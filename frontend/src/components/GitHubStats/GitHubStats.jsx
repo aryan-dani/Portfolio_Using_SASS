@@ -5,6 +5,7 @@ import { useTheme } from "../../context/ThemeContext";
 const GITHUB_USERNAME = "aryan-dani";
 
 import { containerVariants, itemVariants } from "../../utils/motionVariants";
+import ContributionHeatmap from "./ContributionHeatmap";
 
 function ImageWithSkeleton({ src, alt, className = "", imgClassName = "", width = 495, height = 195 }) {
   const [loaded, setLoaded] = useState(false);
@@ -95,10 +96,6 @@ const GitHubStats = memo(function GitHubStats() {
     ? `https://github-readme-activity-graph.vercel.app/graph?username=${GITHUB_USERNAME}&bg_color=13131a&color=b0b0c0&line=f0ff00&point=f0f0f5&hide_border=true&area=true&area_color=1e1e2a`
     : `https://github-readme-activity-graph.vercel.app/graph?username=${GITHUB_USERNAME}&bg_color=ffffff&color=4a4a52&line=5d6300&point=0d0d0d&hide_border=true&area=true&area_color=f0f0ee`;
 
-  const contribUrl = isDark
-    ? `https://ghchart.rshah.org/f0ff00/${GITHUB_USERNAME}`
-    : `https://ghchart.rshah.org/5d6300/${GITHUB_USERNAME}`;
-
   return (
     <motion.section
       className="flex flex-col gap-8"
@@ -151,24 +148,16 @@ const GitHubStats = memo(function GitHubStats() {
         </GHCard>
       </div>
 
-      {/* Contributions Calendar */}
+      {/* Live contribution grid */}
       <GHCard
         header={
           <>
             <span>Contributions Calendar</span>
-            <span className="text-xs opacity-60">Commit History</span>
+            <span className="text-xs opacity-60">Live data</span>
           </>
         }
       >
-        <div className="p-6 flex justify-center overflow-x-auto">
-          <ImageWithSkeleton
-            src={contribUrl}
-            alt="Contributions Calendar"
-            imgClassName="min-w-162.5 max-w-full h-auto"
-            width={1040}
-            height={160}
-          />
-        </div>
+        <ContributionHeatmap />
       </GHCard>
 
       {/* Activity Graph */}

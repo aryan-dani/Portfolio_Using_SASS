@@ -81,7 +81,7 @@ function playNoiseBurst(audioContext, dest, {
   source.stop(start + duration + 0.01);
 }
 
-/** Tactile click — body thump + crisp transient. */
+/** Tactile click - body thump + crisp transient. */
 export function playClickSound(audioContext, masterRef) {
   const dest = getMasterOutput(audioContext, masterRef);
   const t = audioContext.currentTime;
@@ -109,7 +109,7 @@ export function playClickSound(audioContext, masterRef) {
   });
 }
 
-/** Soft hover tick — airy and unobtrusive. */
+/** Soft hover tick - airy and unobtrusive. */
 export function playHoverSound(audioContext, masterRef) {
   const dest = getMasterOutput(audioContext, masterRef);
   const t = audioContext.currentTime;

@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { FaArrowUp } from "react-icons/fa";
 import { getPortfolioScrollY, smoothScrollToTop, subscribePortfolioScroll } from "../../utils/smoothScroll";
 import { snappySpring } from "../../utils/motionVariants";
+import { useSiteIdleState } from "../../context/SiteIdleContext";
 
 function throttle(func, limit) {
   let inThrottle;
@@ -19,6 +20,7 @@ const BackToTop = memo(function BackToTop() {
   const [isVisible, setIsVisible] = useState(false);
   const [isScrolling, setIsScrolling] = useState(false);
   const isScrollingRef = useRef(false);
+  const { hideChrome } = useSiteIdleState();
 
   useEffect(() => {
     const handleScroll = throttle(() => {
@@ -44,7 +46,7 @@ const BackToTop = memo(function BackToTop() {
     });
   }, []);
 
-  const showButton = isVisible || isScrolling;
+  const showButton = (isVisible || isScrolling) && !hideChrome;
 
   return (
     <AnimatePresence>

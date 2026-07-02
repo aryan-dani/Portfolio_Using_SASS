@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect, useCallback } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { FaSearch, FaTimes, FaChevronDown } from "react-icons/fa";
@@ -9,6 +9,7 @@ import { usePageSEO } from "../../utils/seo";
 import ProjectCard from "../../components/ProjectCard/ProjectCard";
 import ProjectModal from "../../components/ProjectModal/ProjectModal";
 import PageHeader from "../../components/PageHeader/PageHeader";
+import { useAchievements } from "../../context/AchievementContext";
 
 function Projects() {
   usePageSEO(useMemo(() => ({ projects }), []));
@@ -20,6 +21,15 @@ function Projects() {
   const [highlightedId, setHighlightedId]     = useState(null);
   const [isFilterExpanded, setIsFilterExpanded] = useState(false);
   const navigate = useNavigate();
+  const { track } = useAchievements();
+
+  const openProject = useCallback(
+    (project) => {
+      setSelectedProject(project);
+      track("project_modal");
+    },
+    [track],
+  );
 
   const allTags = useMemo(() => {
     const s = new Set();
@@ -34,10 +44,10 @@ function Projects() {
     if (highlightParam) {
       const id = parseInt(highlightParam, 10);
       const project = projects.find((p) => p.id === id);
-      if (project) { setSelectedProject(project); setHighlightedId(id); }
+      if (project) { openProject(project); setHighlightedId(id); }
       setSearchParams({}, { replace: true });
     }
-  }, [searchParams, setSearchParams]);
+  }, [searchParams, setSearchParams, openProject]);
 
   useEffect(() => {
     if (highlightedId) {
@@ -207,7 +217,7 @@ function Projects() {
                 <ProjectCard
                   key={project.id}
                   project={project}
-                  onOpenModal={setSelectedProject}
+                  onOpenModal={openProject}
                   index={index}
                   isHighlighted={highlightedId === project.id}
                 />

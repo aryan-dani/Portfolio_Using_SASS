@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback, memo, lazy, Suspense, useMemo } from "react";
+import { useState, useEffect, useRef, memo, lazy, Suspense, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   FaEnvelope, FaFileDownload, FaPaperPlane, FaChevronDown, FaCheck, FaCopy, FaEye,
@@ -25,7 +25,7 @@ const FAQ_ITEMS = [
   },
   {
     q: "Do you freelance?",
-    a: "Yes! I'm open to freelance projects, especially full-stack web apps and AI-powered tools. Let's discuss your idea — I'd love to hear about it.",
+    a: "Yes! I'm open to freelance projects, especially full-stack web apps and AI-powered tools. Let's discuss your idea - I'd love to hear about it.",
   },
   {
     q: "What's your typical response time?",

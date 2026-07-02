@@ -1,13 +1,4 @@
-import {
-  HiHome,
-  HiCode,
-  HiBriefcase,
-  HiBadgeCheck,
-  HiLightningBolt,
-  HiUser,
-  HiTerminal,
-  HiDocumentText,
-} from "react-icons/hi";
+import { HiHome, HiCode, HiBriefcase, HiBadgeCheck, HiLightningBolt, HiUser, HiTerminal, HiDocumentText, HiStar, HiPencil } from "react-icons/hi";
 
 /** Single source of truth for site navigation and route ordering. */
 export const SITE_ROUTES = [
@@ -19,7 +10,9 @@ export const SITE_ROUTES = [
   { id: "about", segment: "about", path: "/about", label: "About", shortcut: "6", header: true, dock: true, palette: true, icon: HiUser },
   { id: "contact", segment: "contact", path: "/contact", label: "Contact", shortcut: null, header: false, dock: false, palette: true, icon: HiUser },
   { id: "playground", segment: "playground", path: "/playground", label: "Playground", shortcut: "7", header: true, dock: true, palette: true, icon: HiTerminal },
-  { id: "copyright", segment: "copyright", path: "/copyright", label: "Copyright", shortcut: "8", header: true, dock: true, palette: true, icon: HiDocumentText },
+  { id: "achievements", segment: "achievements", path: "/achievements", label: "Achievements", shortcut: "8", header: true, dock: true, palette: true, icon: HiStar },
+  { id: "guestbook", segment: "guestbook", path: "/guestbook", label: "Guestbook", shortcut: "9", header: false, dock: true, palette: true, icon: HiPencil },
+  { id: "copyright", segment: "copyright", path: "/copyright", label: "Copyright", shortcut: null, header: true, dock: false, palette: true, icon: HiDocumentText },
 ];
 
 export const routeOrder = SITE_ROUTES.map((route) => route.path);
@@ -61,5 +54,7 @@ export const PAGE_IMPORTS = {
   about: () => import("../pages/About/About"),
   contact: () => import("../pages/Contact/Contact"),
   playground: () => import("../pages/Playground/Playground"),
+  achievements: () => import("../pages/Achievements/Achievements"),
+  guestbook: () => import("../pages/Guestbook/Guestbook"),
   copyright: () => import("../pages/Copyright/Copyright"),
 };

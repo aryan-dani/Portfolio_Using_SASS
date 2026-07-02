@@ -4,14 +4,14 @@
  * Tuned for smooth, cohesive motion across the portfolio.
  */
 
-/** Shared easing curves — match CSS tokens in index.css */
+/** Shared easing curves - match CSS tokens in index.css */
 export const motionEase = {
   out: [0.22, 1, 0.36, 1],
   inOut: [0.45, 0, 0.55, 1],
   in: [0.4, 0, 1, 1],
 };
 
-/** Default spring — soft landing with minimal bounce */
+/** Default spring - soft landing with minimal bounce */
 export const defaultSpring = {
   type: "spring",
   stiffness: 135,
@@ -34,7 +34,7 @@ export const hoverSpring = {
   damping: 32,
 };
 
-/** Stagger container — fades in and staggers children */
+/** Stagger container - fades in and staggers children */
 export const containerVariants = {
   hidden: { opacity: 0 },
   visible: {
@@ -48,7 +48,7 @@ export const containerVariants = {
   },
 };
 
-/** Slide-up item — smooth spring-based reveal */
+/** Slide-up item - smooth spring-based reveal */
 export const itemVariants = {
   hidden: { opacity: 0, y: 8 },
   visible: {
@@ -58,10 +58,10 @@ export const itemVariants = {
   },
 };
 
-/** Card variant — alias of itemVariants for grid children */
+/** Card variant - alias of itemVariants for grid children */
 export const cardVariants = itemVariants;
 
-/** Route/page transition — directional slide with soft spring */
+/** Route/page transition - directional slide with soft spring */
 export const pageVariants = {
   initial: (direction = 1) => ({
     opacity: 0,
@@ -83,14 +83,14 @@ export const pageVariants = {
   }),
 };
 
-/** Modal backdrop — smooth opacity fade */
+/** Modal backdrop - smooth opacity fade */
 export const modalBackdropVariants = {
   hidden: { opacity: 0 },
   visible: { opacity: 1, transition: { duration: 0.32, ease: motionEase.out } },
   exit: { opacity: 0, transition: { duration: 0.24, ease: motionEase.in } },
 };
 
-/** Modal content — refined spring scale-in from slightly below */
+/** Modal content - refined spring scale-in from slightly below */
 export const modalContentVariants = {
   hidden: { opacity: 0, scale: 0.98, y: 12 },
   visible: {

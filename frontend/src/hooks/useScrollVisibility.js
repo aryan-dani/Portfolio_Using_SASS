@@ -70,7 +70,6 @@ export function useScrollVisibility({
 
     const unsubscribeScroll = subscribePortfolioScroll(onScroll);
     if (revealOnBottomProximity) {
-      window.addEventListener("mousemove", onMouseMove, { passive: true });
       window.addEventListener("pointermove", onMouseMove, { passive: true });
     }
     update();
@@ -78,7 +77,6 @@ export function useScrollVisibility({
     return () => {
       unsubscribeScroll();
       if (revealOnBottomProximity) {
-        window.removeEventListener("mousemove", onMouseMove);
         window.removeEventListener("pointermove", onMouseMove);
       }
       if (mouseMoveRaf) cancelAnimationFrame(mouseMoveRaf);

@@ -4,6 +4,7 @@ import { motion } from "framer-motion";
 import { HiVolumeUp, HiVolumeOff } from "react-icons/hi";
 import { useSound } from "../../context/SoundContext";
 import { useScrollVisibility } from "../../hooks/useScrollVisibility";
+import { useSiteIdleState } from "../../context/SiteIdleContext";
 
 import { dockNavItems } from "../../config/routes";
 
@@ -16,10 +17,12 @@ function FloatingDock() {
     revealOnBottomProximity: true,
     bottomProximity: 160,
   });
+  const { hideChrome } = useSiteIdleState();
+  const showDock = isVisible && !hideChrome;
 
   return (
     <>
-      {!isVisible && (
+      {!showDock && (
         <div
           className="fixed inset-x-0 bottom-0 z-40 h-32 pointer-events-auto"
           onPointerEnter={reveal}
@@ -29,13 +32,13 @@ function FloatingDock() {
       )}
     <motion.div
       initial={{ y: 0, opacity: 1, x: "-50%" }}
-      animate={{ y: isVisible ? 0 : 96, opacity: isVisible ? 1 : 0, x: "-50%" }}
+      animate={{ y: showDock ? 0 : 96, opacity: showDock ? 1 : 0, x: "-50%" }}
       transition={{ type: "spring", stiffness: 280, damping: 34, mass: 0.9 }}
       className="fixed bottom-4 sm:bottom-6 left-1/2 z-50 px-2 sm:px-4 w-full max-w-fit pointer-events-none flex justify-center gpu-layer"
-      aria-hidden={!isVisible}
+      aria-hidden={!showDock}
     >
           <nav 
-            className={`flex items-center gap-1 sm:gap-2 p-1 border-4 border-outline shadow-[4px_4px_0px_0px_var(--shadow-color)] sm:shadow-[6px_6px_0px_0px_var(--shadow-color)] overflow-x-auto sm:overflow-visible no-scrollbar max-w-full paint-isolate ${isVisible ? "pointer-events-auto" : "pointer-events-none"}`}
+            className={`flex items-center gap-1 sm:gap-2 p-1 border-4 border-outline shadow-[4px_4px_0px_0px_var(--shadow-color)] sm:shadow-[6px_6px_0px_0px_var(--shadow-color)] overflow-x-auto sm:overflow-visible no-scrollbar max-w-full paint-isolate ${showDock ? "pointer-events-auto" : "pointer-events-none"}`}
             style={{ backgroundColor: "color-mix(in srgb, var(--color-surface) 96%, transparent)" }}
           >
             {dockNavItems.map((item, index) => {

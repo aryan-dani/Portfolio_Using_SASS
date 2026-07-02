@@ -1,6 +1,6 @@
-/** Lightweight counts for Home stats — avoids importing full data arrays on the home route. */
+/** Lightweight counts for Home stats - avoids importing full data arrays on the home route. */
 export const portfolioStats = {
-  projects: 15,
+  projects: 14,
   skills: 37,
   certifications: 9,
 };

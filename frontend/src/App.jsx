@@ -15,12 +15,16 @@ import { ToastProvider } from "./context/ToastContext";
 import { ThemeProvider } from "./context/ThemeContext";
 import { SmoothScrollProvider } from "./context/SmoothScrollContext";
 import { SoundProvider } from "./context/SoundContext";
+import { AchievementProvider } from "./context/AchievementContext";
+import { SiteIdleProvider } from "./context/SiteIdleContext";
 import { useMediaQuery } from "./hooks/useMediaQuery";
 import { MOBILE_LITE_QUERY } from "./utils/device";
 
 import BackToTop from "./components/BackToTop/BackToTop";
 import NoiseOverlay from "./components/NoiseOverlay/NoiseOverlay";
 import PageLoader from "./components/PageLoader/PageLoader";
+import CustomCursor from "./components/CustomCursor/CustomCursor";
+import HackModeListener from "./components/HackModeListener/HackModeListener";
 
 const lazyPages = Object.fromEntries(
   SITE_ROUTES.map((route) => [route.id, lazy(PAGE_IMPORTS[route.id])]),
@@ -32,7 +36,9 @@ const routeConfig = SITE_ROUTES.map((route) => ({
   component: lazyPages[route.id],
 }));
 
-const CustomCursor = lazy(() => import("./components/CustomCursor/CustomCursor"));
+const ChatWidget = lazy(() => import("./components/ChatWidget/ChatWidget"));
+const EasterEggs = lazy(() => import("./components/EasterEggs/EasterEggs"));
+const DevTools = lazy(() => import("./components/DevTools/DevTools"));
 const NotFound = lazy(() => import("./pages/NotFound/NotFound"));
 
 const basename = import.meta.env.BASE_URL;
@@ -164,31 +170,20 @@ function AnimatedRoutes() {
   );
 }
 
-function DeferredCustomCursor() {
-  const [enabled, setEnabled] = useState(false);
+function CustomCursorGate() {
+  const [enabled, setEnabled] = useState(
+    () => typeof window !== "undefined" && window.matchMedia("(pointer: fine)").matches,
+  );
 
   useEffect(() => {
-    if (!window.matchMedia("(pointer: fine)").matches) return undefined;
-
-    const idle = window.requestIdleCallback || ((cb) => window.setTimeout(cb, 1200));
-    const handle = idle(() => setEnabled(true));
-
-    return () => {
-      if (window.cancelIdleCallback) {
-        window.cancelIdleCallback(handle);
-      } else {
-        window.clearTimeout(handle);
-      }
-    };
+    const media = window.matchMedia("(pointer: fine)");
+    const onChange = (event) => setEnabled(event.matches);
+    media.addEventListener("change", onChange);
+    return () => media.removeEventListener("change", onChange);
   }, []);
 
   if (!enabled) return null;
-
-  return (
-    <Suspense fallback={null}>
-      <CustomCursor />
-    </Suspense>
-  );
+  return <CustomCursor />;
 }
 
 function App() {
@@ -198,17 +193,27 @@ function App() {
         <SoundProvider>
           <ToastProvider>
             <NoiseOverlay />
-            <DeferredCustomCursor />
+            <CustomCursorGate />
             <PageLoader />
             <Router
               basename={basename}
               future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
             >
-              <BackToTop />
-              <Layout>
-                <AnimatedRoutes />
-              </Layout>
-              <Analytics />
+              <AchievementProvider>
+                <SiteIdleProvider>
+                  <HackModeListener />
+                  <Suspense fallback={null}>
+                    <EasterEggs />
+                    <DevTools />
+                    <ChatWidget />
+                  </Suspense>
+                  <BackToTop />
+                  <Layout>
+                    <AnimatedRoutes />
+                  </Layout>
+                  {import.meta.env.PROD && <Analytics />}
+                </SiteIdleProvider>
+              </AchievementProvider>
             </Router>
           </ToastProvider>
         </SoundProvider>

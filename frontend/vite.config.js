@@ -1,9 +1,34 @@
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
+import { VitePWA } from "vite-plugin-pwa";
 import path from "path";
+import { apiChatDevPlugin } from "./scripts/vite-api-chat-plugin.mjs";
 
 export default defineConfig({
-  plugins: [react()],
+  plugins: [
+    react(),
+    apiChatDevPlugin(),
+    VitePWA({
+      registerType: "autoUpdate",
+      includeAssets: ["favicons/favicon.svg", "favicons/apple-touch-icon.svg"],
+      manifest: false,
+      workbox: {
+        globPatterns: ["**/*.{js,css,html,ico,svg,woff2}"],
+        navigateFallback: "/index.html",
+        navigateFallbackDenylist: [/^\/api\//],
+        runtimeCaching: [
+          {
+            urlPattern: /^https:\/\/fonts\.googleapis\.com\/.*/i,
+            handler: "CacheFirst",
+            options: {
+              cacheName: "google-fonts-cache",
+              expiration: { maxEntries: 10, maxAgeSeconds: 60 * 60 * 24 * 365 },
+            },
+          },
+        ],
+      },
+    }),
+  ],
   base: "/",
   publicDir: "public",
   css: {

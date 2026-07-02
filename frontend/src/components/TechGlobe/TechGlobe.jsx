@@ -36,6 +36,21 @@ function buildSphereNodes(skills) {
   });
 }
 
+function drawHatch(ctx, w, h, outline) {
+  const spacing = 10;
+  ctx.save();
+  ctx.strokeStyle = outline;
+  ctx.globalAlpha = 0.14;
+  ctx.lineWidth = 1;
+  for (let x = -h; x < w + h; x += spacing) {
+    ctx.beginPath();
+    ctx.moveTo(x, 0);
+    ctx.lineTo(x + h, h);
+    ctx.stroke();
+  }
+  ctx.restore();
+}
+
 function buildEdgePairs(nodes) {
   const pairs = [];
   for (let i = 0; i < nodes.length; i += 1) {
@@ -67,7 +82,7 @@ const TechGlobe = memo(function TechGlobe() {
   const ensureLoopRef = useRef(() => {});
   const inViewRef = useRef(true);
   const isReducedMotionRef = useRef(false);
-  const { theme } = useTheme();
+  const { theme, accent } = useTheme();
   const navigate = useNavigate();
 
   const nodes = useMemo(() => buildSphereNodes(getAllSkills()), []);
@@ -104,7 +119,7 @@ const TechGlobe = memo(function TechGlobe() {
 
   useEffect(() => {
     refreshColorsRef.current?.();
-  }, [theme]);
+  }, [theme, accent]);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -199,6 +214,7 @@ const TechGlobe = memo(function TechGlobe() {
       ctx.clearRect(0, 0, width, height);
       ctx.fillStyle = colors.bg;
       ctx.fillRect(0, 0, width, height);
+      drawHatch(ctx, width, height, colors.outline);
 
       const rotation = rotationRef.current;
       const pointer = pointerRef.current;
@@ -374,7 +390,7 @@ const TechGlobe = memo(function TechGlobe() {
 
   return (
     <div ref={wrapperRef} className="relative w-full max-w-[620px] aspect-[1.24] min-h-[360px]">
-      <div className="absolute -inset-3 border-4 border-outline bg-[var(--color-accent-electric)] opacity-55 pointer-events-none" />
+      <div className="absolute -inset-3 border-4 border-outline bg-hatch pointer-events-none" />
       <div className="absolute -bottom-5 -left-5 h-20 w-20 border-l-8 border-b-8 border-outline pointer-events-none" />
       <canvas
         ref={canvasRef}

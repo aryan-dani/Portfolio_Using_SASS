@@ -26,7 +26,7 @@ export function useModalLock(isOpen, onClose) {
     if (nextCount === 1) {
       body.style.overflow = "hidden";
       html.style.overflow = "hidden";
-      html.classList.add("lenis-stopped");
+      html.classList.add("lenis-stopped", "portfolio-modal-open");
       lenis?.stop?.();
     }
 
@@ -38,7 +38,7 @@ export function useModalLock(isOpen, onClose) {
         html.removeAttribute(lockAttr);
         body.style.overflow = previousBodyOverflow;
         html.style.overflow = previousHtmlOverflow;
-        html.classList.remove("lenis-stopped");
+        html.classList.remove("lenis-stopped", "portfolio-modal-open");
         lenis?.start?.();
       } else {
         html.setAttribute(lockAttr, String(reducedCount));

@@ -4,13 +4,17 @@ import Footer from "../Footer/Footer";
 import FloatingDock from "../FloatingDock/FloatingDock";
 import ShortcutsOverlay from "../ShortcutsOverlay/ShortcutsOverlay";
 import OnboardingHint from "../OnboardingHint/OnboardingHint";
+import InstallPrompt from "../InstallPrompt/InstallPrompt";
+import CrtExitBanner from "../CrtExitBanner/CrtExitBanner";
 import { useKeyboardNav } from "../../hooks/useKeyboardNav";
+import { useSiteIdleState } from "../../context/SiteIdleContext";
 
 const CommandPalette = lazy(() => import("../CommandPalette/CommandPalette"));
 
 const Layout = memo(function Layout({ children }) {
   const [shortcutsOpen, setShortcutsOpen] = useState(false);
   const [paletteMounted, setPaletteMounted] = useState(false);
+  const { hideChrome } = useSiteIdleState();
   const showShortcuts = useCallback(() => setShortcutsOpen(true), []);
   useKeyboardNav({ onShowShortcuts: showShortcuts });
 
@@ -18,7 +22,7 @@ const Layout = memo(function Layout({ children }) {
     const mountPalette = () => setPaletteMounted(true);
 
     const onKeyDown = (event) => {
-      if ((event.ctrlKey || event.metaKey || event.altKey) && event.key.toLowerCase() === "k") {
+      if ((event.ctrlKey || event.metaKey || event.altKey) && event.code === "KeyK") {
         mountPalette();
       }
     };
@@ -58,6 +62,8 @@ const Layout = memo(function Layout({ children }) {
         </Suspense>
       )}
       <OnboardingHint />
+      <InstallPrompt />
+      {!hideChrome && <CrtExitBanner />}
       <ShortcutsOverlay isOpen={shortcutsOpen} onClose={() => setShortcutsOpen(false)} />
     </div>
   );

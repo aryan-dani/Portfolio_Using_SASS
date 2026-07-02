@@ -13,6 +13,9 @@ import PageHeader from "../../components/PageHeader/PageHeader";
 import { containerVariants, itemVariants } from "../../utils/motionVariants";
 import { socialIconMap } from "../../utils/socialIcons";
 
+import GitHubTicker from "../../components/GitHubTicker/GitHubTicker";
+import GitCareerTimeline from "../../components/GitCareerTimeline/GitCareerTimeline";
+
 const GitHubStats = lazy(() => import("../../components/GitHubStats/GitHubStats"));
 const ResumeModal = lazy(() => import("../../components/ResumeModal/ResumeModal"));
 
@@ -295,6 +298,11 @@ function About() {
           </motion.div>
         </motion.div>
       </div>
+
+      <motion.div className="flex flex-col gap-8" variants={itemVariants}>
+        <GitHubTicker />
+        <GitCareerTimeline />
+      </motion.div>
 
       <Suspense fallback={null}>
         <GitHubStats />

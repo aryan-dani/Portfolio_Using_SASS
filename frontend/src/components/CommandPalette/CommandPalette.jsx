@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, memo, useMemo } from "react";
+import { useState, useEffect, useRef, memo, useMemo, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { HiOutlineSearch, HiArrowRight } from "react-icons/hi";
@@ -6,6 +6,7 @@ import { useTheme } from "../../context/ThemeContext";
 import { useModalLock } from "../../hooks/useModalLock";
 import { staticNavCommands } from "../../utils/commandPaletteStatic";
 import { aboutInfo } from "../../data/experience";
+import { PALETTE_EVENT } from "../../utils/ishaniActions";
 
 function CommandPalette() {
   const [isOpen, setIsOpen] = useState(false);
@@ -14,6 +15,9 @@ function CommandPalette() {
   const { toggleTheme } = useTheme();
   const navigate = useNavigate();
   const inputRef = useRef(null);
+  const listRef = useRef(null);
+  const selectedIndexRef = useRef(0);
+  const filteredCommandsRef = useRef([]);
   useModalLock(isOpen, () => setIsOpen(false));
 
   const [searchIndex, setSearchIndex] = useState(staticNavCommands);
@@ -43,14 +47,20 @@ function CommandPalette() {
       .sort((a, b) => b.score - a.score || a.label.localeCompare(b.label));
   }, [query, searchIndex]);
 
-  const groupedCommands = useMemo(() => {
+  const { groupedCommands, displayCommands, displayIndexById } = useMemo(() => {
     const order = ["action", "nav", "project", "skill", "experience", "document", "link"];
-    return order
+    const groups = order
       .map((type) => ({
         type,
         items: filteredCommands.filter((cmd) => cmd.type === type),
       }))
       .filter((group) => group.items.length > 0);
+    const flat = groups.flatMap((group) => group.items);
+    return {
+      groupedCommands: groups,
+      displayCommands: flat,
+      displayIndexById: new Map(flat.map((cmd, i) => [cmd.id, i])),
+    };
   }, [filteredCommands]);
 
   useEffect(() => {
@@ -68,65 +78,135 @@ function CommandPalette() {
     };
   }, [isOpen]);
   useEffect(() => {
+    filteredCommandsRef.current = displayCommands;
+    setSelectedIndex((prev) => {
+      const max = Math.max(0, displayCommands.length - 1);
+      const next = Math.min(prev, max);
+      selectedIndexRef.current = next;
+      return next;
+    });
+  }, [displayCommands]);
+
+  useEffect(() => {
+    selectedIndexRef.current = selectedIndex;
+  }, [selectedIndex]);
+
+  useEffect(() => {
     setSelectedIndex(0);
+    selectedIndexRef.current = 0;
   }, [query]);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    const selected = displayCommands[selectedIndex];
+    if (!selected) return;
+    const option = document.getElementById(`command-${selected.id}`);
+    option?.scrollIntoView({ block: "nearest", behavior: "smooth" });
+  }, [isOpen, selectedIndex, displayCommands]);
 
   // Global keydown listener
   useEffect(() => {
     const handleKeyDown = (e) => {
-      if ((e.ctrlKey || e.metaKey || e.altKey) && e.key.toLowerCase() === "k") {
+      if ((e.ctrlKey || e.metaKey || e.altKey) && e.code === "KeyK") {
         e.preventDefault();
         setIsOpen((prev) => !prev);
       }
     };
+    const handleOpenEvent = () => setIsOpen(true);
     window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
+    window.addEventListener(PALETTE_EVENT, handleOpenEvent);
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+      window.removeEventListener(PALETTE_EVENT, handleOpenEvent);
+    };
   }, []);
 
-  // Handle keys inside palette
+  const executeCommand = useCallback(
+    (cmd) => {
+      if (cmd.action === "TOGGLE_THEME") {
+        toggleTheme();
+      } else if (cmd.action === "COPY_EMAIL") {
+        navigator.clipboard?.writeText(aboutInfo.email);
+      } else if (cmd.isExternal) {
+        window.open(cmd.action, "_blank");
+      } else {
+        navigate(cmd.action);
+      }
+      setIsOpen(false);
+      setQuery("");
+    },
+    [navigate, toggleTheme],
+  );
+
+  const moveSelection = useCallback((delta) => {
+    const commands = filteredCommandsRef.current;
+    if (!commands.length) return;
+    setSelectedIndex((prev) => {
+      const next = Math.max(0, Math.min(commands.length - 1, prev + delta));
+      selectedIndexRef.current = next;
+      return next;
+    });
+  }, []);
+
+  const handlePaletteKeyDown = useCallback(
+    (event) => {
+      if (event.key === "ArrowDown" || event.code === "ArrowDown") {
+        event.preventDefault();
+        event.stopPropagation();
+        moveSelection(1);
+        return;
+      }
+      if (event.key === "ArrowUp" || event.code === "ArrowUp") {
+        event.preventDefault();
+        event.stopPropagation();
+        moveSelection(-1);
+        return;
+      }
+      if (event.key === "Home") {
+        event.preventDefault();
+        event.stopPropagation();
+        setSelectedIndex(0);
+        selectedIndexRef.current = 0;
+        return;
+      }
+      if (event.key === "End") {
+        event.preventDefault();
+        event.stopPropagation();
+        const last = Math.max(0, filteredCommandsRef.current.length - 1);
+        setSelectedIndex(last);
+        selectedIndexRef.current = last;
+        return;
+      }
+      if (event.key === "Enter") {
+        event.preventDefault();
+        event.stopPropagation();
+        const selectedCmd = filteredCommandsRef.current[selectedIndexRef.current];
+        if (selectedCmd) executeCommand(selectedCmd);
+        return;
+      }
+      if (event.key === "Escape") {
+        event.preventDefault();
+        event.stopPropagation();
+        setIsOpen(false);
+      }
+    },
+    [executeCommand, moveSelection],
+  );
+
   useEffect(() => {
-    if (!isOpen) return;
-    
-    // Focus input on open
-    setTimeout(() => {
-      inputRef.current?.focus();
+    if (!isOpen) return undefined;
+
+    const focusTimer = window.setTimeout(() => {
+      inputRef.current?.focus({ preventScroll: true });
+      inputRef.current?.select();
     }, 50);
 
-    const handlePaletteKeyDown = (e) => {
-      if (e.key === "Escape") {
-        setIsOpen(false);
-      } else if (e.key === "ArrowDown") {
-        e.preventDefault();
-        setSelectedIndex((prev) => (prev + 1) % (filteredCommands.length || 1));
-      } else if (e.key === "ArrowUp") {
-        e.preventDefault();
-        setSelectedIndex((prev) => (prev - 1 + filteredCommands.length) % (filteredCommands.length || 1));
-      } else if (e.key === "Enter") {
-        e.preventDefault();
-        const selectedCmd = filteredCommands[selectedIndex];
-        if (selectedCmd) {
-          executeCommand(selectedCmd);
-        }
-      }
+    window.addEventListener("keydown", handlePaletteKeyDown, true);
+    return () => {
+      window.clearTimeout(focusTimer);
+      window.removeEventListener("keydown", handlePaletteKeyDown, true);
     };
-
-    window.addEventListener("keydown", handlePaletteKeyDown);
-    return () => window.removeEventListener("keydown", handlePaletteKeyDown);
-  }, [isOpen, filteredCommands, selectedIndex]);
-
-  const executeCommand = (cmd) => {
-    if (cmd.action === "TOGGLE_THEME") {
-      toggleTheme();
-    } else if (cmd.action === "COPY_EMAIL") {
-      navigator.clipboard?.writeText(aboutInfo.email);
-    } else if (cmd.isExternal) {
-      window.open(cmd.action, "_blank");
-    } else {
-      navigate(cmd.action);
-    }
-    setIsOpen(false);
-    setQuery("");
-  };
+  }, [isOpen, handlePaletteKeyDown]);
 
   return (
     <AnimatePresence>
@@ -163,7 +243,7 @@ function CommandPalette() {
                   type="text"
                   aria-label="Search commands, projects, skills, and pages"
                   aria-controls="command-palette-results"
-                  aria-activedescendant={filteredCommands[selectedIndex]?.id ? `command-${filteredCommands[selectedIndex].id}` : undefined}
+                  aria-activedescendant={displayCommands[selectedIndex]?.id ? `command-${displayCommands[selectedIndex].id}` : undefined}
                   placeholder="Search projects, skills, or navigate..."
                   value={query}
                   onChange={(e) => setQuery(e.target.value)}
@@ -176,20 +256,21 @@ function CommandPalette() {
 
               {/* Results List */}
               <div
+                ref={listRef}
                 id="command-palette-results"
                 role="listbox"
                 aria-label="Command palette results"
-                className="max-h-[55vh] overflow-y-auto overscroll-contain no-scrollbar py-2 content-visibility-auto"
+                className="max-h-[55vh] overflow-y-auto overscroll-contain no-scrollbar py-2 content-visibility-auto scroll-smooth"
                 data-lenis-prevent
               >
-                {filteredCommands.length > 0 ? (
+                {displayCommands.length > 0 ? (
                   groupedCommands.map((group) => (
                     <div key={group.type}>
                       <div className="px-4 sm:px-6 py-2 font-label-bold text-[10px] uppercase tracking-[0.22em] text-[var(--color-text-muted)] bg-[var(--color-surface)]">
                         {group.type}
                       </div>
                       {group.items.map((cmd) => {
-                        const index = filteredCommands.findIndex((item) => item.id === cmd.id);
+                        const index = displayIndexById.get(cmd.id) ?? 0;
                         const Icon = cmd.icon;
                         return (
                           <div
@@ -203,7 +284,10 @@ function CommandPalette() {
                                 : "border-transparent hover:bg-[var(--color-surface-variant)] text-[var(--color-on-surface)]"
                             }`}
                             onClick={() => executeCommand(cmd)}
-                            onMouseEnter={() => setSelectedIndex(index)}
+                            onMouseEnter={() => {
+                              selectedIndexRef.current = index;
+                              setSelectedIndex(index);
+                            }}
                           >
                             <div className="flex items-center gap-4 min-w-0">
                               <Icon className={`text-xl sm:text-2xl shrink-0 ${index === selectedIndex ? "text-[var(--color-on-primary-container)]" : "text-[var(--color-text-muted)]"}`} />

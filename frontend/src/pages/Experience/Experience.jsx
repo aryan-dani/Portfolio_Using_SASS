@@ -1,6 +1,5 @@
-import { useState, useRef, memo, useMemo, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
-import { motion, AnimatePresence, useInView } from "framer-motion";
+import { useState, useRef, useMemo, useEffect, memo } from "react";
+import { useNavigate, useLocation } from "react-router-dom";import { motion, AnimatePresence, useInView } from "framer-motion";
 import { FaChevronDown, FaExternalLinkAlt, FaMapMarkerAlt, FaCalendarAlt } from "react-icons/fa";
 import { experiences } from "../../data/experience";
 import { containerVariants, hoverSpring, defaultSpring } from "../../utils/motionVariants";
@@ -198,63 +197,71 @@ function ExperienceCard({ exp, index, isExpanded, onToggle }) {
     <motion.div
       ref={ref}
       key={exp.id}
-      className="relative z-10 w-full mb-10 md:mb-16 grid grid-cols-1 md:grid-cols-[1fr_80px_1fr] items-center gap-4 md:gap-0 overflow-visible p-3 -m-3"
+      className="relative z-10 w-full mb-10 md:mb-16 grid grid-cols-1 md:grid-cols-[minmax(0,1fr)_3.5rem_minmax(0,1fr)] md:gap-x-10 items-start gap-4 overflow-visible"
       initial={{ opacity: 0, x: isEven ? -60 : 60 }}
       animate={inView ? { opacity: 1, x: 0 } : {}}
       transition={{ ...defaultSpring, delay: index * 0.05 }}
     >
-      {/* Column 1 (Left): Card if Even, Period if Odd */}
       {isEven ? (
-        <CardContent exp={exp} style={style} isExpanded={isExpanded} onToggle={onToggle} />
+        <>
+          <div className="md:pr-6">
+            <CardContent exp={exp} style={style} isExpanded={isExpanded} onToggle={onToggle} />
+          </div>
+          <TimelineDot index={index} inView={inView} isExpanded={isExpanded} style={style} />
+          <div className="hidden md:flex justify-start pl-2 pt-8">
+            <PeriodBadge exp={exp} alignRight={false} />
+          </div>
+        </>
       ) : (
-        <div className="hidden md:flex justify-end pr-12">
-          <PeriodBadge exp={exp} alignRight />
-        </div>
-      )}
-
-      {/* Column 2 (Center): Timeline dot */}
-      <div className="hidden md:flex justify-center items-center relative z-10 w-full">
-        <div className="relative">
-          <motion.div
-            className="w-8 h-8 border-4 border-outline relative z-10 flex items-center justify-center"
-            style={style.dot}
-            initial={{ scale: 0 }}
-            animate={inView ? { scale: 1 } : {}}
-            transition={{ ...defaultSpring, delay: index * 0.05 + 0.15 }}
-          />
-          {inView && (
-            <motion.div
-              className="absolute inset-0 border-4 border-primary-container"
-              initial={{ scale: 1, opacity: 0.7 }}
-              animate={{ scale: 2.5, opacity: 0 }}
-              transition={{ duration: 1.2, ease: "easeOut", delay: index * 0.05 + 0.3 }}
-            />
-          )}
-          {isExpanded && (
-            <motion.div
-              className="absolute inset-0 border-4 border-outline"
-              animate={{ scale: [1, 2.2, 1], opacity: [0.8, 0, 0.8] }}
-              transition={{ duration: 1.8, repeat: Infinity, ease: "easeInOut" }}
-            />
-          )}
-        </div>
-      </div>
-
-      {/* Column 3 (Right): Period if Even, Card if Odd */}
-      {isEven ? (
-        <div className="hidden md:flex justify-start pl-12">
-          <PeriodBadge exp={exp} alignRight={false} />
-        </div>
-      ) : (
-        <CardContent exp={exp} style={style} isExpanded={isExpanded} onToggle={onToggle} />
+        <>
+          <div className="hidden md:flex justify-end pr-2 pt-8">
+            <PeriodBadge exp={exp} alignRight />
+          </div>
+          <TimelineDot index={index} inView={inView} isExpanded={isExpanded} style={style} />
+          <div className="md:pl-6">
+            <CardContent exp={exp} style={style} isExpanded={isExpanded} onToggle={onToggle} />
+          </div>
+        </>
       )}
     </motion.div>
+  );
+}
+
+function TimelineDot({ index, inView, isExpanded, style }) {
+  return (
+    <div className="hidden md:flex justify-center pt-8 z-20">
+      <div className="relative">
+        <motion.div
+          className="w-8 h-8 border-4 border-outline relative z-10"
+          style={style.dot}
+          initial={{ scale: 0 }}
+          animate={inView ? { scale: 1 } : {}}
+          transition={{ ...defaultSpring, delay: index * 0.05 + 0.15 }}
+        />
+        {inView && (
+          <motion.div
+            className="absolute inset-0 border-4 border-primary-container pointer-events-none"
+            initial={{ scale: 1, opacity: 0.7 }}
+            animate={{ scale: 2.5, opacity: 0 }}
+            transition={{ duration: 1.2, ease: "easeOut", delay: index * 0.05 + 0.3 }}
+          />
+        )}
+        {isExpanded && (
+          <motion.div
+            className="absolute inset-0 border-4 border-outline pointer-events-none"
+            animate={{ scale: [1, 2.2, 1], opacity: [0.8, 0, 0.8] }}
+            transition={{ duration: 1.8, repeat: Infinity, ease: "easeInOut" }}
+          />
+        )}
+      </div>
+    </div>
   );
 }
 
 function Experience() {
   const seoData = useMemo(() => ({ experiences }), []);
   usePageSEO(seoData);
+  const location = useLocation();
   const [expandedId, setExpandedId] = useState(experiences[0]?.id || null);
   const containerRef = useRef(null);
   const timelineFillRef = useRef(null);
@@ -280,6 +287,11 @@ function Experience() {
 
   const toggleExpand = (id) => setExpandedId(expandedId === id ? null : id);
 
+  useEffect(() => {
+    const expandId = location.state?.expandId;
+    if (expandId) setExpandedId(expandId);
+  }, [location.state]);
+
   return (
     <motion.div
       className="flex flex-col gap-12 md:gap-16 relative"
@@ -294,13 +306,12 @@ function Experience() {
       />
 
       <section className="relative py-8 w-full" ref={containerRef}>
-        {/* Timeline track - static outline background */}
+        {/* Timeline track */}
         <div
-          className="absolute left-5 md:left-1/2 transform -translate-x-1/2 top-0 bottom-0 w-2 z-0"
+          className="absolute left-5 md:left-1/2 md:-translate-x-1/2 top-0 bottom-0 w-0.5 md:w-2 z-0"
           style={{ background: "var(--color-outline-variant)" }}
         />
-        {/* Timeline track - scroll animated fill gradient */}
-        <div className="absolute left-5 md:left-1/2 -translate-x-1/2 top-0 bottom-0 w-2 z-0 overflow-hidden">
+        <div className="absolute left-5 md:left-1/2 md:-translate-x-1/2 top-0 bottom-0 w-0.5 md:w-2 z-0 overflow-hidden">
           <div
             ref={timelineFillRef}
             className="h-full w-full origin-top"

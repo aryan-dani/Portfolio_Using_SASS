@@ -2,7 +2,7 @@
   "id": "/",
   "name": "Aryan Dani Portfolio",
   "short_name": "AD Portfolio",
-  "description": "Portfolio of Aryan Dani — AI Engineer & Full Stack Developer specializing in Machine Learning, Computer Vision, and modern web development.",
+  "description": "Portfolio of Aryan Dani - AI Engineer & Full Stack Developer specializing in Machine Learning, Computer Vision, and modern web development.",
   "start_url": "./",
   "scope": "/",
   "display": "standalone",

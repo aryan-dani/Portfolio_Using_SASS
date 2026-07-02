@@ -82,7 +82,7 @@ ${SITE_URL}/
 ## Important Pages
 ${SEO_ROUTE_ORDER.map((path) => {
   const config = SEO_CONFIG[path];
-  return `- ${config.title}: ${config.canonical} — ${config.description}`;
+  return `- ${config.title}: ${config.canonical} - ${config.description}`;
 }).join("\n")}
 
 ## Entity Keywords
@@ -108,9 +108,21 @@ Last updated: ${today}
 `;
 }
 
+function buildRouteOgSvg(title, accent = "#2f6bff") {
+  const safe = xmlEscape(title);
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
+  <rect width="1200" height="630" fill="#f8f7f4"/>
+  <rect x="40" y="40" width="1120" height="550" fill="#ffffff" stroke="#131316" stroke-width="12"/>
+  <rect x="72" y="72" width="180" height="56" fill="${accent}"/>
+  <text x="92" y="110" fill="#f8f7f4" font-family="Arial, sans-serif" font-size="28" font-weight="800">ARYAN DANI</text>
+  <text x="72" y="280" fill="#131316" font-family="Arial, sans-serif" font-size="64" font-weight="900">${safe}</text>
+  <text x="72" y="360" fill="#454449" font-family="Arial, sans-serif" font-size="30" font-weight="700">aryandani.com</text>
+</svg>`;
+}
+
 function buildOgSvg() {
   return `<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630" role="img" aria-labelledby="title desc">
-  <title id="title">Aryan Dani — AI Engineer &amp; Full Stack Developer</title>
+  <title id="title">Aryan Dani - AI Engineer &amp; Full Stack Developer</title>
   <desc id="desc">Social preview image for Aryan Dani portfolio.</desc>
   <rect width="1200" height="630" fill="#f8f7f4"/>
   <rect x="44" y="44" width="1112" height="542" fill="#ffffff" stroke="#131316" stroke-width="10"/>
@@ -141,6 +153,11 @@ await writePublicFile("robots.txt", buildRobots());
 await writePublicFile("llms.txt", buildLlmsTxt());
 await writePublicFile("humans.txt", buildHumansTxt());
 await writePublicFile("og-image.svg", buildOgSvg());
+for (const path of SEO_ROUTE_ORDER) {
+  const meta = SEO_ROUTE_META[path];
+  const slug = path === "/" ? "home" : path.replace(/^\//, "").replace(/\//g, "-");
+  await writePublicFile(`og-${slug}.svg`, buildRouteOgSvg(meta?.label || path));
+}
 await writePublicFile("favicons/favicon.svg", buildFaviconSvg());
 await writePublicFile("favicons/apple-touch-icon.svg", buildFaviconSvg());
 

@@ -1,9 +1,12 @@
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { usePageSEO } from "../../utils/seo";
+import { useAchievements } from "../../context/AchievementContext";
+import Breakout404 from "../../components/Breakout404/Breakout404";
 
 export default function NotFound() {
   usePageSEO(undefined, "/404");
+  const { track } = useAchievements();
 
   return (
     <motion.section
@@ -17,19 +20,18 @@ export default function NotFound() {
       </div>
       <div className="max-w-2xl border-4 border-outline bg-[var(--color-surface)] p-6 shadow-[6px_6px_0_var(--shadow-color)]">
         <h2 className="font-headline-md text-3xl uppercase text-[var(--color-on-surface)]">
-          Page Not Found
+          Page Not Found - Play Breakout Instead
         </h2>
         <p className="mt-4 font-body-lg text-[var(--color-on-surface)]">
-          This page does not exist, but Aryan Dani&apos;s AI engineering, machine learning,
-          full-stack development, and portfolio projects are still one click away.
+          This route does not exist. Move your mouse or finger to control the paddle. ESC to leave - or win.
         </p>
       </div>
+      <Breakout404 onScore={() => track("breakout_score")} />
       <nav aria-label="Helpful portfolio links" className="flex flex-wrap gap-3">
         {[
-          ["/", "Return to Aryan Dani home"],
-          ["/projects", "Explore AI and web development projects"],
-          ["/skills", "Review technical skills"],
-          ["/contact", "Contact Aryan Dani"],
+          ["/", "Return home"],
+          ["/projects", "Explore projects"],
+          ["/playground", "Open CLI"],
         ].map(([to, label]) => (
           <Link
             key={to}

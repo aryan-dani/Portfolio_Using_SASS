@@ -66,7 +66,7 @@ export const experiences = [
       { name: "The Fourth Clover Web App", url: "https://github.com/aryan-dani/The-Fourth-Clover" },
       { name: "Utility Academic OS", url: "https://github.com/aryan-dani/Utility" },
       { name: "Shadow Instructor (Gemini 3.0)", url: "https://github.com/aryan-dani/The_Shadow_Instructor" },
-      { name: "Arbiter — RIFT 2026", url: "https://github.com/aryan-dani/Arbiter" },
+      { name: "Arbiter - RIFT 2026", url: "https://github.com/aryan-dani/Arbiter" },
       { name: "Democrazy", url: "https://github.com/aryan-dani/Democrazy" },
       { name: "Portfolio v2.0", url: "https://github.com/aryan-dani/Portfolio" },
     ],
@@ -81,7 +81,7 @@ export const experiences = [
       "Vercel"
     ],
     responsibilities: [
-      "Designed and launched '<a href='https://github.com/aryan-dani/The-Fourth-Clover' target='_blank' rel='noopener noreferrer' class='underline decoration-4 underline-offset-2 hover:bg-[var(--color-outline)] hover:text-[var(--color-surface)] transition-colors'>The Fourth Clover</a>', '<a href='https://github.com/aryan-dani/Utility' target='_blank' rel='noopener noreferrer' class='underline decoration-4 underline-offset-2 hover:bg-[var(--color-outline)] hover:text-[var(--color-surface)] transition-colors'>Utility</a>', and '<a href='https://github.com/aryan-dani/The_Shadow_Instructor' target='_blank' rel='noopener noreferrer' class='underline decoration-4 underline-offset-2 hover:bg-[var(--color-outline)] hover:text-[var(--color-surface)] transition-colors'>Shadow Instructor</a>' — production Next.js apps with App Router, RAG pipelines, OAuth, and serverless AI endpoints.",
+      "Designed and launched '<a href='https://github.com/aryan-dani/The-Fourth-Clover' target='_blank' rel='noopener noreferrer' class='underline decoration-4 underline-offset-2 hover:bg-[var(--color-outline)] hover:text-[var(--color-surface)] transition-colors'>The Fourth Clover</a>', '<a href='https://github.com/aryan-dani/Utility' target='_blank' rel='noopener noreferrer' class='underline decoration-4 underline-offset-2 hover:bg-[var(--color-outline)] hover:text-[var(--color-surface)] transition-colors'>Utility</a>', and '<a href='https://github.com/aryan-dani/The_Shadow_Instructor' target='_blank' rel='noopener noreferrer' class='underline decoration-4 underline-offset-2 hover:bg-[var(--color-outline)] hover:text-[var(--color-surface)] transition-colors'>Shadow Instructor</a>' - production Next.js apps with App Router, RAG pipelines, OAuth, and serverless AI endpoints.",
       "Built agentic systems including '<a href='https://github.com/aryan-dani/Arbiter' target='_blank' rel='noopener noreferrer' class='underline decoration-4 underline-offset-2 hover:bg-[var(--color-outline)] hover:text-[var(--color-surface)] transition-colors'>Arbiter</a>' (RIFT 2026) and '<a href='https://github.com/aryan-dani/DebateBot' target='_blank' rel='noopener noreferrer' class='underline decoration-4 underline-offset-2 hover:bg-[var(--color-outline)] hover:text-[var(--color-surface)] transition-colors'>DebateBot</a>' using LangGraph, Gemini, and Docker sandboxes for autonomous debugging and structured debate flows.",
       "Shipped '<a href='https://github.com/aryan-dani/Democrazy' target='_blank' rel='noopener noreferrer' class='underline decoration-4 underline-offset-2 hover:bg-[var(--color-outline)] hover:text-[var(--color-surface)] transition-colors'>Democrazy</a>' and '<a href='https://github.com/aryan-dani/Portfolio' target='_blank' rel='noopener noreferrer' class='underline decoration-4 underline-offset-2 hover:bg-[var(--color-outline)] hover:text-[var(--color-surface)] transition-colors'>Portfolio v2.0</a>' with Vite/React, static SEO prerendering, and mobile-first performance tuning.",
       "Selected as a Google Student Ambassador (Dec 2025), contributing to community outreach and technical advocacy for Gemini and modern AI tooling.",
@@ -118,11 +118,11 @@ export const aboutInfo = {
   tagline: "Building the future, one line of code at a time.",
   email: "daniaryan212@gmail.com",
   resumeUrl: "/resume.pdf",
-  bio: `Hey, I'm Aryan Dani — a full-stack developer and AI engineer who builds sharp web products and agentic systems that actually ship. Recent work spans dual-agent interview simulators (Gemini 3.0), autonomous CI/CD healing agents for RIFT 2026, academic OS tools with RAG, and this portfolio rebuilt for speed on mobile.
+  bio: `Hey, I'm Aryan Dani - a full-stack developer and AI engineer who builds sharp web products and agentic systems that actually ship. Recent work spans dual-agent interview simulators (Gemini 3.0), autonomous CI/CD healing agents for RIFT 2026, academic OS tools with RAG, and this portfolio rebuilt for speed on mobile.
 
 When I'm not wrangling CSS or LangGraph state machines, you'll find me deep in anime like Haikyu!! or experimenting with the next Gemini release. I'm also a Google Student Ambassador and a proud tea person (chai > coffee, always).
 
-Future goals? Build products that feel as polished as the best creator-tech channels — but with more AI magic and fewer buzzwords. Let's connect and build something epic.`,
+Future goals? Build products that feel as polished as the best creator-tech channels - but with more AI magic and fewer buzzwords. Let's connect and build something epic.`,
   highlights: [
     {
       icon: "🚀",
@@ -134,7 +134,7 @@ Future goals? Build products that feel as polished as the best creator-tech chan
       icon: "🤖",
       title: "Agentic AI",
       description:
-        "Building multi-agent systems with Gemini, LangGraph, and RAG — from interview coaches to CI/CD healers.",
+        "Building multi-agent systems with Gemini, LangGraph, and RAG - from interview coaches to CI/CD healers.",
     },
     {
       icon: "🤝",
@@ -146,7 +146,7 @@ Future goals? Build products that feel as polished as the best creator-tech chan
       icon: "🎓",
       title: "Google Ambassador",
       description:
-        "Google Student Ambassador (Dec 2025) — community outreach and technical advocacy for Gemini and AI.",
+        "Google Student Ambassador (Dec 2025) - community outreach and technical advocacy for Gemini and AI.",
     },
   ],
 };

@@ -1,7 +1,7 @@
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { dirname } from "node:path";
 import { fileURLToPath } from "node:url";
-import { SEO_CONFIG, SEO_ROUTE_ORDER, buildBaseSchemas, DEFAULT_IMAGE, DEFAULT_IMAGE_ALT, SITE_NAME, TWITTER_HANDLE } from "../src/config/seoConfig.js";
+import { SEO_CONFIG, SEO_ROUTE_ORDER, buildBaseSchemas, DEFAULT_IMAGE, DEFAULT_IMAGE_ALT, SITE_NAME, TWITTER_HANDLE, routeOgImage } from "../src/config/seoConfig.js";
 import { projects } from "../src/data/projects.js";
 import { certifications } from "../src/data/certifications.js";
 import { experiences } from "../src/data/experience.js";
@@ -61,8 +61,8 @@ function routeFallback(path, config) {
 </noscript>`;
 }
 
-function replaceHead(html, config, schemas) {
-  const image = config.ogImage || DEFAULT_IMAGE;
+function replaceHead(html, config, schemas, routePath) {
+  const image = config.ogImage || routeOgImage(routePath) || DEFAULT_IMAGE;
   const imageAlt = config.imageAlt || DEFAULT_IMAGE_ALT;
   const headMeta = [
     `<title>${escapeHtml(config.title)}</title>`,
@@ -122,13 +122,13 @@ for (const routePath of SEO_ROUTE_ORDER) {
     ...buildBaseSchemas(),
     ...(config.schemas?.(EXTRA_DATA[routePath]) || []),
   ];
-  const routeHtml = replaceHead(baseHtml, config, routeSchemas)
+  const routeHtml = replaceHead(baseHtml, config, routeSchemas, routePath)
     .replace('<div id="root"></div>', `${routeFallback(routePath, config)}\n    <div id="root"></div>`);
   await writeRouteHtml(routePath, routeHtml);
 }
 
 const notFoundConfig = SEO_CONFIG["/404"];
-const notFoundHtml = replaceHead(baseHtml, notFoundConfig, notFoundConfig.schemas?.() || [])
+const notFoundHtml = replaceHead(baseHtml, notFoundConfig, notFoundConfig.schemas?.() || [], "/404")
   .replace('<div id="root"></div>', `${routeFallback("/404", notFoundConfig)}\n    <div id="root"></div>`);
 await writeFile(new URL("404.html", distDir), notFoundHtml, "utf8");
 

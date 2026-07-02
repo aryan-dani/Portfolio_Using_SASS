@@ -9,7 +9,7 @@ export const skills = {
       icon: "FaHtml5",
       level: 82,
       description:
-        "Semantic HTML5 markup, accessibility standards, and modern web structure used across every web project — from SPAs to static pages.",
+        "Semantic HTML5 markup, accessibility standards, and modern web structure used across every web project - from SPAs to static pages.",
       projectIds: [1, 7, 8, 12, 13, 14],
     },
     {
@@ -27,7 +27,7 @@ export const skills = {
       icon: "FaSass",
       level: 62,
       description:
-        "Modular, maintainable CSS with variables, mixins, nesting, and inheritance — primarily used for this portfolio's component styles.",
+        "Modular, maintainable CSS with variables, mixins, nesting, and inheritance - primarily used for this portfolio's component styles.",
       projectIds: [1, 7, 8, 12, 13, 14, 15],
     },
     {
@@ -54,7 +54,7 @@ export const skills = {
       icon: "FaReact",
       level: 70,
       description:
-        "Primary frontend framework — hooks, context API, component architecture, and state management used across 7+ production projects.",
+        "Primary frontend framework - hooks, context API, component architecture, and state management used across 7+ production projects.",
       projectIds: [1, 2, 4, 10, 11, 12, 13, 14, 15],
     },
     {
@@ -72,7 +72,7 @@ export const skills = {
       icon: "FaAngular",
       level: 38,
       description:
-        "Component-based SPAs with Angular — services, routing, and reactive forms. Used for the Threat Detection System frontend.",
+        "Component-based SPAs with Angular - services, routing, and reactive forms. Used for the Threat Detection System frontend.",
       projectIds: [5],
     },
     {
@@ -126,7 +126,7 @@ export const skills = {
       icon: "SiSupabase",
       level: 58,
       description:
-        "Open-source Firebase alternative — PostgreSQL database, auth, row-level security, and storage. Used in The Fourth Clover and Utility.",
+        "Open-source Firebase alternative - PostgreSQL database, auth, row-level security, and storage. Used in The Fourth Clover and Utility.",
       projectIds: [1, 13],
     },
     {
@@ -191,7 +191,7 @@ export const skills = {
       icon: "FaBrain",
       level: 72,
       description:
-        "Designing Dual-Agent and Multi-Agent state machines — interview simulation (Shadow Instructor) and autonomous CI/CD healing (Arbiter).",
+        "Designing Dual-Agent and Multi-Agent state machines - interview simulation (Shadow Instructor) and autonomous CI/CD healing (Arbiter).",
       projectIds: [10, 11],
     },
     {
@@ -227,7 +227,7 @@ export const skills = {
       icon: "SiScikitlearn",
       level: 60,
       description:
-        "Traditional ML algorithms — Random Forest, SVM, model evaluation, and preprocessing pipelines. Achieved 76% accuracy on NASA Kepler data.",
+        "Traditional ML algorithms - Random Forest, SVM, model evaluation, and preprocessing pipelines. Achieved 76% accuracy on NASA Kepler data.",
       projectIds: [4, 9],
     },
     {
@@ -328,7 +328,7 @@ export const skills = {
       icon: "FaGitAlt",
       level: 50,
       description:
-        "CI/CD pipeline automation — automated testing, builds, and deployment triggers. Core infrastructure for Arbiter's healing workflows.",
+        "CI/CD pipeline automation - automated testing, builds, and deployment triggers. Core infrastructure for Arbiter's healing workflows.",
       projectIds: [11],
     },
     {

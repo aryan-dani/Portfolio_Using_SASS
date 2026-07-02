@@ -1,9 +1,9 @@
 import { useEffect, useRef } from "react";
 import { useLocation } from "react-router-dom";
-import { SEO_CONFIG, SITE_NAME, DEFAULT_IMAGE, TWITTER_HANDLE, DEFAULT_IMAGE_ALT } from "../config/seoConfig";
+import { SEO_CONFIG, SITE_NAME, DEFAULT_IMAGE, TWITTER_HANDLE, DEFAULT_IMAGE_ALT, routeOgImage } from "../config/seoConfig";
 
 /**
- * SEO hook — updates document <title>, meta tags, canonical URL,
+ * SEO hook - updates document <title>, meta tags, canonical URL,
  * Open Graph tags, Twitter Cards, and injects per-page JSON-LD
  * structured data on every route change.
  *
@@ -16,7 +16,8 @@ export function usePageSEO(extraData, overridePath) {
   useEffect(() => {
     const config = SEO_CONFIG[overridePath || pathname];
     if (!config) return;
-    const image = config.ogImage || DEFAULT_IMAGE;
+    const pagePath = overridePath || pathname;
+    const image = config.ogImage || routeOgImage(pagePath) || DEFAULT_IMAGE;
     const imageAlt = config.imageAlt || DEFAULT_IMAGE_ALT;
 
     // ── Title ──────────────────────────────────────────────

@@ -6,11 +6,10 @@ import TypeWriter from "../../components/TypeWriter/TypeWriter";
 import StatCard from "../../components/StatCard/StatCard";
 import MagneticLink from "../../components/MagneticLink/MagneticLink";
 import { usePageSEO } from "../../utils/seo";
+import { containerVariants, itemVariants } from "../../utils/motionVariants";
 import { useMediaQuery } from "../../hooks/useMediaQuery";
 import { MOBILE_LITE_QUERY, FINE_POINTER_QUERY } from "../../utils/device";
 import TechGlobeFallback from "../../components/TechGlobe/TechGlobeFallback";
-
-import { itemVariants } from "../../utils/motionVariants";
 
 const TechGlobe = lazy(() => import("../../components/TechGlobe/TechGlobe"));
 
@@ -38,12 +37,15 @@ const Home = memo(function Home() {
 
   return (
     <motion.section
-      className="flex flex-col gap-10 lg:gap-14 min-h-[calc(100vh-200px)] w-full relative"
+      className="flex flex-col gap-8 lg:gap-10 w-full relative pb-4"
+      variants={containerVariants}
+      initial="hidden"
+      animate="visible"
     >
       {/* Hero row */}
-      <div className="flex flex-col lg:flex-row gap-10 xl:gap-14 items-center justify-between lg:min-h-[560px] relative z-10">
+      <div className="flex flex-col lg:flex-row gap-8 xl:gap-12 items-center justify-between relative z-10">
         {/* Text content */}
-        <div className="flex-1 flex flex-col gap-4 lg:gap-5 max-w-2xl w-full z-10">
+        <div className="flex-1 flex flex-col gap-3.5 lg:gap-4 max-w-2xl w-full z-10">
 
           {/* Name heading with shimmer */}
           <motion.div variants={itemVariants}>
@@ -71,7 +73,7 @@ const Home = memo(function Home() {
 
           {/* Bio */}
           <motion.p
-            className="font-body-lg text-base md:text-lg text-[var(--color-on-surface)] bg-[var(--color-surface)] border-4 border-outline p-4 md:p-5 shadow-[4px_4px_0px_0px_var(--shadow-color)] max-w-xl"
+            className="font-body-lg text-base md:text-lg text-[var(--color-on-surface)] bg-[var(--color-surface)] border-4 border-outline p-3.5 md:p-4 shadow-[4px_4px_0px_0px_var(--shadow-color)] max-w-xl leading-snug"
             variants={itemVariants}
           >
             I build fast, high-contrast web products and AI systems that feel
@@ -81,7 +83,7 @@ const Home = memo(function Home() {
 
           {/* CTA buttons */}
           <motion.div
-            className="flex flex-wrap items-center gap-3 md:gap-4 mt-2"
+            className="flex flex-wrap items-center gap-3 mt-1"
             variants={itemVariants}
           >
             <MagneticLink
@@ -99,7 +101,7 @@ const Home = memo(function Home() {
 
         {/* Signature 3D showcase */}
         <motion.div
-          className="flex-1 w-full flex justify-center lg:justify-end mt-6 lg:mt-0"
+          className="flex-1 w-full flex justify-center lg:justify-end mt-2 lg:mt-0 max-w-[560px] lg:max-w-none mx-auto lg:mx-0"
           variants={carouselVariants}
         >
           <Suspense fallback={<div className="w-full max-w-[560px] min-h-[280px] border-4 border-outline bg-[var(--color-surface)] shadow-[8px_8px_0_var(--shadow-color)]" />}>
@@ -110,44 +112,13 @@ const Home = memo(function Home() {
 
       {/* Stats ribbon */}
       <motion.div
-        className="grid grid-cols-1 sm:grid-cols-3 gap-4 w-full"
+        className="bg-hatch border-4 border-outline p-3 md:p-4 shadow-[4px_4px_0_var(--shadow-color)] w-full"
         variants={itemVariants}
       >
-        <StatCard to="/projects" value={totalProjects} label="Projects"      bg="var(--color-primary-container)" text="var(--color-on-primary-container)" />
-        <StatCard to="/skills" value={totalSkills}   isPlus label="Skills" bg="var(--color-on-background)" text="var(--color-background)" />
-        <StatCard to="/certifications" value={totalCerts}    label="Certifications" bg="var(--color-surface)" text="var(--color-on-surface)" />
-      </motion.div>
-
-      {/* Marquee strip */}
-      <motion.div
-        className="border-4 border-outline overflow-hidden py-3 -mx-4 md:-mx-8 relative"
-        style={{ background: "var(--color-on-background)" }}
-        variants={itemVariants}
-      >
-        {/* Fade edges */}
-        <div
-          className="absolute left-0 top-0 bottom-0 w-16 z-10 pointer-events-none"
-          style={{ background: "linear-gradient(90deg, var(--color-on-background), transparent)" }}
-        />
-        <div
-          className="absolute right-0 top-0 bottom-0 w-16 z-10 pointer-events-none"
-          style={{ background: "linear-gradient(-90deg, var(--color-on-background), transparent)" }}
-        />
-        <div className="marquee-strip flex gap-10 whitespace-nowrap">
-          {Array.from({ length: 3 }).map((_, i) => (
-            <span
-              key={i}
-              className="flex gap-10 items-center font-label-bold text-sm uppercase tracking-widest shrink-0"
-              style={{ color: "var(--color-background)" }}
-            >
-              <span>+ Web Developer</span>
-              <span>+ AI Engineer</span>
-              <span>+ Gemini 3.0 / LangGraph</span>
-              <span>+ RIFT 2026 — Arbiter</span>
-              <span>+ Google Student Ambassador</span>
-              <span>+ Open to Opportunities</span>
-            </span>
-          ))}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 w-full">
+          <StatCard compact to="/projects" value={totalProjects} label="Projects" bg="var(--color-primary-container)" text="var(--color-on-primary-container)" />
+          <StatCard compact to="/skills" value={totalSkills} isPlus label="Skills" bg="var(--color-on-background)" text="var(--color-background)" />
+          <StatCard compact to="/certifications" value={totalCerts} label="Certifications" bg="var(--color-surface)" text="var(--color-on-surface)" />
         </div>
       </motion.div>
     </motion.section>

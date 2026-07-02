@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, memo } from "react";
+import { useState, useRef, useEffect, useCallback, memo } from "react";
 import { createPortal } from "react-dom";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
@@ -7,6 +7,9 @@ import { projects } from "../../data/projects";
 import { certifications } from "../../data/certifications";
 import { experiences, aboutInfo } from "../../data/experience";
 import { useTheme } from "../../context/ThemeContext";
+import { useAchievements } from "../../context/AchievementContext";
+import { useSound } from "../../context/SoundContext";
+import { askIshani } from "../../utils/askIshani";
 import { useModalLock } from "../../hooks/useModalLock";
 import PageHeader from "../../components/PageHeader/PageHeader";
 import { usePageSEO } from "../../utils/seo";
@@ -36,12 +39,22 @@ const COMMAND_HELP = [
   ["banner", "Print the portfolio wordmark"],
   ["history", "Show command history"],
   ["clear", "Clear terminal log history"],
+  ["ask [question]", "Ask Kuro about the portfolio"],
+  ["hack", "Toggle CRT hacker mode"],
+  ["unhack", "Exit CRT hacker mode"],
+  ["matrix", "Matrix rain in terminal"],
+  ["achievements", "Show trophy progress"],
+  ["neofetch", "System info card"],
+  ["coffee", "Request coffee"],
+  ["konami", "Hint at a secret code"],
+  ["devmode", "Toggle dev HUD hint"],
+  ["sudo hire-me", "Print employment contract"],
 ];
 
 const COMMANDS = Array.from(
   new Set(COMMAND_HELP.flatMap(([command]) => command.split(" / ").map((part) => part.split(" ")[0]))),
 );
-const STARTER_COMMANDS = ["help", "whoami", "stack", "projects", "open skills", "email"];
+const STARTER_COMMANDS = ["help", "whoami", "stack", "ask", "hack", "neofetch"];
 
 function getSuggestion(command) {
   if (!command) return null;
@@ -61,7 +74,9 @@ function getSuggestion(command) {
 function Playground() {
   usePageSEO();
   const navigate = useNavigate();
-  const { theme, toggleTheme } = useTheme();
+  const { theme, crtMode, toggleTheme, setCrtMode } = useTheme();
+  const { track } = useAchievements();
+  const { play } = useSound();
   const [history, setHistory] = useState([
     { text: "ARYAN DANI [PORTFOLIO INTERACTIVE CLI v3.0]", type: "info" },
     { text: "Type 'help', press Tab to autocomplete, or click a starter command below.", type: "success" },
@@ -74,6 +89,8 @@ function Playground() {
   const [isFocused, setIsFocused] = useState(true);
   const terminalEndRef = useRef(null);
   const terminalLogRef = useRef(null);
+  const collapsedTerminalRef = useRef(null);
+  const expandedTerminalRef = useRef(null);
   const inputRef = useRef(null);
 
   const focusInput = () => {
@@ -117,15 +134,16 @@ function Playground() {
 
       // If it's a single character, focus the terminal input
       if (e.key.length === 1 && inputRef.current) {
-        inputRef.current.focus();
-      }
+      play("hover");
+      inputRef.current.focus();
+    }
     };
 
     window.addEventListener("keydown", handleGlobalKeyDown);
     return () => {
       window.removeEventListener("keydown", handleGlobalKeyDown);
     };
-  }, []);
+  }, [play]);
 
   const handleKeyDown = (e) => {
     if (e.key === "Enter") {
@@ -164,7 +182,7 @@ function Playground() {
     }
   };
 
-  const handleTerminalWheel = (event) => {
+  const handleTerminalWheel = useCallback((event) => {
     if (!terminalLogRef.current) return;
     const log = terminalLogRef.current;
     const canScroll = log.scrollHeight > log.clientHeight;
@@ -173,7 +191,17 @@ function Playground() {
     event.preventDefault();
     event.stopPropagation();
     log.scrollTop += event.deltaY;
-  };
+  }, []);
+
+  useEffect(() => {
+    const nodes = [collapsedTerminalRef.current, expandedTerminalRef.current].filter(Boolean);
+    if (!nodes.length) return undefined;
+
+    nodes.forEach((node) => node.addEventListener("wheel", handleTerminalWheel, { passive: false }));
+    return () => {
+      nodes.forEach((node) => node.removeEventListener("wheel", handleTerminalWheel));
+    };
+  }, [isExpanded, handleTerminalWheel]);
 
   const processCommand = (rawCommand) => {
     const normalizedCommand = rawCommand.trim();
@@ -188,6 +216,7 @@ function Playground() {
     ]);
 
     if (!command) return;
+    track("cli_command");
 
     switch (command) {
       case "help":
@@ -246,6 +275,7 @@ function Playground() {
 
       case "theme":
         toggleTheme();
+        track("theme_toggle");
         setHistory((prev) => [
           ...prev,
           {
@@ -266,7 +296,7 @@ function Playground() {
         ]);
         break;
 
-      case "skills":
+      case "skills": {
         const allSkills = Object.values(skills)
           .flat()
           .map((s) => s.name)
@@ -277,6 +307,7 @@ function Playground() {
           { text: allSkills, type: "text" },
         ]);
         break;
+      }
 
       case "projects":
         setHistory((prev) => [
@@ -289,7 +320,7 @@ function Playground() {
         ]);
         break;
 
-      case "project":
+      case "project": {
         const idx = parseInt(args[1], 10) - 1;
         if (isNaN(idx) || idx < 0 || idx >= projects.length) {
           setHistory((prev) => [
@@ -313,13 +344,14 @@ function Playground() {
           }, 1500);
         }
         break;
+      }
 
       case "certifications":
         setHistory((prev) => [
           ...prev,
           { text: "Credentials & Certifications:", type: "info" },
           ...certifications.map((c, idx) => ({
-            text: `  [${idx + 1}] ${c.title} — Issued by ${c.issuer} (${c.date})`,
+            text: `  [${idx + 1}] ${c.title} - Issued by ${c.issuer} (${c.date})`,
             type: "text",
           })),
         ]);
@@ -329,7 +361,7 @@ function Playground() {
         setHistory((prev) => [
           ...prev,
           {
-            text: `${aboutInfo.name} — ${aboutInfo.title}`,
+            text: `${aboutInfo.name} - ${aboutInfo.title}`,
             type: "info",
           },
           {
@@ -437,23 +469,144 @@ function Playground() {
         break;
 
       case "sudo":
+        if (originalArgs.join(" ").toLowerCase().includes("hire")) {
+          track("hire");
+          setHistory((prev) => [
+            ...prev,
+            { text: "EMPLOYMENT CONTRACT - ARYAN DANI", type: "info" },
+            { text: "Role: AI Engineer / Full-Stack Developer", type: "text" },
+            { text: "Start: ASAP  |  Location: Remote / Pune", type: "text" },
+            { text: "Perks: ships agentic systems, drinks chai, debugs in neo-brutalist UI", type: "success" },
+            { text: "Sign here: mailto:daniaryan212@gmail.com", type: "success" },
+          ]);
+        } else {
+          setHistory((prev) => [
+            ...prev,
+            { text: "Nice try. You already have root access to the portfolio.", type: "success" },
+          ]);
+        }
+        break;
+
+      case "coffee":
+        track("coffee");
         setHistory((prev) => [
           ...prev,
-          { text: "Nice try. You already have root access to the portfolio.", type: "success" },
+          { text: "tea > coffee. Try again.", type: "error" },
         ]);
         break;
+
+      case "konami":
+        setHistory((prev) => [
+          ...prev,
+          { text: "↑ ↑ ↓ ↓ ← → ← → B A  -  or press Ctrl+Alt+H", type: "info" },
+        ]);
+        break;
+
+      case "devmode":
+        setHistory((prev) => [
+          ...prev,
+          { text: "Dev HUD: Ctrl+Alt+D | X-ray toggle inside HUD", type: "success" },
+        ]);
+        break;
+
+      case "achievements":
+        navigate("/achievements");
+        setHistory((prev) => [...prev, { text: "Routing to trophy wall...", type: "success" }]);
+        break;
+
+      case "neofetch":
+        setHistory((prev) => [
+          ...prev,
+          { text: "aryan@portfolio", type: "info" },
+          { text: "OS: Vercel Edge / React 18", type: "text" },
+          { text: "Shell: Playground CLI v3.0", type: "text" },
+          { text: "Theme: " + theme, type: "text" },
+          { text: "Stack: Groq, LangGraph, Next.js, FastAPI", type: "text" },
+          { text: "Uptime: always shipping", type: "success" },
+        ]);
+        break;
+
+      case "matrix": {
+        track("matrix");
+        const lines = Array.from({ length: 8 }, () =>
+          Array.from({ length: 42 }, () => String.fromCharCode(0x30a0 + Math.random() * 96)).join(""),
+        );
+        setHistory((prev) => [
+          ...prev,
+          { text: "MATRIX RAIN INIT", type: "info" },
+          ...lines.map((line) => ({ text: line, type: "success" })),
+        ]);
+        break;
+      }
+
+      case "unhack": {
+        setCrtMode(false);
+        setHistory((prev) => [
+          ...prev,
+          { text: "ACCESS REVOKED - CRT MODE DISABLED", type: "success" },
+          { text: "Welcome back to normal reality.", type: "text" },
+        ]);
+        break;
+      }
+
+      case "hack": {
+        if (crtMode) {
+          setHistory((prev) => [
+            ...prev,
+            { text: "CRT mode already active. Run unhack to exit.", type: "info" },
+          ]);
+          break;
+        }
+
+        track("hack");
+        const hex = Array.from({ length: 6 }, () =>
+          Math.random().toString(16).slice(2, 10).toUpperCase(),
+        );
+        setHistory((prev) => [
+          ...prev,
+          { text: "[BREACH] scanning ports...", type: "info" },
+          ...hex.map((h) => ({ text: `0x${h} ... OK`, type: "text" })),
+          { text: "ACCESS GRANTED - CRT MODE ENABLED", type: "success" },
+          { text: "Run unhack, Ctrl+Alt+H, or Konami again to exit.", type: "text" },
+        ]);
+        setCrtMode(true);
+        break;
+      }
+
+      case "ask": {
+        const question = originalArgs.slice(1).join(" ").trim();
+        if (!question) {
+          setHistory((prev) => [...prev, { text: "Usage: ask <your question>", type: "error" }]);
+          break;
+        }
+        track("ai_ask");
+        setHistory((prev) => [...prev, { text: "Kuro is thinking...", type: "info" }]);
+        askIshani(question, { currentPath: window.location.pathname })
+          .then(({ reply, actions }) => {
+            setHistory((prev) => [...prev, { text: reply, type: "success" }]);
+            if (actions?.length) {
+              actions.forEach((a) => {
+                if (a.type === "navigate" && a.path) navigate(a.path);
+              });
+            }
+          })
+          .catch((err) => {
+            setHistory((prev) => [...prev, { text: err.message, type: "error" }]);
+          });
+        break;
+      }
 
       case "wow":
       case "graph":
         setHistory((prev) => [
           ...prev,
-          { text: "Initializing 3D skill graph...", type: "info" },
+          { text: "Initializing skills graph view...", type: "info" },
           { text: "Routing to /skills with Graph mode ready for launch.", type: "success" },
         ]);
         setTimeout(() => navigate("/skills"), 900);
         break;
 
-      default:
+      default: {
         const suggestion = getSuggestion(command);
         setHistory((prev) => [
           ...prev,
@@ -462,6 +615,7 @@ function Playground() {
             type: "error",
           },
         ]);
+      }
     }
   };
 
@@ -590,9 +744,9 @@ function Playground() {
       {/* Render collapsed inline terminal */}
       {!isExpanded && (
         <motion.div
+          ref={collapsedTerminalRef}
           className="nb-cli-container border-4 border-outline bg-[var(--color-surface)] p-6 font-mono flex flex-col relative overflow-hidden min-h-120 h-120 w-full shadow-[8px_8px_0px_0px_var(--shadow-color)] paint-isolate hover-gpu"
           onClick={focusInput}
-          onWheel={handleTerminalWheel}
           role="application"
           aria-label="Interactive CLI playground terminal"
           whileHover={{ y: -2, boxShadow: "10px 10px 0px 0px var(--shadow-color)" }}
@@ -617,9 +771,9 @@ function Playground() {
                 />
                 <div className="fixed inset-0 z-200 flex items-center justify-center p-3 sm:p-4 md:p-6 pointer-events-none">
                   <motion.div
+                    ref={expandedTerminalRef}
                     className="nb-cli-container pointer-events-auto bg-[var(--color-surface)] p-4 sm:p-5 md:p-6 font-mono flex flex-col relative w-full h-full max-w-[1600px] overflow-hidden border-4 border-outline shadow-[6px_6px_0_var(--shadow-color)] gpu-layer paint-isolate"
                     onClick={focusInput}
-                    onWheel={handleTerminalWheel}
                     role="dialog"
                     aria-modal="true"
                     aria-label="Expanded CLI playground terminal"

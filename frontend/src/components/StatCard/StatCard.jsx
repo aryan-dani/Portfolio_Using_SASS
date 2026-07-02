@@ -4,46 +4,94 @@ import { motion, useInView } from "framer-motion";
 import { useCountUp } from "../../hooks/useCountUp";
 import { hoverSpring } from "../../utils/motionVariants";
 
-function StatCard({ value, isPlus, label, bg, text, shadow, to }) {
+const MotionLink = motion.create(Link);
+
+const cardMotion = {
+  initial: false,
+  whileHover: {
+    y: -3,
+    x: -3,
+    transition: hoverSpring,
+  },
+};
+
+function StatCard({ value, isPlus, label, bg, text, shadow, to, compact = false }) {
   const ref = useRef(null);
   const inView = useInView(ref, { once: true, margin: "-40px" });
   const displayVal = useCountUp(typeof value === "number" ? value : parseInt(value), {
     duration: 1600,
     trigger: inView,
   });
-  const Component = to ? motion(Link) : motion.div;
 
-  return (
-    <Component
-      ref={ref}
-      to={to}
-      className={`block border-4 border-outline p-4 md:p-6 text-center ${to ? "cursor-none group" : ""}`}
-      style={{
-        background: bg,
-        color: text,
-        boxShadow: `4px 4px 0px 0px ${shadow || 'var(--shadow-color)'}`
-      }}
-      initial={false}
-      whileHover={{
-        y: -4,
-        x: -4,
-        boxShadow: `8px 8px 0px 0px ${shadow || 'var(--shadow-color)'}`,
-        transition: hoverSpring,
-      }}
-      aria-label={to ? `Open ${label}` : undefined}
-    >
-      <div className="font-headline-xl text-3xl md:text-5xl font-black">
+  const shadowValue = shadow || "var(--shadow-color)";
+  const style = {
+    background: bg,
+    color: text,
+    boxShadow: `4px 4px 0px 0px ${shadowValue}`,
+  };
+
+  const hoverShadow = `6px 6px 0px 0px ${shadowValue}`;
+  const shellClass = compact
+    ? "relative border-4 border-outline px-4 py-2.5 md:py-3 text-center"
+    : "relative border-4 border-outline px-4 py-3 md:px-5 md:py-3.5 text-center";
+
+  const valueClass = compact
+    ? "font-headline-xl text-2xl md:text-3xl font-black leading-none"
+    : "font-headline-xl text-2xl md:text-4xl font-black leading-none";
+
+  const content = compact ? (
+    <div className="flex items-baseline justify-center gap-2.5 w-full">
+      <div className={valueClass}>
         {displayVal}{isPlus && "+"}
       </div>
-      <div className="font-label-bold text-xs uppercase mt-1 opacity-80 tracking-wider">
+      <div className="font-label-bold text-[10px] md:text-xs uppercase opacity-80 tracking-wider">
         {label}
       </div>
-      {to && (
-        <div className="mt-3 font-label-bold text-[10px] uppercase tracking-[0.2em] opacity-0 group-hover:opacity-80 transition-opacity">
-          Open
-        </div>
-      )}
-    </Component>
+    </div>
+  ) : (
+    <>
+      <div className={valueClass}>
+        {displayVal}{isPlus && "+"}
+      </div>
+      <div className="font-label-bold text-[10px] md:text-xs uppercase mt-0.5 opacity-80 tracking-wider">
+        {label}
+      </div>
+    </>
+  );
+
+  const openHint = to ? (
+    <div className="absolute bottom-1 right-2 font-label-bold text-[9px] uppercase tracking-[0.18em] opacity-0 group-hover:opacity-70 transition-opacity pointer-events-none">
+      Open
+    </div>
+  ) : null;
+
+  if (to) {
+    return (
+      <MotionLink
+        ref={ref}
+        to={to}
+        className={`block cursor-none group ${shellClass}`}
+        style={style}
+        {...cardMotion}
+        whileHover={{ ...cardMotion.whileHover, boxShadow: hoverShadow }}
+        aria-label={`Open ${label}`}
+      >
+        {content}
+        {openHint}
+      </MotionLink>
+    );
+  }
+
+  return (
+    <motion.div
+      ref={ref}
+      className={`block ${shellClass}`}
+      style={style}
+      {...cardMotion}
+      whileHover={{ ...cardMotion.whileHover, boxShadow: hoverShadow }}
+    >
+      {content}
+    </motion.div>
   );
 }
 

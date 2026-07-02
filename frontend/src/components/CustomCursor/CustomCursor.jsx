@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, memo } from "react";
+import { useCallback, useEffect, useRef, useState, memo } from "react";
 import { createPortal } from "react-dom";
 import { useTheme } from "../../context/ThemeContext";
 
@@ -10,7 +10,13 @@ import { useTheme } from "../../context/ThemeContext";
    ──────────────────────────────────────────────────────────── */
 const LIGHT = "#f8f7f4";
 const DARK  = "#131316";
+const CRT_PHOSPHOR = "#39ff14";
+const CRT_BG = "#050805";
 const NATIVE_CURSOR_KEY = "portfolio_native_cursor";
+const CUSTOM_CURSOR_CLASS = "custom-cursor-active";
+const CUSTOM_CURSOR_PORTAL_CLASS = "portfolio-custom-cursor";
+/** Above shortcuts overlay (100011) so the cursor stays visible on modals */
+const CURSOR_Z_INDEX = 100020;
 
 const parseColor = (str) => {
   if (!str || str === "transparent" || str === "rgba(0, 0, 0, 0)") return null;
@@ -41,8 +47,25 @@ const getEffectiveBgLuminance = (el) => {
 };
 
 const CustomCursor = memo(function CustomCursor() {
-  const { theme } = useTheme();
-  const isDark = theme === "dark";
+  const { theme, crtMode } = useTheme();
+  const isDark = crtMode || theme === "dark";
+
+  const resolveColors = useCallback(
+    (darkBg, state) => {
+      const isHover = state === "hover" || state === "image";
+      if (crtMode) {
+        return {
+          primary: CRT_PHOSPHOR,
+          inverted: CRT_BG,
+          isHover,
+        };
+      }
+      const primaryColor = darkBg ? LIGHT : DARK;
+      const invertedColor = darkBg ? DARK : LIGHT;
+      return { primary: primaryColor, inverted: invertedColor, isHover };
+    },
+    [crtMode],
+  );
 
   const [cursorState, setCursorState] = useState("default");
   const [onDarkBg, setOnDarkBg] = useState(isDark);
@@ -73,18 +96,24 @@ const CustomCursor = memo(function CustomCursor() {
   useEffect(() => {
     onDarkBgRef.current = isDark;
     setOnDarkBg(isDark);
-  }, [theme, isDark]);
+  }, [theme, crtMode, isDark]);
 
   useEffect(() => {
     document.documentElement.classList.toggle("native-cursor", nativeCursor);
+    document.documentElement.classList.toggle(CUSTOM_CURSOR_CLASS, !nativeCursor);
     localStorage.setItem(NATIVE_CURSOR_KEY, String(nativeCursor));
+    return () => {
+      document.documentElement.classList.remove(CUSTOM_CURSOR_CLASS);
+    };
   }, [nativeCursor]);
 
+  // Ctrl/Alt+C toggles between the custom and native cursor (documented in shortcuts overlay)
   useEffect(() => {
     const onKeyDown = (event) => {
-      if (event.ctrlKey && event.altKey && event.key.toLowerCase() === "c") {
-        setNativeCursor((current) => !current);
-      }
+      if (event.code !== "KeyC" || !event.ctrlKey || !event.altKey) return;
+      if (event.target?.closest?.("input, textarea, select, [contenteditable='true']")) return;
+      event.preventDefault();
+      setNativeCursor((prev) => !prev);
     };
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
@@ -170,18 +199,16 @@ const CustomCursor = memo(function CustomCursor() {
     };
 
     const applyCursorColors = (darkBg, state) => {
-      const primaryColor = darkBg ? LIGHT : DARK;
-      const invertedColor = darkBg ? DARK : LIGHT;
-      const isHover = state === "hover" || state === "image";
+      const { primary, inverted, isHover } = resolveColors(darkBg, state);
 
       if (innerRef.current) {
-        innerRef.current.style.background = isHover ? invertedColor : primaryColor;
-        innerRef.current.style.borderColor = primaryColor;
+        innerRef.current.style.background = isHover ? inverted : primary;
+        innerRef.current.style.borderColor = primary;
         innerRef.current.style.width = state === "text" ? "4px" : "16px";
         innerRef.current.style.height = state === "text" ? "22px" : "16px";
       }
       if (outerRef.current) {
-        outerRef.current.style.borderColor = primaryColor;
+        outerRef.current.style.borderColor = primary;
         outerRef.current.style.width = isHover ? "50px" : "36px";
         outerRef.current.style.height = isHover ? "50px" : "36px";
         outerRef.current.style.opacity = state === "text" ? "0" : "1";
@@ -211,6 +238,8 @@ const CustomCursor = memo(function CustomCursor() {
       if (!el && !img && !input) {
         const lum = getEffectiveBgLuminance(target);
         resolvedDark = lum !== null ? lum < 0.4 : isDark;
+      } else if (crtMode) {
+        resolvedDark = true;
       }
 
       if (onDarkBgRef.current !== resolvedDark) {
@@ -234,6 +263,39 @@ const CustomCursor = memo(function CustomCursor() {
     document.addEventListener("mouseenter", onMouseEnter);
     window.addEventListener("mouseover", handleHoverChange, { passive: true });
 
+    const onPointerDown = (e) => {
+      if (e.button !== 0) return;
+      const inner = innerRef.current;
+      const outer = outerRef.current;
+      if (!inner) return;
+
+      const innerW = inner.offsetWidth;
+      const innerH = inner.offsetHeight;
+      inner.animate(
+        [
+          { width: `${innerW}px`, height: `${innerH}px` },
+          { width: `${Math.max(6, innerW * 0.55)}px`, height: `${Math.max(6, innerH * 0.55)}px` },
+          { width: `${innerW}px`, height: `${innerH}px` },
+        ],
+        { duration: 160, easing: "ease-out" },
+      );
+
+      if (outer && cursorStateRef.current !== "text") {
+        const outerW = outer.offsetWidth;
+        const outerH = outer.offsetHeight;
+        outer.animate(
+          [
+            { width: `${outerW}px`, height: `${outerH}px`, opacity: 1 },
+            { width: `${outerW + 6}px`, height: `${outerH + 6}px`, opacity: 0.45 },
+            { width: `${outerW}px`, height: `${outerH}px`, opacity: 1 },
+          ],
+          { duration: 200, easing: "ease-out" },
+        );
+      }
+    };
+
+    window.addEventListener("pointerdown", onPointerDown, { passive: true });
+
     // Initialize positions off-screen
     if (innerRef.current) {
       innerRef.current.style.transform = "translate3d(-100px, -100px, 0) translate(-50%, -50%)";
@@ -247,24 +309,25 @@ const CustomCursor = memo(function CustomCursor() {
       document.removeEventListener("mouseleave", onMouseLeave);
       document.removeEventListener("mouseenter", onMouseEnter);
       window.removeEventListener("mouseover", handleHoverChange);
+      window.removeEventListener("pointerdown", onPointerDown);
       if (hoverRafRef.current) cancelAnimationFrame(hoverRafRef.current);
     };
-  }, [isDark, nativeCursor]);
+  }, [isDark, crtMode, nativeCursor, resolveColors]);
 
   if (nativeCursor) return null;
 
-  const primaryColor = onDarkBg ? LIGHT : DARK;
-  const invertedColor = onDarkBg ? DARK : LIGHT;
-
-  const innerBg = isHoverState ? invertedColor : primaryColor;
+  const { primary: primaryColor, inverted: invertedColor, isHover: isHoverStateColors } =
+    resolveColors(onDarkBg, cursorState);
+  const innerBg = isHoverStateColors ? invertedColor : primaryColor;
   const innerBorder = primaryColor;
   const outerBorder = primaryColor;
 
   return createPortal(
     <div
+      className={CUSTOM_CURSOR_PORTAL_CLASS}
       style={{
         pointerEvents: "none",
-        zIndex: 100000,
+        zIndex: CURSOR_Z_INDEX,
         position: "fixed",
         top: 0,
         left: 0,

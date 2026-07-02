@@ -1,32 +1,55 @@
-import { createContext, useContext, useState, useCallback } from "react";
+import { createContext, useContext, useState, useCallback, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 
 const ToastContext = createContext();
 
+let toastIdCounter = 0;
+
 export function ToastProvider({ children }) {
   const [toasts, setToasts] = useState([]);
-
-  const addToast = useCallback((message, type = "info", options = {}) => {
-    const id = Date.now();
-    const toast = {
-      id,
-      message,
-      type,
-      title: options.title || getDefaultTitle(type),
-      duration: options.duration || 4000,
-    };
-
-    setToasts((prev) => [...prev, toast]);
-
-    setTimeout(() => {
-      removeToast(id);
-    }, toast.duration);
-
-    return id;
-  }, []);
+  const timersRef = useRef(new Map());
 
   const removeToast = useCallback((id) => {
+    const timer = timersRef.current.get(id);
+    if (timer) {
+      clearTimeout(timer);
+      timersRef.current.delete(id);
+    }
     setToasts((prev) => prev.filter((toast) => toast.id !== id));
+  }, []);
+
+  const addToast = useCallback(
+    (message, type = "info", options = {}) => {
+      // A monotonic counter (not Date.now()) guarantees unique IDs even when
+      // multiple toasts fire within the same millisecond - colliding IDs
+      // used to let one toast's dismiss timer delete a sibling toast early.
+      const id = ++toastIdCounter;
+      const toast = {
+        id,
+        message,
+        type,
+        title: options.title || getDefaultTitle(type),
+        duration: options.duration || 4000,
+      };
+
+      setToasts((prev) => [...prev, toast]);
+
+      const timer = setTimeout(() => {
+        removeToast(id);
+      }, toast.duration);
+      timersRef.current.set(id, timer);
+
+      return id;
+    },
+    [removeToast],
+  );
+
+  useEffect(() => {
+    const timers = timersRef.current;
+    return () => {
+      timers.forEach((timer) => clearTimeout(timer));
+      timers.clear();
+    };
   }, []);
 
   // Alias for backward compatibility
@@ -78,9 +101,9 @@ function Toast({ toast, onClose }) {
     <motion.div
       className={`toast toast--${toast.type}`}
       role="alert"
-      initial={{ opacity: 0, y: 50, scale: 0.9 }}
+      initial={{ opacity: 0, y: -32, scale: 0.9 }}
       animate={{ opacity: 1, y: 0, scale: 1 }}
-      exit={{ opacity: 0, y: 20, scale: 0.9 }}
+      exit={{ opacity: 0, y: -16, scale: 0.9 }}
       transition={{ duration: 0.3, ease: "easeOut" }}
     >
       <span className="toast__icon">{icons[toast.type]}</span>

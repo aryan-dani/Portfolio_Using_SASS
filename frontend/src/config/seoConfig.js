@@ -11,6 +11,11 @@ const TWITTER_HANDLE = "@Killfall15";
 const DEFAULT_ROBOTS = "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1";
 const DEFAULT_IMAGE_ALT = "Aryan Dani AI Engineer and Full Stack Developer portfolio preview";
 
+export function routeOgImage(path) {
+  const slug = path === "/" ? "home" : path.replace(/^\//, "").replace(/\//g, "-");
+  return `${SITE_URL}/og-${slug}.svg`;
+}
+
 export const SEO_ROUTE_ORDER = [
   "/",
   "/projects",
@@ -20,6 +25,8 @@ export const SEO_ROUTE_ORDER = [
   "/about",
   "/contact",
   "/playground",
+  "/achievements",
+  "/guestbook",
   "/copyright",
 ];
 
@@ -32,6 +39,8 @@ export const SEO_ROUTE_META = {
   "/about": { label: "About", priority: "0.9", changefreq: "monthly" },
   "/contact": { label: "Contact", priority: "0.7", changefreq: "yearly" },
   "/playground": { label: "CLI Playground", priority: "0.55", changefreq: "yearly" },
+  "/achievements": { label: "Achievements", priority: "0.45", changefreq: "monthly" },
+  "/guestbook": { label: "Guestbook", priority: "0.5", changefreq: "weekly" },
   "/copyright": { label: "Copyright", priority: "0.25", changefreq: "yearly" },
 };
 
@@ -174,7 +183,7 @@ export function buildBaseSchemas() {
       "@type": "ProfilePage",
       "@id": `${SITE_URL}/#profilepage`,
       url: `${SITE_URL}/`,
-      name: "Aryan Dani — AI Engineer & Full Stack Developer Portfolio",
+      name: "Aryan Dani - AI Engineer & Full Stack Developer Portfolio",
       isPartOf: WEBSITE_REF,
       about: PERSON_REF,
       mainEntity: PERSON_REF,
@@ -188,9 +197,9 @@ export function buildBaseSchemas() {
  */
 export const SEO_CONFIG = {
   "/": {
-    title: "Aryan Dani — AI Engineer & Full Stack Developer Portfolio",
+    title: "Aryan Dani - AI Engineer & Full Stack Developer Portfolio",
     description:
-      "Portfolio of Aryan Dani — AI Engineer and Full Stack Developer specializing in Machine Learning, Computer Vision, Generative AI, LLMs, RAG, React, Angular, Python, and Next.js. Explore projects, skills, and experience.",
+      "Portfolio of Aryan Dani - AI Engineer and Full Stack Developer specializing in Machine Learning, Computer Vision, Generative AI, LLMs, RAG, React, Angular, Python, and Next.js. Explore projects, skills, and experience.",
     keywords:
       "Aryan Dani, AI Engineer, Full Stack Developer, Machine Learning, Computer Vision, Generative AI, LLMs, RAG, React, Python, Portfolio",
     canonical: `${SITE_URL}/`,
@@ -203,8 +212,8 @@ export const SEO_CONFIG = {
       const schemas = [
         buildBreadcrumbs("Home", "/"),
         buildWebPage(
-          "Aryan Dani — AI Engineer & Full Stack Developer Portfolio",
-          "Portfolio of Aryan Dani — AI Engineer and Full Stack Developer specializing in Machine Learning, Computer Vision, Generative AI, LLMs, RAG, React, Angular, Python, and Next.js.",
+          "Aryan Dani - AI Engineer & Full Stack Developer Portfolio",
+          "Portfolio of Aryan Dani - AI Engineer and Full Stack Developer specializing in Machine Learning, Computer Vision, Generative AI, LLMs, RAG, React, Angular, Python, and Next.js.",
           "/"
         ),
       ];
@@ -231,7 +240,7 @@ export const SEO_CONFIG = {
   },
 
   "/projects": {
-    title: "Projects — Aryan Dani | AI & Web Development Portfolio",
+    title: "Projects - Aryan Dani | AI & Web Development Portfolio",
     description:
       "Explore Aryan Dani's portfolio of AI and web development projects including Computer Vision systems, LLM-powered applications, full-stack web apps with React, Next.js, FastAPI, and more.",
     keywords:
@@ -246,7 +255,7 @@ export const SEO_CONFIG = {
       const schemas = [
         buildBreadcrumbs("Projects", "/projects"),
         buildWebPage(
-          "Projects — Aryan Dani | AI & Web Development Portfolio",
+          "Projects - Aryan Dani | AI & Web Development Portfolio",
           "Explore Aryan Dani's portfolio of AI and web development projects.",
           "/projects"
         ),
@@ -282,7 +291,7 @@ export const SEO_CONFIG = {
   },
 
   "/experience": {
-    title: "Experience — Aryan Dani | AI Engineer & Web Developer",
+    title: "Experience - Aryan Dani | AI Engineer & Web Developer",
     description:
       "Professional experience of Aryan Dani as an AI Engineer and Full Stack Developer. Includes work at Artem HealthTech, MIT-WPU AI Capstone, and freelance web development projects.",
     keywords:
@@ -297,7 +306,7 @@ export const SEO_CONFIG = {
       const schemas = [
         buildBreadcrumbs("Experience", "/experience"),
         buildWebPage(
-          "Experience — Aryan Dani | AI Engineer & Web Developer",
+          "Experience - Aryan Dani | AI Engineer & Web Developer",
           "Professional experience of Aryan Dani as an AI Engineer and Full Stack Developer.",
           "/experience"
         ),
@@ -337,7 +346,7 @@ export const SEO_CONFIG = {
   },
 
   "/certifications": {
-    title: "Certifications — Aryan Dani | AI & Cloud Credentials",
+    title: "Certifications - Aryan Dani | AI & Cloud Credentials",
     description:
       "Industry-recognized certifications earned by Aryan Dani across AI, cloud computing, web development, and data science from Google, IBM, Meta, and more.",
     keywords:
@@ -352,7 +361,7 @@ export const SEO_CONFIG = {
       const schemas = [
         buildBreadcrumbs("Certifications", "/certifications"),
         buildWebPage(
-          "Certifications — Aryan Dani | AI & Cloud Credentials",
+          "Certifications - Aryan Dani | AI & Cloud Credentials",
           "Industry-recognized certifications earned by Aryan Dani.",
           "/certifications"
         ),
@@ -388,7 +397,7 @@ export const SEO_CONFIG = {
   },
 
   "/skills": {
-    title: "Skills & Tools — Aryan Dani | Tech Stack & Expertise",
+    title: "Skills & Tools - Aryan Dani | Tech Stack & Expertise",
     description:
       "Complete technical skill set of Aryan Dani including Python, React, Angular, Next.js, TensorFlow, PyTorch, Computer Vision, Generative AI, LLMs, RAG, Docker, and 30+ technologies.",
     keywords:
@@ -402,7 +411,7 @@ export const SEO_CONFIG = {
     schemas: () => [
       buildBreadcrumbs("Skills & Tools", "/skills"),
       buildWebPage(
-        "Skills & Tools — Aryan Dani | Tech Stack & Expertise",
+        "Skills & Tools - Aryan Dani | Tech Stack & Expertise",
         "Complete technical skill set of Aryan Dani including Python, React, Angular, Next.js, and 30+ technologies.",
         "/skills"
       ),
@@ -410,9 +419,9 @@ export const SEO_CONFIG = {
   },
 
   "/about": {
-    title: "About Aryan Dani — AI Engineer, Full Stack Developer, Pune",
+    title: "About Aryan Dani - AI Engineer, Full Stack Developer, Pune",
     description:
-      "Learn about Aryan Dani — an AI Engineer and Full Stack Developer from Pune, India. MIT-WPU student specializing in Machine Learning, Computer Vision, Generative AI, and modern web development.",
+      "Learn about Aryan Dani - an AI Engineer and Full Stack Developer from Pune, India. MIT-WPU student specializing in Machine Learning, Computer Vision, Generative AI, and modern web development.",
     keywords:
       "Aryan Dani, Aryan Dani developer, Aryan Dani AI, AI Engineer Pune, MIT WPU AI student, Full Stack Developer India",
     canonical: `${SITE_URL}/about`,
@@ -424,15 +433,15 @@ export const SEO_CONFIG = {
     schemas: () => [
       buildBreadcrumbs("About", "/about"),
       buildWebPage(
-        "About Aryan Dani — AI Engineer, Full Stack Developer, Pune",
-        "Learn about Aryan Dani — an AI Engineer and Full Stack Developer from Pune, India.",
+        "About Aryan Dani - AI Engineer, Full Stack Developer, Pune",
+        "Learn about Aryan Dani - an AI Engineer and Full Stack Developer from Pune, India.",
         "/about"
       ),
     ],
   },
 
   "/contact": {
-    title: "Contact Aryan Dani — Hire an AI Engineer & Web Developer",
+    title: "Contact Aryan Dani - Hire an AI Engineer & Web Developer",
     description:
       "Get in touch with Aryan Dani for freelance projects, job opportunities, collaborations, or open source contributions. AI Engineer and Full Stack Developer available for hire.",
     keywords:
@@ -447,7 +456,7 @@ export const SEO_CONFIG = {
       const schemas = [
         buildBreadcrumbs("Contact", "/contact"),
         buildWebPage(
-          "Contact Aryan Dani — Hire an AI Engineer & Web Developer",
+          "Contact Aryan Dani - Hire an AI Engineer & Web Developer",
           "Get in touch with Aryan Dani for freelance projects, collaborations, or job opportunities.",
           "/contact"
         ),
@@ -474,7 +483,7 @@ export const SEO_CONFIG = {
   },
 
   "/playground": {
-    title: "CLI Playground — Aryan Dani Portfolio | Interactive Terminal",
+    title: "CLI Playground - Aryan Dani Portfolio | Interactive Terminal",
     description:
       "Explore Aryan Dani's portfolio through an interactive command-line interface. Query projects, list skills, navigate pages, and discover features using terminal commands.",
     keywords:
@@ -488,15 +497,47 @@ export const SEO_CONFIG = {
     schemas: () => [
       buildBreadcrumbs("CLI Playground", "/playground"),
       buildWebPage(
-        "CLI Playground — Aryan Dani Portfolio | Interactive Terminal",
+        "CLI Playground - Aryan Dani Portfolio | Interactive Terminal",
         "Explore Aryan Dani's portfolio through an interactive command-line interface.",
         "/playground"
       ),
     ],
   },
 
+  "/achievements": {
+    title: "Achievements - Aryan Dani Portfolio | Trophy Wall",
+    description: "Unlock achievements by exploring Aryan Dani's portfolio - CLI commands, easter eggs, and hidden modes.",
+    keywords: "portfolio achievements, gamified portfolio, Aryan Dani",
+    canonical: `${SITE_URL}/achievements`,
+    robots: DEFAULT_ROBOTS,
+    imageAlt: "Achievement trophy wall on Aryan Dani portfolio",
+    priority: SEO_ROUTE_META["/achievements"].priority,
+    changefreq: SEO_ROUTE_META["/achievements"].changefreq,
+    ogType: "website",
+    schemas: () => [
+      buildBreadcrumbs("Achievements", "/achievements"),
+      buildWebPage("Achievements - Aryan Dani Portfolio", "Gamified trophy wall.", "/achievements"),
+    ],
+  },
+
+  "/guestbook": {
+    title: "Guestbook - Aryan Dani Portfolio | Sign The Wall",
+    description: "Leave a message on Aryan Dani's portfolio guestbook wall.",
+    keywords: "portfolio guestbook, Aryan Dani",
+    canonical: `${SITE_URL}/guestbook`,
+    robots: DEFAULT_ROBOTS,
+    imageAlt: "Guestbook wall on Aryan Dani portfolio",
+    priority: SEO_ROUTE_META["/guestbook"].priority,
+    changefreq: SEO_ROUTE_META["/guestbook"].changefreq,
+    ogType: "website",
+    schemas: () => [
+      buildBreadcrumbs("Guestbook", "/guestbook"),
+      buildWebPage("Guestbook - Aryan Dani Portfolio", "Sign the wall.", "/guestbook"),
+    ],
+  },
+
   "/copyright": {
-    title: "Copyright & License — Aryan Dani Portfolio",
+    title: "Copyright & License - Aryan Dani Portfolio",
     description:
       "MIT License and copyright information for Aryan Dani's portfolio website. Open source portfolio template.",
     keywords: "Aryan Dani copyright, MIT License, portfolio license",
@@ -509,14 +550,14 @@ export const SEO_CONFIG = {
     schemas: () => [
       buildBreadcrumbs("Copyright", "/copyright"),
       buildWebPage(
-        "Copyright & License — Aryan Dani Portfolio",
+        "Copyright & License - Aryan Dani Portfolio",
         "MIT License and copyright information for Aryan Dani's portfolio website.",
         "/copyright"
       ),
     ],
   },
   "/404": {
-    title: "Page Not Found — Aryan Dani Portfolio",
+    title: "Page Not Found - Aryan Dani Portfolio",
     description:
       "The requested page could not be found. Return to Aryan Dani's AI Engineer and Full Stack Developer portfolio to explore projects, skills, experience, and contact details.",
     keywords: "Aryan Dani portfolio 404",
@@ -526,7 +567,7 @@ export const SEO_CONFIG = {
     ogType: "website",
     schemas: () => [
       buildWebPage(
-        "Page Not Found — Aryan Dani Portfolio",
+        "Page Not Found - Aryan Dani Portfolio",
         "The requested page could not be found.",
         "/404"
       ),

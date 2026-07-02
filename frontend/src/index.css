@@ -1,15 +1,15 @@
 @import "tailwindcss";
 
 /* ═══════════════════════════════════════════════════════════════
-   DESIGN TOKENS — LIGHT MODE (DEFAULT)
-   Monochrome editorial palette — charcoal accents on warm white
+   DESIGN TOKENS - LIGHT MODE (DEFAULT)
+   Monochrome editorial palette - charcoal accents on warm white
    ═══════════════════════════════════════════════════════════════ */
 @theme {
   /* ── Core brand palette (monochrome) ── */
-  --color-accent: #131316;         /* deep warm charcoal — primary brand accent */
-  --color-accent-warm: #26262b;    /* slightly lifted charcoal — hover states */
+  --color-accent: #131316;         /* deep warm charcoal - primary brand accent */
+  --color-accent-warm: #26262b;    /* slightly lifted charcoal - hover states */
   --color-accent-cool: #3c3c43;    /* medium charcoal */
-  --color-accent-dark: #09090b;    /* near-black — pressed/active */
+  --color-accent-dark: #09090b;    /* near-black - pressed/active */
   --color-accent-electric: #131316; /* monochrome highlight */
 
   /* ── Semantic surface colors (light) ── */
@@ -126,7 +126,7 @@
 }
 
 /* ═══════════════════════════════════════════════════════════════
-   DARK MODE — CSS CUSTOM PROPERTY REBINDING
+   DARK MODE - CSS CUSTOM PROPERTY REBINDING
    Luminous white/platinum accent on near-black background
    ═══════════════════════════════════════════════════════════════ */
 .dark {
@@ -215,22 +215,29 @@ html.theme-transitioning {
     color 0.32s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* Theme toggle: limit transitions to root surfaces — avoid forcing every node to repaint. */
+/* Theme toggle: limit transitions to root surfaces - avoid forcing every node to repaint. */
 html.theme-transitioning body {
   transition:
     background-color 0.28s cubic-bezier(0.4, 0, 0.2, 1),
     color 0.28s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* Hide system cursor on pointer devices — custom cursor takes over */
+/* Hide system cursor only after the custom cursor is active */
 @media (hover: hover) and (pointer: fine) {
-  * {
+  html.custom-cursor-active:not(.native-cursor) * {
     cursor: none !important;
   }
 
   html.native-cursor,
   html.native-cursor * {
     cursor: auto !important;
+  }
+
+  html.portfolio-modal-open #main-content,
+  html.portfolio-modal-open header,
+  html.portfolio-modal-open footer,
+  html.portfolio-modal-open .noise-overlay {
+    pointer-events: none !important;
   }
 }
 
@@ -412,7 +419,7 @@ input:focus-visible, textarea:focus-visible, select:focus-visible {
    KEYFRAME ANIMATIONS
    ═══════════════════════════════════════════════════════════════ */
 
-/* Float — gentle levitating for elements (subtler, slower) */
+/* Float - gentle levitating for elements (subtler, slower) */
 @keyframes float {
   0%,
   100% {
@@ -423,7 +430,7 @@ input:focus-visible, textarea:focus-visible, select:focus-visible {
   }
 }
 
-/* Shimmer sweep — silver/white gradient highlight */
+/* Shimmer sweep - silver/white gradient highlight */
 @keyframes shimmer {
   0% {
     background-position: -200% center;
@@ -433,7 +440,7 @@ input:focus-visible, textarea:focus-visible, select:focus-visible {
   }
 }
 
-/* Pulse glow — subtle monochrome aura */
+/* Pulse glow - subtle monochrome aura */
 @keyframes pulse-glow {
   0%,
   100% {
@@ -449,7 +456,7 @@ input:focus-visible, textarea:focus-visible, select:focus-visible {
   }
 }
 
-/* Gradient shift — animated gradient background */
+/* Gradient shift - animated gradient background */
 @keyframes gradient-shift {
   0% {
     background-position: 0% 50%;
@@ -462,7 +469,7 @@ input:focus-visible, textarea:focus-visible, select:focus-visible {
   }
 }
 
-/* Reveal up — scroll-triggered upward reveal */
+/* Reveal up - scroll-triggered upward reveal */
 @keyframes reveal-up {
   from {
     opacity: 0;
@@ -554,7 +561,7 @@ input:focus-visible, textarea:focus-visible, select:focus-visible {
   }
 }
 
-/* Grain animation — shifts noise texture position */
+/* Grain animation - shifts noise texture position */
 @keyframes grain {
   0%,
   100% {
@@ -589,7 +596,7 @@ input:focus-visible, textarea:focus-visible, select:focus-visible {
   }
 }
 
-/* Scale pulse for status badges (stays green — semantic meaning) */
+/* Scale pulse for status badges (stays green - semantic meaning) */
 @keyframes status-pulse {
   0%,
   100% {
@@ -647,7 +654,7 @@ input:focus-visible, textarea:focus-visible, select:focus-visible {
   animation: grain 8s steps(4) infinite;
 }
 
-/* Shimmer text effect — silver sweep for hero headings */
+/* Shimmer text effect - silver sweep for hero headings */
 .text-shimmer {
   background: linear-gradient(
     90deg,
@@ -671,7 +678,7 @@ input:focus-visible, textarea:focus-visible, select:focus-visible {
 }
 
 /* ═══════════════════════════════════════════════════════════════
-   CARD HOVER LIFT — unified card interaction (smoother easing)
+   CARD HOVER LIFT - unified card interaction (smoother easing)
    ═══════════════════════════════════════════════════════════════ */
 @utility card-hover-lift {
   transition:
@@ -686,7 +693,7 @@ input:focus-visible, textarea:focus-visible, select:focus-visible {
 }
 
 /* ═══════════════════════════════════════════════════════════════
-   TILT CARD — 3D perspective tilt container
+   TILT CARD - 3D perspective tilt container
    ═══════════════════════════════════════════════════════════════ */
 .tilt-card {
   transform-style: preserve-3d;
@@ -703,7 +710,7 @@ input:focus-visible, textarea:focus-visible, select:focus-visible {
 }
 
 /* ═══════════════════════════════════════════════════════════════
-   GLASSMORPHISM — premium frosted glass effect
+   GLASSMORPHISM - premium frosted glass effect
    ═══════════════════════════════════════════════════════════════ */
 .glass {
   backdrop-filter: blur(12px) saturate(118%);
@@ -1176,7 +1183,7 @@ input:focus-visible, textarea:focus-visible, select:focus-visible {
 }
 
 /* ═══════════════════════════════════════════════════════════════
-   REDUCED MOTION — disable decorative motion only
+   REDUCED MOTION - disable decorative motion only
    ═══════════════════════════════════════════════════════════════ */
 @media (prefers-reduced-motion: reduce) {
   .animate-float,
@@ -1283,9 +1290,11 @@ input:focus-visible, textarea:focus-visible, select:focus-visible {
    TOAST NOTIFICATION SYSTEM
    Neo-brutalist monochrome styled toasts
    ═══════════════════════════════════════════════════════════════ */
+/* Anchored to the top (below the sticky header) so toasts never collide
+   with the bottom-fixed dock, chat button, install prompt, or CRT banner. */
 .toast-container {
   position: fixed;
-  bottom: 1.5rem;
+  top: 5.5rem;
   left: 50%;
   transform: translateX(-50%);
   z-index: 99998;
@@ -1360,7 +1369,7 @@ input:focus-visible, textarea:focus-visible, select:focus-visible {
   color: var(--color-on-surface);
 }
 
-/* Toast type variants — monochrome with subtle accent strips */
+/* Toast type variants - monochrome with subtle accent strips */
 .toast--success {
   border-left: 6px solid var(--color-on-background);
 }
@@ -1379,7 +1388,7 @@ input:focus-visible, textarea:focus-visible, select:focus-visible {
 
 @media (max-width: 480px) {
   .toast-container {
-    bottom: 1rem;
+    top: 4.5rem;
     left: 1rem;
     right: 1rem;
     transform: none;
@@ -1429,5 +1438,60 @@ input:focus-visible, textarea:focus-visible, select:focus-visible {
 
 @utility animate-hue-cycle {
   animation: cursor-hue-cycle 3s linear infinite;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   SITE IDLE / STALE STATE
+   Dims content when the session has been idle for a long stretch.
+   ═══════════════════════════════════════════════════════════════ */
+html.site-stale #main-content {
+  filter: saturate(0.42) contrast(0.96);
+  transition: filter 0.55s ease;
+}
+
+html.site-stale footer {
+  opacity: 0.55;
+  transition: opacity 0.55s ease;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   CRT HACKER MODE + DEV X-RAY
+   ═══════════════════════════════════════════════════════════════ */
+html.crt {
+  --color-background: #050805;
+  --color-on-background: #39ff14;
+  --color-surface: #0a120a;
+  --color-on-surface: #7fff7f;
+  --color-surface-variant: #0f1a0f;
+  --color-primary-container: #39ff14;
+  --color-on-primary-container: #050805;
+  --color-outline: #39ff14;
+  --color-accent-electric: #39ff14;
+  font-family: "JetBrains Mono", monospace;
+}
+
+html.crt body {
+  text-shadow: 0 0 6px rgba(57, 255, 20, 0.35);
+}
+
+html.crt::after {
+  content: "";
+  pointer-events: none;
+  position: fixed;
+  inset: 0;
+  z-index: 9997;
+  background: repeating-linear-gradient(
+    0deg,
+    rgba(0, 0, 0, 0.18) 0px,
+    rgba(0, 0, 0, 0.18) 1px,
+    transparent 2px,
+    transparent 4px
+  );
+  mix-blend-mode: multiply;
+}
+
+html.dev-xray * {
+  outline: 1px dashed rgba(47, 107, 255, 0.45) !important;
+  outline-offset: 1px;
 }
 

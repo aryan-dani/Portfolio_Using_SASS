@@ -15,8 +15,8 @@ const TechGlobeFallback = memo(function TechGlobeFallback() {
   );
 
   return (
-    <div className="relative w-full max-w-[620px] min-h-[280px] sm:min-h-[320px] border-4 border-outline bg-[var(--color-surface)] shadow-[12px_12px_0_var(--shadow-color)] p-4 sm:p-5 flex flex-col gap-4">
-      <div className="absolute -inset-2 border-4 border-outline bg-[var(--color-accent-electric)] opacity-40 pointer-events-none -z-10" />
+    <div className="relative w-full max-w-[620px] min-h-[280px] sm:min-h-[320px] border-4 border-outline bg-[var(--color-surface)] shadow-[12px_12px_0_var(--shadow-color)] p-4 sm:p-5 flex flex-col gap-4 overflow-hidden">
+      <div className="absolute -inset-2 border-4 border-outline bg-hatch pointer-events-none -z-10" />
       <div className="flex items-center justify-between gap-3 border-b-4 border-dashed border-outline pb-3">
         <span className="font-label-bold text-[10px] uppercase tracking-[0.24em] text-[var(--color-on-surface)]">
           Live Stack
@@ -37,7 +37,7 @@ const TechGlobeFallback = memo(function TechGlobeFallback() {
         ))}
       </div>
       <p className="font-body-md text-xs text-[var(--color-text-muted)] border-t-2 border-dashed border-outline pt-3">
-        Optimized static view for mobile — full interactive globe on desktop.
+        Optimized static view for mobile - full interactive globe on desktop.
       </p>
     </div>
   );

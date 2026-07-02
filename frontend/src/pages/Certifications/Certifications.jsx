@@ -36,7 +36,7 @@ function Certifications() {
   return (
     <>
       <motion.section
-        className="flex flex-col gap-12 w-full mt-4"
+        className="flex flex-col gap-6 w-full mt-4"
         initial="hidden"
         animate="visible"
         variants={containerVariants}
@@ -46,11 +46,10 @@ function Certifications() {
           title="Certifications"
           count={filteredCerts.length}
           description="Proof of work - industry-recognized credentials across AI, cloud, and web technologies."
-          className="mb-8"
         />
 
         {/* Controls */}
-        <div className="bg-hatch border-4 border-outline p-4 md:p-6 shadow-[4px_4px_0px_0px_var(--shadow-color)] mb-8">
+        <div className="bg-hatch border-4 border-outline p-4 md:p-6 shadow-[4px_4px_0px_0px_var(--shadow-color)]">
           <div className="flex flex-col md:flex-row gap-4 items-stretch md:items-center justify-between w-full">
             {/* Search */}
             <motion.div

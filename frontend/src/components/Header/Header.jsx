@@ -4,8 +4,10 @@ import { FaSun, FaMoon } from "react-icons/fa";
 import { HiMenuAlt3, HiX } from "react-icons/hi";
 import { motion, AnimatePresence } from "framer-motion";
 import { useTheme } from "../../context/ThemeContext";
+import { useAchievements } from "../../context/AchievementContext";
 import { snappySpring, defaultSpring } from "../../utils/motionVariants";
 import { useScrollVisibility } from "../../hooks/useScrollVisibility";
+import { useSiteIdleState } from "../../context/SiteIdleContext";
 
 import { headerNavItems } from "../../config/routes";
 
@@ -34,34 +36,38 @@ const motionEase = { out: [0.22, 1, 0.36, 1] };
 function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const { theme, toggleTheme } = useTheme();
+  const { track } = useAchievements();
   const location = useLocation();
   const { isVisible, isScrolled } = useScrollVisibility({
     topThreshold: 84,
     deltaThreshold: 16,
   });
+  const { hideChrome } = useSiteIdleState();
+  const showChrome = isVisible && !hideChrome;
 
   useEffect(() => {
-    if (!isVisible) setIsMenuOpen(false);
-  }, [isVisible]);
+    if (!showChrome) setIsMenuOpen(false);
+  }, [showChrome]);
 
   const handleToggleTheme = () => {
     toggleTheme();
+    track("theme_toggle");
   };
 
   return (
     <>
       <motion.nav
         initial={{ y: 0, opacity: 1 }}
-        animate={{ y: isVisible ? 0 : "-100%", opacity: isVisible ? 1 : 0 }}
+        animate={{ y: showChrome ? 0 : "-100%", opacity: showChrome ? 1 : 0 }}
         transition={{ type: "spring", stiffness: 280, damping: 34, mass: 0.9 }}
         aria-label="Main navigation"
         className={`sticky top-0 w-full border-b-4 z-50 transition-[box-shadow,border-color] duration-300 gpu-layer paint-isolate ${
           isScrolled
             ? "border-outline shadow-[0_5px_0_0_var(--shadow-color)]"
             : "border-outline shadow-[0_8px_0_0_var(--shadow-color)]"
-        } ${isVisible ? "pointer-events-auto" : "pointer-events-none"}`}
+        } ${showChrome ? "pointer-events-auto" : "pointer-events-none"}`}
         style={{ backgroundColor: "color-mix(in srgb, var(--color-surface) 96%, transparent)" }}
-        aria-hidden={!isVisible}
+        aria-hidden={!showChrome}
       >
             <div
               className="flex justify-between items-center px-4 md:px-8 w-full h-16 md:h-20"
@@ -187,7 +193,7 @@ function Header() {
 
       {/* Mobile menu */}
       <AnimatePresence>
-        {isMenuOpen && isVisible && (
+        {isMenuOpen && showChrome && (
           <motion.div
             className="lg:hidden fixed inset-0 z-40 top-[64px] md:top-[80px] flex flex-col items-center pt-8 pb-8 border-t-4 border-outline font-headline-md uppercase font-bold text-xl gap-4 overflow-y-auto"
             style={{ backgroundColor: "color-mix(in srgb, var(--color-surface) 96%, transparent)" }}

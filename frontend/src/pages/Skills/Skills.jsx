@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect, useRef, memo } from "react";
+import { useState, useMemo, useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence, useInView, useMotionValue } from "framer-motion";
@@ -77,7 +77,7 @@ const SKILL_LEVELS_OVERVIEW = [
 
 // ── Animated progress bar ─────────────────────────────────────
 
-function AnimatedBar({ level, delay = 0, color }) {
+function AnimatedBar({ level, delay = 0 }) {
   const ref = useRef(null);
   const inView = useInView(ref, { once: true, margin: "-40px" });
 
@@ -511,7 +511,6 @@ function EmptyState() {
 function SkillModal({ skill, icon, onClose, onProjectClick }) {
   const category = getSkillCategory(skill.id);
   const relatedProjects = getProjectsForSkill(skill.id);
-  const levelStyle = getLevelStyle(skill.level);
 
   return createPortal(
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
@@ -563,7 +562,7 @@ function SkillModal({ skill, icon, onClose, onProjectClick }) {
         <div className="flex flex-col gap-2">
           <div className="flex justify-between font-label-bold uppercase text-sm text-[var(--color-on-surface)]">
             <span>Proficiency</span>
-            <span>{skill.level}% — {getProficiencyLabel(skill.level)}</span>
+            <span>{skill.level}% - {getProficiencyLabel(skill.level)}</span>
           </div>
           <div className="h-6 w-full border-2 border-outline bg-[var(--color-surface)] overflow-hidden">
             <motion.div
