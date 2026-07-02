@@ -106,28 +106,26 @@ const KuroFace = memo(function KuroFace({ pupilsRef, mood, bliss, sleeping, size
         asleep
           ? { y: [0, 1.5, 0], rotate: [0, 1.2, 0, -1.2, 0] }
           : bliss
-            ? { y: [0, -1.5, 0], rotate: [0, -2, 0, 2, 0], scale: [1, 1.04, 1] }
+            ? { y: -1.5, rotate: -2, scale: 1.04 }
             : { y: 0, scale: 1, rotate: 0 }
       }
       transition={
         asleep
           ? { duration: 3.2, repeat: Infinity, ease: "easeInOut" }
-          : bliss
-            ? { duration: 0.85, repeat: Infinity, ease: "easeInOut" }
-            : { duration: 0.24 }
+          : { type: "spring", stiffness: 420, damping: 24 }
       }
     >
       {/* Ears */}
       <motion.g
-        animate={bliss ? { rotate: [-24, -30, -24] } : { rotate: -22 }}
-        transition={bliss ? { duration: 0.7, repeat: Infinity, ease: "easeInOut" } : { duration: 0.2 }}
+        animate={bliss ? { rotate: -28 } : { rotate: -22 }}
+        transition={{ type: "spring", stiffness: 420, damping: 24 }}
         style={{ transformOrigin: "26px 24px", transformBox: "fill-box" }}
       >
         <rect x="21" y="14" width="11" height="20" fill={FUR_EAR} stroke={OUTLINE} strokeWidth="2" />
       </motion.g>
       <motion.g
-        animate={bliss ? { rotate: [24, 30, 24] } : { rotate: 22 }}
-        transition={bliss ? { duration: 0.7, repeat: Infinity, ease: "easeInOut" } : { duration: 0.2 }}
+        animate={bliss ? { rotate: 28 } : { rotate: 22 }}
+        transition={{ type: "spring", stiffness: 420, damping: 24 }}
         style={{ transformOrigin: "70px 24px", transformBox: "fill-box" }}
       >
         <rect x="64" y="14" width="11" height="20" fill={FUR_EAR} stroke={OUTLINE} strokeWidth="2" />

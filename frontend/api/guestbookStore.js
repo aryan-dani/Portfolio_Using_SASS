@@ -52,17 +52,47 @@ function normalizeEntry(item) {
   return item;
 }
 
+function publicEntry(entry) {
+  if (!entry) return null;
+  const { owner_token, ...safe } = entry;
+  return safe;
+}
+
+export function sanitizeEntriesForPublic(entries) {
+  return entries.map(publicEntry).filter(Boolean);
+}
+
 export async function listGuestbookEntries(redis) {
   const raw = await redis.lrange(GUESTBOOK_KEY, 0, MAX_ENTRIES - 1);
   return raw.map(normalizeEntry).filter(Boolean);
 }
 
-export async function addGuestbookEntry(redis, { name, message }) {
+async function rewriteGuestbookEntries(redis, entries) {
+  await redis.del(GUESTBOOK_KEY);
+  if (entries.length === 0) return;
+  await redis.lpush(GUESTBOOK_KEY, ...entries.slice().reverse());
+}
+
+export async function purgeGuestbookEntries(redis, predicate) {
+  const entries = await listGuestbookEntries(redis);
+  const next = entries.filter((entry) => !predicate(entry));
+  await rewriteGuestbookEntries(redis, next);
+  return sanitizeEntriesForPublic(next);
+}
+
+export async function addGuestbookEntry(redis, { name, message, ownerToken }) {
   const cleanName = String(name || "").trim().slice(0, 40);
   const cleanMsg = String(message || "").trim().slice(0, 140);
+  const token = String(ownerToken || "").trim();
 
   if (!cleanName || !cleanMsg) {
     const error = new Error("Name and message are required.");
+    error.status = 400;
+    throw error;
+  }
+
+  if (!token || token.length < 16 || token.length > 64) {
+    const error = new Error("Invalid session token.");
     error.status = 400;
     throw error;
   }
@@ -79,12 +109,43 @@ export async function addGuestbookEntry(redis, { name, message }) {
     name: cleanName,
     message: cleanMsg,
     created_at: new Date().toISOString(),
+    owner_token: token,
   };
 
   await redis.lpush(GUESTBOOK_KEY, entry);
   await redis.ltrim(GUESTBOOK_KEY, 0, MAX_ENTRIES - 1);
 
-  return entry;
+  return publicEntry(entry);
+}
+
+export async function deleteGuestbookEntry(redis, { id, ownerToken }) {
+  const entryId = String(id || "").trim();
+  const token = String(ownerToken || "").trim();
+
+  if (!entryId || !token) {
+    const error = new Error("Entry id and owner token are required.");
+    error.status = 400;
+    throw error;
+  }
+
+  const entries = await listGuestbookEntries(redis);
+  const target = entries.find((entry) => entry.id === entryId);
+
+  if (!target) {
+    const error = new Error("Entry not found.");
+    error.status = 404;
+    throw error;
+  }
+
+  if (target.owner_token !== token) {
+    const error = new Error("You can only remove your own stamp.");
+    error.status = 403;
+    throw error;
+  }
+
+  const next = entries.filter((entry) => entry.id !== entryId);
+  await rewriteGuestbookEntries(redis, next);
+  return sanitizeEntriesForPublic(next);
 }
 
 export async function checkGuestbookRateLimit(redis, ip) {

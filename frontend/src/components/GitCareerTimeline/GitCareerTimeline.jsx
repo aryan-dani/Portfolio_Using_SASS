@@ -1,62 +1,78 @@
 import { memo, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
-import { buildCareerCommits } from "../../utils/careerGitLog";
-import { experiences } from "../../data/experience";
+import { motion } from "framer-motion";
+import { buildCareerRoles } from "../../utils/careerGitLog";
+import { itemVariants } from "../../utils/motionVariants";
 
 const GitCareerTimeline = memo(function GitCareerTimeline({ onSelectExperience }) {
   const navigate = useNavigate();
-  const commits = useMemo(() => buildCareerCommits(), []);
+  const roles = useMemo(() => buildCareerRoles(), []);
 
-  const handleSelect = (exp) => {
-    if (!exp) return;
+  const handleSelect = (id) => {
+    if (!id) return;
     if (onSelectExperience) {
-      onSelectExperience(exp.id);
+      onSelectExperience(id);
       return;
     }
-    navigate("/experience", { state: { expandId: exp.id } });
+    navigate("/experience", { state: { expandId: id } });
   };
+
   return (
-    <section className="border-4 border-outline bg-[var(--color-on-background)] text-[var(--color-background)] p-4 md:p-6 shadow-[8px_8px_0_var(--shadow-color)] font-mono text-xs md:text-sm overflow-x-auto max-w-3xl mx-auto w-full">
-      <div className="flex flex-wrap items-center justify-between gap-3 mb-4 border-b-2 border-dashed border-[color-mix(in_srgb,var(--color-background)_35%,transparent)] pb-3">
-        <p className="font-label-bold uppercase tracking-widest text-[var(--color-accent-electric)]">
-          git log --oneline --graph
-        </p>
-        <p className="text-[10px] uppercase opacity-60 text-right">
-          {experiences.length} roles · {commits.length} highlights
-          <span className="block normal-case opacity-80">from experience data (not live GitHub)</span>
+    <motion.section className="flex flex-col gap-6" variants={itemVariants}>
+      <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-2 border-b-4 border-outline pb-4">
+        <h2 className="font-headline-md text-3xl md:text-4xl uppercase text-[var(--color-on-surface)]">
+          Career Timeline
+        </h2>
+        <p className="font-mono text-[10px] uppercase tracking-widest text-[var(--color-text-muted)]">
+          {roles.length} roles · git-style log
         </p>
       </div>
-      <div className="space-y-0.5">
-        {commits.map((commit) => {
-          const exp = experiences.find((e) => e.id === commit.expId);
-          return (
-            <button
-              key={commit.id}
-              type="button"
-              onClick={() => handleSelect(exp)}
-              className={`group block w-full text-left px-2 py-1.5 transition-colors border-l-2 border-transparent hover:border-[var(--color-accent-electric)] hover:bg-[color-mix(in_srgb,var(--color-background)_10%,transparent)] ${
-                exp ? "cursor-pointer" : "cursor-default"
-              }`}
-            >
-              <span className="text-[var(--color-accent-electric)] opacity-90">
-                {(commit.graph || "|").padEnd(4)}
+
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        {roles.map((role, index) => (
+          <motion.button
+            key={role.id}
+            type="button"
+            onClick={() => handleSelect(role.id)}
+            className="group text-left bg-[var(--color-surface)] border-4 border-outline shadow-[6px_6px_0px_0px_var(--shadow-color)] flex flex-col h-full hover:-translate-y-1 hover:-translate-x-1 hover:shadow-[10px_10px_0px_0px_var(--shadow-color)] transition-all"
+            initial={{ opacity: 0, y: 24 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-40px" }}
+            transition={{ delay: index * 0.08, type: "spring", stiffness: 280, damping: 22 }}
+          >
+            <div className="flex items-center justify-between gap-3 border-b-4 border-outline bg-[var(--color-surface-variant)] px-4 py-3">
+              <span className="font-mono text-[10px] uppercase tracking-wider text-[var(--color-on-surface)] opacity-70">
+                {role.branch}
               </span>
-              <span className="text-[#7ee787] group-hover:underline">{commit.hash}</span>{" "}
-              <span className="opacity-55">({commit.branch})</span>{" "}
-              <span className="opacity-95">{commit.msg}</span>
-              {commit.meta && (
-                <span className="ml-2 opacity-45 hidden sm:inline">- {commit.meta}</span>
+              <span className="font-mono text-[10px] uppercase text-[var(--color-text-muted)] whitespace-nowrap">
+                {role.period}
+              </span>
+            </div>
+
+            <div className="p-5 flex flex-col flex-1 gap-2">
+              <h3 className="font-label-bold text-sm uppercase leading-snug text-[var(--color-on-surface)]">
+                {role.position}
+              </h3>
+              <p className="font-body-md text-sm text-[var(--color-on-surface-variant)]">
+                {role.company}
+              </p>
+
+              {role.highlight && (
+                <p className="mt-auto pt-4 border-t-2 border-dashed border-outline-variant font-mono text-[11px] leading-relaxed text-[var(--color-text-muted)] group-hover:text-[var(--color-on-surface)] transition-colors">
+                  <span className="text-[var(--color-on-surface)] opacity-80">{role.highlight.hash}</span>
+                  {" "}
+                  {role.highlight.msg}
+                </p>
               )}
-              {exp && (
-                <span className="ml-2 text-[10px] uppercase opacity-40 group-hover:opacity-70">
-                  ↳ {exp.period}
-                </span>
-              )}
-            </button>
-          );
-        })}
+            </div>
+          </motion.button>
+        ))}
       </div>
-    </section>
+
+      <p className="font-mono text-[10px] uppercase text-[var(--color-text-muted)] text-center">
+        Click a role to open the full experience · not live GitHub data
+      </p>
+    </motion.section>
   );
 });
 

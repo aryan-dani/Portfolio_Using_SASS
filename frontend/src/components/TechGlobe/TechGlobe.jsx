@@ -51,6 +51,18 @@ function drawHatch(ctx, w, h, outline) {
   ctx.restore();
 }
 
+function drawCenterPlate(ctx, cx, cy, size, bg, outline) {
+  const half = size / 2;
+  ctx.save();
+  ctx.globalAlpha = 1;
+  ctx.fillStyle = bg;
+  ctx.fillRect(cx - half, cy - half, size, size);
+  ctx.strokeStyle = outline;
+  ctx.lineWidth = 2;
+  ctx.strokeRect(cx - half, cy - half, size, size);
+  ctx.restore();
+}
+
 function buildEdgePairs(nodes) {
   const pairs = [];
   for (let i = 0; i < nodes.length; i += 1) {
@@ -192,7 +204,7 @@ const TechGlobe = memo(function TechGlobe() {
       ctx.font = "700 10px Space Grotesk, Inter, sans-serif";
       const textWidth = ctx.measureText(label).width;
       const x = Math.min(node.sx + 12, width - textWidth - 28);
-      const y = Math.max(76, Math.min(node.sy - 8, height - 82));
+      const y = Math.max(84, Math.min(node.sy - 14, height - 88));
       ctx.fillStyle = colors.bg;
       ctx.strokeStyle = colors.outline;
       ctx.lineWidth = 2;
@@ -215,6 +227,7 @@ const TechGlobe = memo(function TechGlobe() {
       ctx.fillStyle = colors.bg;
       ctx.fillRect(0, 0, width, height);
       drawHatch(ctx, width, height, colors.outline);
+      drawCenterPlate(ctx, centerX, centerY, globeRadius * 0.38, colors.bg, colors.outline);
 
       const rotation = rotationRef.current;
       const pointer = pointerRef.current;

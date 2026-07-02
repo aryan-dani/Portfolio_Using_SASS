@@ -1,7 +1,8 @@
 const GITHUB_USER = "aryan-dani";
 const CACHE_KEY = "portfolio_github_events";
-const CONTRIB_CACHE_KEY = "portfolio_github_contributions";
+const DASHBOARD_CACHE_KEY = "portfolio_github_dashboard";
 const CACHE_MS = 10 * 60 * 1000;
+const DASHBOARD_CACHE_MS = 30 * 60 * 1000;
 
 export async function fetchGitHubEvents() {
   try {
@@ -10,12 +11,24 @@ export async function fetchGitHubEvents() {
       const { ts, data } = JSON.parse(cached);
       if (Date.now() - ts < CACHE_MS) return data;
     }
-    const res = await fetch(`https://api.github.com/users/${GITHUB_USER}/events/public?per_page=10`);
-    if (!res.ok) throw new Error("GitHub API unavailable");
-    const data = await res.json();
-    sessionStorage.setItem(CACHE_KEY, JSON.stringify({ ts: Date.now(), data }));
-    return data;
+    const res = await fetch("/api/github-events");
+    if (res.ok) {
+      const data = await res.json();
+      sessionStorage.setItem(CACHE_KEY, JSON.stringify({ ts: Date.now(), data }));
+      return data;
+    }
+    if (cached) {
+      const { data } = JSON.parse(cached);
+      return data;
+    }
+    throw new Error("GitHub events unavailable");
   } catch {
+    try {
+      const cached = sessionStorage.getItem(CACHE_KEY);
+      if (cached) return JSON.parse(cached).data;
+    } catch {
+      /* ignore */
+    }
     return [];
   }
 }
@@ -90,25 +103,26 @@ export function formatRelativeTime(iso) {
   return new Date(iso).toLocaleDateString(undefined, { month: "short", day: "numeric" });
 }
 
-/** Last ~year of contribution counts from a public contributions API. */
-export async function fetchGitHubContributions() {
+/** Aggregated profile stats from GitHub REST API (via /api/github-stats). */
+export async function fetchGitHubDashboard() {
+  let stale = null;
   try {
-    const cached = sessionStorage.getItem(CONTRIB_CACHE_KEY);
+    const cached = sessionStorage.getItem(DASHBOARD_CACHE_KEY);
     if (cached) {
-      const { ts, data } = JSON.parse(cached);
-      if (Date.now() - ts < CACHE_MS) return data;
+      const parsed = JSON.parse(cached);
+      stale = parsed.data;
+      if (Date.now() - parsed.ts < DASHBOARD_CACHE_MS) return parsed.data;
     }
 
-    const year = new Date().getFullYear();
-    const res = await fetch(
-      `https://github-contributions-api.jogruber.de/v4/${GITHUB_USER}?y=${year}`,
-    );
-    if (!res.ok) throw new Error("Contributions API unavailable");
-    const json = await res.json();
-    const contributions = json.contributions || [];
-    sessionStorage.setItem(CONTRIB_CACHE_KEY, JSON.stringify({ ts: Date.now(), data: contributions }));
-    return contributions;
+    const res = await fetch("/api/github-stats");
+    const data = await res.json().catch(() => null);
+    if (res.ok && data && !data.error) {
+      sessionStorage.setItem(DASHBOARD_CACHE_KEY, JSON.stringify({ ts: Date.now(), data }));
+      return data;
+    }
+    if (stale) return stale;
+    return null;
   } catch {
-    return [];
+    return stale;
   }
 }

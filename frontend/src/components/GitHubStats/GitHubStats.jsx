@@ -1,48 +1,10 @@
-import { memo, useState, useRef } from "react";
+import { memo, useEffect, useRef, useState } from "react";
 import { motion, useInView } from "framer-motion";
-import { useTheme } from "../../context/ThemeContext";
-
-const GITHUB_USERNAME = "aryan-dani";
-
+import { fetchGitHubDashboard } from "../../utils/githubApi";
 import { containerVariants, itemVariants } from "../../utils/motionVariants";
 import ContributionHeatmap from "./ContributionHeatmap";
 
-function ImageWithSkeleton({ src, alt, className = "", imgClassName = "", width = 495, height = 195 }) {
-  const [loaded, setLoaded] = useState(false);
-  const [failed, setFailed] = useState(false);
-
-  if (failed) {
-    return (
-      <div className={`flex min-h-[160px] items-center justify-center border-4 border-dashed border-outline-variant bg-[var(--color-surface-variant)] p-4 text-center ${className}`}>
-        <span className="font-body-md text-sm text-[var(--color-text-muted)]">
-          GitHub stats are temporarily unavailable.
-        </span>
-      </div>
-    );
-  }
-
-  return (
-    <div className={`relative w-full overflow-hidden flex justify-center items-center ${className}`}>
-      {!loaded && (
-        <div className="w-full min-h-[160px] bg-[var(--color-surface-variant)] flex items-center justify-center border-4 border-dashed border-outline-variant relative overflow-hidden">
-          <div className="absolute inset-0 animate-shimmer opacity-20" />
-          <span className="font-mono text-xs uppercase tracking-widest opacity-60 animate-pulse">Loading github stats...</span>
-        </div>
-      )}
-      <img
-        src={src}
-        alt={alt}
-        width={width}
-        height={height}
-        onLoad={() => setLoaded(true)}
-        onError={() => setFailed(true)}
-        className={`${imgClassName} transition-all duration-300 ${loaded ? "opacity-100 scale-100" : "opacity-0 scale-95 absolute w-0 h-0"}`}
-        loading="lazy"
-        decoding="async"
-      />
-    </div>
-  );
-}
+const GITHUB_USERNAME = "aryan-dani";
 
 function GHCard({ header, children, className = "" }) {
   const ref = useRef(null);
@@ -71,30 +33,117 @@ function GHCard({ header, children, className = "" }) {
   );
 }
 
+function StatTile({ label, value }) {
+  return (
+    <div className="border-4 border-outline bg-[var(--color-surface-variant)] p-4 text-center shadow-[4px_4px_0px_0px_var(--shadow-color)]">
+      <p className="font-headline-md text-2xl md:text-3xl text-[var(--color-on-surface)]">{value}</p>
+      <p className="font-mono text-[10px] uppercase tracking-widest text-[var(--color-text-muted)] mt-1">{label}</p>
+    </div>
+  );
+}
+
+function LanguageBars({ languages = [] }) {
+  if (!languages.length) {
+    return (
+      <p className="p-4 font-mono text-xs uppercase text-[var(--color-text-muted)] text-center">
+        Language breakdown unavailable.
+      </p>
+    );
+  }
+
+  return (
+    <div className="p-4 flex flex-col gap-3">
+      {languages.map((lang) => (
+        <div key={lang.name}>
+          <div className="flex justify-between font-mono text-xs uppercase mb-1">
+            <span>{lang.name}</span>
+            <span className="text-[var(--color-text-muted)]">{lang.percent}%</span>
+          </div>
+          <div className="h-3 border-2 border-outline bg-[var(--color-surface-variant)]">
+            <div
+              className="h-full bg-[var(--color-on-surface)]"
+              style={{ width: `${Math.max(lang.percent, 2)}%` }}
+            />
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function WeeklyActivityChart({ weeklyCommits = [] }) {
+  if (!weeklyCommits.length) {
+    return (
+      <p className="p-4 font-mono text-xs uppercase text-[var(--color-text-muted)] text-center">
+        Weekly activity unavailable.
+      </p>
+    );
+  }
+
+  const max = Math.max(...weeklyCommits, 1);
+  const recent = weeklyCommits.slice(-26);
+
+  return (
+    <div className="p-4">
+      <div className="flex items-end gap-1 h-32 border-b-4 border-outline pb-1">
+        {recent.map((count, i) => (
+          <div
+            key={i}
+            className="flex-1 min-w-0 bg-[var(--color-on-surface)] border border-outline"
+            style={{ height: `${Math.max((count / max) * 100, count > 0 ? 8 : 2)}%` }}
+            title={`${count} commit${count === 1 ? "" : "s"}`}
+          />
+        ))}
+      </div>
+      <p className="mt-2 font-mono text-[10px] uppercase text-[var(--color-text-muted)] text-center">
+        Last 26 weeks · aggregated repo participation
+      </p>
+    </div>
+  );
+}
+
+function StreakPanel({ current = 0, longest = 0, commitsLastYear = 0 }) {
+  return (
+    <div className="p-4 grid grid-cols-1 sm:grid-cols-3 gap-4">
+      <StatTile label="Current streak" value={`${current}d`} />
+      <StatTile label="Longest streak" value={`${longest}d`} />
+      <StatTile label="Commits (year)" value={commitsLastYear.toLocaleString()} />
+    </div>
+  );
+}
+
+function LoadingBlock({ label }) {
+  return (
+    <div className="p-4 flex flex-col items-center min-h-[120px] justify-center">
+      <div className="h-20 w-full max-w-md border-4 border-dashed border-outline-variant bg-[var(--color-surface-variant)] animate-pulse" />
+      <p className="mt-2 font-mono text-[10px] uppercase text-[var(--color-text-muted)]">{label}</p>
+    </div>
+  );
+}
+
 const GitHubStats = memo(function GitHubStats() {
-  const { theme } = useTheme();
-  const isDark = theme === "dark";
+  const [dashboard, setDashboard] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [failed, setFailed] = useState(false);
 
-  // Build stat image URLs with theme-aware params
-  const statsUrl = isDark
-    ? `https://github-readme-stats.vercel.app/api?username=${GITHUB_USERNAME}&show_icons=true&count_private=true&hide_border=true&bg_color=ffffff00&title_color=f0ff00&text_color=b0b0c0&icon_color=f0ff00&ring_color=f0ff00`
-    : `https://github-readme-stats.vercel.app/api?username=${GITHUB_USERNAME}&show_icons=true&count_private=true&hide_border=true&bg_color=ffffff00&title_color=0d0d0d&text_color=4a4a52&icon_color=5d6300&ring_color=f0ff00`;
+  useEffect(() => {
+    let cancelled = false;
+    fetchGitHubDashboard().then((data) => {
+      if (cancelled) return;
+      setLoading(false);
+      if (!data) {
+        setFailed(true);
+        return;
+      }
+      setDashboard(data);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
-  const langsUrl = isDark
-    ? `https://github-readme-stats.vercel.app/api/top-langs/?username=${GITHUB_USERNAME}&layout=compact&hide_border=true&bg_color=ffffff00&title_color=f0ff00&text_color=b0b0c0&langs_count=8`
-    : `https://github-readme-stats.vercel.app/api/top-langs/?username=${GITHUB_USERNAME}&layout=compact&hide_border=true&bg_color=ffffff00&title_color=0d0d0d&text_color=4a4a52&langs_count=8`;
-
-  const streakUrl = isDark
-    ? `https://streak-stats.demolab.com/?user=${GITHUB_USERNAME}&hide_border=true&background=00000000&ring=f0ff00&fire=f0ff00&currStreakNum=f0ff00&sideNums=f0f0f5&currStreakLabel=b0b0c0&sideLabels=b0b0c0&dates=6b6b80`
-    : `https://streak-stats.demolab.com/?user=${GITHUB_USERNAME}&hide_border=true&background=00000000&ring=f0ff00&fire=0d0d0d&currStreakNum=0d0d0d&sideNums=0d0d0d&currStreakLabel=5d6300&sideLabels=5d6300&dates=78795f`;
-
-  const trophiesUrl = isDark
-    ? `https://github-profile-trophy.vercel.app/?username=${GITHUB_USERNAME}&theme=darkhub&no-bg=true&no-frame=true&column=4&margin-w=8&margin-h=8`
-    : `https://github-profile-trophy.vercel.app/?username=${GITHUB_USERNAME}&theme=flat&no-bg=true&no-frame=true&column=4&margin-w=8&margin-h=8`;
-
-  const activityUrl = isDark
-    ? `https://github-readme-activity-graph.vercel.app/graph?username=${GITHUB_USERNAME}&bg_color=13131a&color=b0b0c0&line=f0ff00&point=f0f0f5&hide_border=true&area=true&area_color=1e1e2a`
-    : `https://github-readme-activity-graph.vercel.app/graph?username=${GITHUB_USERNAME}&bg_color=ffffff&color=4a4a52&line=5d6300&point=0d0d0d&hide_border=true&area=true&area_color=f0f0ee`;
+  const user = dashboard?.user;
+  const totals = dashboard?.totals;
 
   return (
     <motion.section
@@ -111,117 +160,97 @@ const GitHubStats = memo(function GitHubStats() {
         GitHub Activity
       </motion.h2>
 
-      {/* Stats + Languages row */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <GHCard
-          header={
-            <>
-              <span>Stats Overview</span>
-              <span className="opacity-60 text-xs">@{GITHUB_USERNAME}</span>
-            </>
-          }
-        >
-          <div className="p-4 flex justify-center items-center min-h-50">
-            <ImageWithSkeleton
-              src={statsUrl}
-              alt="GitHub Stats"
-              imgClassName="w-full max-w-[495px] h-auto"
-            />
+      {loading && <LoadingBlock label="Fetching GitHub stats (may take a moment on first load)…" />}
+
+      {failed && !loading && (
+        <div className="border-4 border-dashed border-outline-variant p-6 text-center bg-[var(--color-surface-variant)]">
+          <p className="font-body-md text-sm text-[var(--color-text-muted)]">
+            GitHub stats are temporarily unavailable — usually a rate limit. Add <code className="font-mono text-xs">GITHUB_TOKEN</code> to your env vars, restart the dev server, and try again in a few minutes.
+          </p>
+        </div>
+      )}
+
+      {dashboard && (
+        <>
+          {dashboard.stale && (
+            <p className="font-mono text-[10px] uppercase text-[var(--color-text-muted)] text-center -mb-4">
+              Showing cached GitHub data while the API cools down.
+            </p>
+          )}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <GHCard
+              header={
+                <>
+                  <span>Stats Overview</span>
+                  <span className="opacity-60 text-xs">@{user?.login || GITHUB_USERNAME}</span>
+                </>
+              }
+            >
+              <div className="p-4 grid grid-cols-2 gap-4">
+                <StatTile label="Public repos" value={user?.publicRepos ?? "—"} />
+                <StatTile label="Followers" value={user?.followers ?? "—"} />
+                <StatTile label="Stars earned" value={totals?.stars?.toLocaleString() ?? "—"} />
+                <StatTile label="Following" value={user?.following ?? "—"} />
+              </div>
+            </GHCard>
+
+            <GHCard
+              header={
+                <>
+                  <span>Top Languages</span>
+                  <span className="text-xs opacity-60">By repo weight</span>
+                </>
+              }
+            >
+              <LanguageBars languages={dashboard.languages} />
+            </GHCard>
           </div>
-        </GHCard>
 
-        <GHCard
-          header={
-            <>
-              <span>Top Languages</span>
-              <span className="text-xs opacity-60">By Repo</span>
-            </>
-          }
-        >
-          <div className="p-4 flex justify-center items-center min-h-50">
-            <ImageWithSkeleton
-              src={langsUrl}
-              alt="Top Languages"
-              imgClassName="w-full max-w-[495px] h-auto"
+          <GHCard
+            header={
+              <>
+                <span>Contributions Calendar</span>
+                <span className="text-xs opacity-60">Repo commit activity</span>
+              </>
+            }
+          >
+            <ContributionHeatmap contributions={dashboard.contributions} />
+          </GHCard>
+
+          <GHCard
+            header={
+              <>
+                <span>Contribution Trend</span>
+                <span className="opacity-60 text-xs">Weekly commits</span>
+              </>
+            }
+          >
+            <WeeklyActivityChart weeklyCommits={dashboard.weeklyCommits} />
+          </GHCard>
+
+          <GHCard
+            header={
+              <>
+                <span>Contribution Streak</span>
+                <span className="text-xs opacity-60">From aggregated activity</span>
+              </>
+            }
+          >
+            <StreakPanel
+              current={totals?.streakCurrent}
+              longest={totals?.streakLongest}
+              commitsLastYear={totals?.commitsLastYear}
             />
-          </div>
-        </GHCard>
-      </div>
+          </GHCard>
 
-      {/* Live contribution grid */}
-      <GHCard
-        header={
-          <>
-            <span>Contributions Calendar</span>
-            <span className="text-xs opacity-60">Live data</span>
-          </>
-        }
-      >
-        <ContributionHeatmap />
-      </GHCard>
+          {dashboard.activityRepos?.length > 0 && (
+            <p className="font-mono text-[10px] uppercase text-[var(--color-text-muted)] text-center -mt-4">
+              Activity from {dashboard.activityRepos.length} recent repos · cached 30m · official GitHub REST API
+            </p>
+          )}
+        </>
+      )}
 
-      {/* Activity Graph */}
-      <GHCard
-        header={
-          <>
-            <span>Contribution Trend</span>
-            <span className="opacity-60 text-xs">Activity Pulse</span>
-          </>
-        }
-      >
-        <div
-          className="p-4 flex justify-center"
-          style={{ background: isDark ? "#13131a" : "var(--color-surface)" }}
-        >
-          <ImageWithSkeleton
-            src={activityUrl}
-            alt="Contribution Trend Graph"
-            imgClassName="w-full max-w-3xl h-auto"
-            width={900}
-            height={300}
-          />
-        </div>
-      </GHCard>
-
-      {/* Streak */}
-      <GHCard
-        header={
-          <>
-            <span>Contribution Streak</span>
-            <span className="text-xs opacity-60">Consistency is key</span>
-          </>
-        }
-      >
-        <div className="p-4 flex justify-center">
-          <ImageWithSkeleton
-            src={streakUrl}
-            alt="GitHub Streak"
-            imgClassName="w-full max-w-[495px] h-auto"
-          />
-        </div>
-      </GHCard>
-
-      {/* Trophies */}
-      <GHCard
-        header={
-          <>
-            <span>Trophies</span>
-            <span className="opacity-60 text-xs">Achievements Unlocked</span>
-          </>
-        }
-      >
-        <div className="p-4 flex justify-center">
-          <ImageWithSkeleton
-            src={trophiesUrl}
-            alt="GitHub Trophies"
-            imgClassName="w-full max-w-3xl h-auto"
-            width={900}
-            height={220}
-          />
-        </div>
-      </GHCard>
-
-      {/* Profile link */}
       <motion.a
         href={`https://github.com/${GITHUB_USERNAME}`}
         target="_blank"

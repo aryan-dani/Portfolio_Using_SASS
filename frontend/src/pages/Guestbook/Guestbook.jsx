@@ -2,11 +2,42 @@ import { memo, useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { usePageSEO } from "../../utils/seo";
 import { useAchievements } from "../../context/AchievementContext";
+import { formatRelativeTime } from "../../utils/githubApi";
 import PageHeader from "../../components/PageHeader/PageHeader";
 import { containerVariants } from "../../utils/motionVariants";
-
 const LOCAL_KEY = "portfolio_guestbook_local";
+const TOKEN_KEY = "portfolio_guestbook_token";
+const OWNED_KEY = "portfolio_guestbook_owned";
 const BLOCKED = ["spam", "badword"];
+
+function getOwnerToken() {
+  let token = localStorage.getItem(TOKEN_KEY);
+  if (!token) {
+    token = crypto.randomUUID();
+    localStorage.setItem(TOKEN_KEY, token);
+  }
+  return token;
+}
+
+function loadOwnedIds() {
+  try {
+    return new Set(JSON.parse(localStorage.getItem(OWNED_KEY) || "[]"));
+  } catch {
+    return new Set();
+  }
+}
+
+function rememberOwnedId(id) {
+  const owned = loadOwnedIds();
+  owned.add(id);
+  localStorage.setItem(OWNED_KEY, JSON.stringify([...owned]));
+}
+
+function forgetOwnedId(id) {
+  const owned = loadOwnedIds();
+  owned.delete(id);
+  localStorage.setItem(OWNED_KEY, JSON.stringify([...owned]));
+}
 
 function loadLocal() {
   try {
@@ -36,21 +67,58 @@ async function fetchGuestbook() {
 }
 
 async function postGuestbook(entry) {
+  const ownerToken = getOwnerToken();
   try {
     const res = await fetch("/api/guestbook", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(entry),
+      body: JSON.stringify({ ...entry, ownerToken }),
     });
     const data = await res.json().catch(() => ({}));
-    if (res.ok) return { entries: data.entries || [data.entry], localMode: false };
+    if (res.ok) {
+      if (data.entry?.id) rememberOwnedId(data.entry.id);
+      return { entries: data.entries || [data.entry], localMode: false };
+    }
     if (res.status === 503) throw new Error("offline");
     throw new Error(data.error || "Could not save to wall");
   } catch (error) {
     if (error.message === "offline" || error.message === "Failed to fetch") {
-      const local = [{ ...entry, id: Date.now() }, ...loadLocal()];
+      const localEntry = { ...entry, id: `${Date.now()}-local`, owner_token: ownerToken };
+      const local = [localEntry, ...loadLocal()];
       saveLocal(local);
-      return { entries: local, localMode: true };
+      rememberOwnedId(localEntry.id);
+      return { entries: local.map(({ owner_token, ...rest }) => rest), localMode: true };
+    }
+    throw error;
+  }
+}
+
+async function removeGuestbookEntry(id) {
+  const ownerToken = getOwnerToken();
+  try {
+    const res = await fetch("/api/guestbook", {
+      method: "DELETE",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id, ownerToken }),
+    });
+    const data = await res.json().catch(() => ({}));
+    if (res.ok) {
+      forgetOwnedId(id);
+      return { entries: data.entries || [], localMode: false };
+    }
+    if (res.status === 503) throw new Error("offline");
+    throw new Error(data.error || "Could not remove stamp");
+  } catch (error) {
+    if (error.message === "offline" || error.message === "Failed to fetch") {
+      const owned = loadOwnedIds();
+      if (!owned.has(id)) throw new Error("You can only remove your own stamp.");
+      const local = loadLocal().filter((entry) => entry.id !== id);
+      saveLocal(local);
+      forgetOwnedId(id);
+      return {
+        entries: local.map(({ owner_token, ...rest }) => rest),
+        localMode: true,
+      };
     }
     throw error;
   }
@@ -60,10 +128,12 @@ const Guestbook = memo(function Guestbook() {
   usePageSEO();
   const { track } = useAchievements();
   const [entries, setEntries] = useState([]);
+  const [ownedIds, setOwnedIds] = useState(() => loadOwnedIds());
   const [name, setName] = useState("");
   const [message, setMessage] = useState("");
   const [status, setStatus] = useState("");
   const [localMode, setLocalMode] = useState(false);
+  const [removingId, setRemovingId] = useState(null);
 
   useEffect(() => {
     fetchGuestbook().then(({ entries: data, localMode: offline }) => {
@@ -86,6 +156,7 @@ const Guestbook = memo(function Guestbook() {
       const result = await postGuestbook(entry);
       const nextEntries = Array.isArray(result.entries) ? result.entries : [entry, ...entries];
       setEntries(nextEntries);
+      setOwnedIds(loadOwnedIds());
       setLocalMode(Boolean(result.localMode));
       setName("");
       setMessage("");
@@ -93,6 +164,23 @@ const Guestbook = memo(function Guestbook() {
       track("guestbook");
     } catch (error) {
       setStatus(error.message || "Could not post - try again later.");
+    }
+  };
+
+  const removeEntry = async (id) => {
+    if (removingId) return;
+    setRemovingId(id);
+    setStatus("");
+    try {
+      const result = await removeGuestbookEntry(id);
+      setEntries(result.entries);
+      setOwnedIds(loadOwnedIds());
+      setLocalMode(Boolean(result.localMode));
+      setStatus("Your stamp was removed.");
+    } catch (error) {
+      setStatus(error.message || "Could not remove stamp.");
+    } finally {
+      setRemovingId(null);
     }
   };
 
@@ -126,17 +214,44 @@ const Guestbook = memo(function Guestbook() {
         )}
       </form>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 content-visibility-auto">
-        {entries.map((entry) => (
-          <article
-            key={entry.id || entry.created_at}
-            className="border-4 border-outline bg-[var(--color-surface-variant)] p-4 shadow-[5px_5px_0_var(--shadow-color)]"
-            style={{ transform: `rotate(${(entry.name?.length || 0) % 5 - 2}deg)` }}
-          >
-            <p className="font-label-bold uppercase text-sm">{entry.name}</p>
-            <p className="font-body-md text-sm mt-2">{entry.message}</p>
-          </article>
-        ))}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 content-visibility-auto">
+        {entries.length === 0 && (
+          <p className="font-body-md text-sm text-[var(--color-text-muted)] col-span-full border-4 border-dashed border-outline-variant p-8 text-center bg-[var(--color-surface-variant)]">
+            No stamps yet. Be the first to sign the wall.
+          </p>
+        )}
+        {entries.map((entry) => {
+          const canRemove = ownedIds.has(entry.id);
+          return (
+            <article
+              key={entry.id || entry.created_at}
+              className="flex flex-col border-4 border-outline bg-[var(--color-surface)] shadow-[4px_4px_0_var(--shadow-color)] overflow-hidden min-h-[140px]"
+            >
+              <div className="border-b-4 border-outline bg-[var(--color-surface-variant)] px-4 py-3">
+                <p className="font-label-bold uppercase text-sm truncate">{entry.name}</p>
+                {entry.created_at && (
+                  <p className="font-mono text-[10px] uppercase text-[var(--color-text-muted)] mt-0.5">
+                    {formatRelativeTime(entry.created_at)}
+                  </p>
+                )}
+              </div>
+              <p className="font-body-md text-sm leading-relaxed px-4 py-4 flex-1">{entry.message}</p>
+              {canRemove && (
+                <div className="px-4 pb-4 pt-0">
+                  <button
+                    type="button"
+                    onClick={() => removeEntry(entry.id)}
+                    disabled={removingId === entry.id}
+                    className="font-mono text-[10px] uppercase tracking-wider text-[var(--color-text-muted)] hover:text-[var(--color-on-surface)] underline underline-offset-2 disabled:opacity-50"
+                    aria-label={`Remove your stamp from ${entry.name}`}
+                  >
+                    {removingId === entry.id ? "Removing…" : "Remove my stamp"}
+                  </button>
+                </div>
+              )}
+            </article>
+          );
+        })}
       </div>
     </motion.section>
   );

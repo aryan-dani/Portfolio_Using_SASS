@@ -176,7 +176,7 @@ function Skills() {
   return (
     <>
       <motion.div
-        className="flex flex-col gap-12 md:gap-16"
+        className="flex flex-col gap-8 md:gap-10"
         initial="hidden"
         animate="visible"
         variants={containerVariants}
@@ -185,6 +185,7 @@ function Skills() {
         <PageHeader
           title="Skills & Tools"
           description="A chaotic sticker sheet of the technologies I use to build loud, unapologetic digital experiences. Function over form, but make it look cool."
+          className="!gap-5 !pb-6 !mb-0 !mt-0"
         />
 
         {/* Stats Bar */}
@@ -196,7 +197,7 @@ function Skills() {
         </motion.div>
 
         {/* Controls */}
-        <motion.div className="flex flex-col gap-6 bg-hatch border-4 border-outline p-4 md:p-6 shadow-[4px_4px_0px_0px_var(--shadow-color)]" variants={cardVariants}>
+        <motion.div className="flex flex-col gap-4 bg-hatch border-4 border-outline p-4 md:p-5 shadow-[4px_4px_0px_0px_var(--shadow-color)]" variants={cardVariants}>
           <div className="flex flex-col md:flex-row gap-4 items-start md:items-center justify-between">
             <div className="flex items-center bg-[var(--color-surface)] border-4 border-outline p-2 w-full md:w-96 shadow-[4px_4px_0px_0px_var(--shadow-color)] focus-within:shadow-[4px_4px_0px_0px_var(--shadow-accent)] transition-all">
               <FaSearch className="text-xl ml-2 mr-3 text-[var(--color-on-surface)]" />
@@ -299,7 +300,7 @@ function Skills() {
                 : <EmptyState />}
             </motion.div>
           ) : (
-            <motion.div key="grid" className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 overflow-visible p-3 -m-3 content-visibility-auto" variants={containerVariants} initial="hidden" animate="visible">
+            <motion.div key="grid" className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 overflow-visible p-2 -m-2 content-visibility-auto" variants={containerVariants} initial="hidden" animate="visible">
               {flatSkills.length > 0
                 ? flatSkills.map((skill) => (
                     <SkillGridCard key={skill.id} skill={skill} icon={getIcon(skill.icon)} onClick={() => setSelectedSkill(skill)} />

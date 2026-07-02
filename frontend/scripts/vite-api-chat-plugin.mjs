@@ -1,6 +1,8 @@
 import { loadEnv } from "vite";
 import { generateIshaniReply } from "../api/ishaniChat.js";
 import { handleGuestbookRequest } from "../api/guestbook.js";
+import { handleGitHubStatsRequest } from "../api/githubStats.js";
+import { handleGitHubEventsRequest } from "../api/githubEvents.js";
 
 function readJsonBody(req) {
   return new Promise((resolve, reject) => {
@@ -59,13 +61,31 @@ export function apiChatDevPlugin() {
 
         if (path === "/api/guestbook") {
           try {
-            const body = req.method === "POST" ? await readJsonBody(req) : {};
+            const body = ["POST", "DELETE"].includes(req.method) ? await readJsonBody(req) : {};
             await handleGuestbookRequest(
               { method: req.method, headers: req.headers, body },
               createMockResponse(res),
             );
           } catch (error) {
             sendJson(res, 500, { error: error.message || "Guestbook failed" });
+          }
+          return;
+        }
+
+        if (path === "/api/github-stats" && req.method === "GET") {
+          try {
+            await handleGitHubStatsRequest(req, createMockResponse(res));
+          } catch (error) {
+            sendJson(res, 503, { error: error.message || "GitHub stats failed" });
+          }
+          return;
+        }
+
+        if (path === "/api/github-events" && req.method === "GET") {
+          try {
+            await handleGitHubEventsRequest(req, createMockResponse(res));
+          } catch (error) {
+            sendJson(res, 503, { error: error.message || "GitHub events failed" });
           }
           return;
         }

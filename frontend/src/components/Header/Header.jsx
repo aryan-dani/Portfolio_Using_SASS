@@ -70,28 +70,28 @@ function Header() {
         aria-hidden={!showChrome}
       >
             <div
-              className="flex justify-between items-center px-4 md:px-8 w-full h-16 md:h-20"
+              className="flex justify-between items-center gap-2 px-3 md:px-6 lg:px-5 xl:px-8 w-full h-16 md:h-[4.25rem] xl:h-20 min-w-0"
             >
               {/* Logo */}
               <div className="flex-shrink-0">
                 <NavLink
                   to="/"
                   onClick={() => setIsMenuOpen(false)}
-                  className="block text-xl md:text-2xl font-black tracking-tighter text-[var(--color-on-primary-container)] border-4 border-outline px-3 md:px-4 py-2 bg-[var(--color-primary-container)] shadow-[4px_4px_0_0_var(--shadow-color)] hover:translate-x-1 hover:translate-y-1 hover:shadow-[2px_2px_0_0_var(--shadow-color)] transition-all duration-[220ms] ease-[cubic-bezier(0.22,1,0.36,1)] select-none whitespace-nowrap hover-gpu"
+                  className="block text-base lg:text-lg xl:text-2xl font-black tracking-tighter text-[var(--color-on-primary-container)] border-4 border-outline px-2.5 lg:px-3 xl:px-4 py-1.5 lg:py-2 bg-[var(--color-primary-container)] shadow-[4px_4px_0_0_var(--shadow-color)] hover:translate-x-1 hover:translate-y-1 hover:shadow-[2px_2px_0_0_var(--shadow-color)] transition-all duration-[220ms] ease-[cubic-bezier(0.22,1,0.36,1)] select-none whitespace-nowrap hover-gpu"
                 >
                   ARYAN DANI
                 </NavLink>
               </div>
 
               {/* Desktop Navigation */}
-              <div className="hidden lg:flex items-center gap-2 mx-auto">
+              <div className="hidden lg:flex items-center gap-0 xl:gap-1 mx-auto min-w-0 flex-1 justify-center max-w-[52rem]">
                 {headerNavItems.map((item) => {
                   const isActive = location.pathname === item.path;
                   return (
                     <NavLink
                       key={item.path}
                       to={item.path}
-                      className={`relative isolate font-bold px-3 py-2 border-4 border-transparent transition-all duration-[220ms] ease-[cubic-bezier(0.22,1,0.36,1)] select-none uppercase text-xs xl:text-sm tracking-widest hover-gpu ${
+                      className={`relative isolate font-bold px-1.5 lg:px-2 xl:px-3 py-1.5 border-4 border-transparent transition-all duration-[220ms] ease-[cubic-bezier(0.22,1,0.36,1)] select-none uppercase text-[10px] lg:text-[11px] xl:text-sm tracking-wide xl:tracking-widest hover-gpu whitespace-nowrap ${
                         isActive
                           ? "text-[var(--color-on-primary-container)]"
                           : "text-[var(--color-on-surface)] hover:border-outline hover:bg-[var(--color-surface-variant)]"
@@ -115,10 +115,10 @@ function Header() {
               </div>
 
               {/* Right side Actions */}
-              <div className="hidden lg:flex items-center gap-2 sm:gap-3 flex-shrink-0">
+              <div className="hidden lg:flex items-center gap-1.5 xl:gap-3 flex-shrink-0">
                 <NavLink
                   to="/contact"
-                  className="hidden sm:flex font-headline-md text-sm lg:text-base uppercase tracking-widest font-black text-[var(--color-on-primary-container)] bg-[var(--color-primary-container)] border-4 border-outline px-5 py-3 shadow-[6px_6px_0px_0px_var(--shadow-color)] hover:translate-x-1 hover:translate-y-1 hover:shadow-[2px_2px_0px_0px_var(--shadow-color)] active:translate-x-2 active:translate-y-2 active:shadow-none transition-all duration-[220ms] ease-[cubic-bezier(0.22,1,0.36,1)] flex items-center justify-center whitespace-nowrap"
+                  className="hidden sm:flex font-headline-md text-[11px] lg:text-xs xl:text-base uppercase tracking-wide xl:tracking-widest font-black text-[var(--color-on-primary-container)] bg-[var(--color-primary-container)] border-4 border-outline px-3 lg:px-4 xl:px-5 py-2 xl:py-3 shadow-[4px_4px_0px_0px_var(--shadow-color)] xl:shadow-[6px_6px_0px_0px_var(--shadow-color)] hover:translate-x-1 hover:translate-y-1 hover:shadow-[2px_2px_0px_0px_var(--shadow-color)] active:translate-x-2 active:translate-y-2 active:shadow-none transition-all duration-[220ms] ease-[cubic-bezier(0.22,1,0.36,1)] items-center justify-center whitespace-nowrap"
                 >
                   Work with me
                 </NavLink>
@@ -126,7 +126,7 @@ function Header() {
                 {/* Theme Toggle */}
                 <motion.button
                   onClick={handleToggleTheme}
-                  className="bg-[var(--color-surface)] text-[var(--color-on-surface)] border-4 border-outline w-12 h-12 flex items-center justify-center text-lg shadow-[4px_4px_0_0_var(--shadow-color)] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none active:translate-x-[4px] active:translate-y-[4px] transition-all duration-[220ms] ease-[cubic-bezier(0.22,1,0.36,1)] cursor-none overflow-hidden"
+                  className="bg-[var(--color-surface)] text-[var(--color-on-surface)] border-4 border-outline w-10 h-10 xl:w-12 xl:h-12 flex items-center justify-center text-base xl:text-lg shadow-[4px_4px_0_0_var(--shadow-color)] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none active:translate-x-[4px] active:translate-y-[4px] transition-all duration-[220ms] ease-[cubic-bezier(0.22,1,0.36,1)] cursor-none overflow-hidden"
                   aria-label="Toggle theme"
                   whileTap={{ scale: 0.9 }}
                 >

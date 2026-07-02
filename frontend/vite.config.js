@@ -47,7 +47,11 @@ export default defineConfig({
   },
   server: {
     port: 3000,
+    strictPort: false,
     open: true,
+    hmr: process.env.VITE_HMR_CLIENT_PORT
+      ? { clientPort: Number(process.env.VITE_HMR_CLIENT_PORT) }
+      : undefined,
   },
   build: {
     outDir: "dist",

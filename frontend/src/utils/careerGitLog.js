@@ -41,6 +41,29 @@ function row(seed, fields) {
 
 const HIGHLIGHTS_PER_ROLE = 1;
 
+/** Grouped roles for the About page career section. */
+export function buildCareerRoles() {
+  return [...experiences]
+    .sort((a, b) => b.id - a.id)
+    .map((exp) => {
+      const link = (exp.links || [])[0];
+      return {
+        id: exp.id,
+        branch: branchSlug(exp),
+        position: exp.position,
+        company: exp.company,
+        period: exp.period,
+        highlight: link
+          ? {
+              name: link.name,
+              msg: linkToMsg(link.name),
+              hash: fakeHash(`${exp.id}-${link.name}`),
+            }
+          : null,
+      };
+    });
+}
+
 /** Build a compact git-log from experience + linked projects (not the GitHub API). */
 export function buildCareerCommits() {
   const rows = [];
