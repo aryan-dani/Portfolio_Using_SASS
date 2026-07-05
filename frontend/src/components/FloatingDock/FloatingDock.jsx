@@ -1,15 +1,17 @@
-import { memo } from "react";
+import { memo, useRef, useEffect } from "react";
 import { NavLink, useLocation } from "react-router-dom";
 import { motion } from "framer-motion";
 import { HiVolumeUp, HiVolumeOff } from "react-icons/hi";
 import { useSound } from "../../context/SoundContext";
 import { useScrollVisibility } from "../../hooks/useScrollVisibility";
 import { useSiteIdleState } from "../../context/SiteIdleContext";
+import { useInertWhenHidden } from "../../hooks/useInertWhenHidden";
 
 import { dockNavItems } from "../../config/routes";
 
 function FloatingDock() {
   const location = useLocation();
+  const dockRef = useRef(null);
   const { enabled: soundEnabled, toggleSound, play } = useSound();
   const { isVisible, reveal } = useScrollVisibility({
     topThreshold: 80,
@@ -19,6 +21,14 @@ function FloatingDock() {
   });
   const { hideChrome } = useSiteIdleState();
   const showDock = isVisible && !hideChrome;
+  useInertWhenHidden(dockRef, !showDock);
+
+  useEffect(() => {
+    const el = dockRef.current;
+    if (el?.contains(document.activeElement)) {
+      document.activeElement?.blur?.();
+    }
+  }, [location.pathname]);
 
   return (
     <>
@@ -31,13 +41,14 @@ function FloatingDock() {
         />
       )}
     <motion.div
+      ref={dockRef}
       initial={{ y: 0, opacity: 1, x: "-50%" }}
       animate={{ y: showDock ? 0 : 96, opacity: showDock ? 1 : 0, x: "-50%" }}
       transition={{ type: "spring", stiffness: 280, damping: 34, mass: 0.9 }}
       className="fixed bottom-4 sm:bottom-6 left-1/2 z-50 px-2 sm:px-4 w-full max-w-fit pointer-events-none flex justify-center gpu-layer"
-      aria-hidden={!showDock}
     >
-          <nav 
+          <nav
+            aria-label="Quick navigation"
             className={`flex items-center gap-1 sm:gap-2 p-1 border-4 border-outline shadow-[4px_4px_0px_0px_var(--shadow-color)] sm:shadow-[6px_6px_0px_0px_var(--shadow-color)] overflow-x-auto sm:overflow-visible no-scrollbar max-w-full paint-isolate ${showDock ? "pointer-events-auto" : "pointer-events-none"}`}
             style={{ backgroundColor: "color-mix(in srgb, var(--color-surface) 96%, transparent)" }}
           >

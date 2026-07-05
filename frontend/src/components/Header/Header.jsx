@@ -1,4 +1,4 @@
-import { useState, useEffect, memo } from "react";
+import { useState, useEffect, memo, useRef } from "react";
 import { NavLink, useLocation } from "react-router-dom";
 import { FaSun, FaMoon } from "react-icons/fa";
 import { HiMenuAlt3, HiX } from "react-icons/hi";
@@ -8,6 +8,7 @@ import { useAchievements } from "../../context/AchievementContext";
 import { snappySpring, defaultSpring } from "../../utils/motionVariants";
 import { useScrollVisibility } from "../../hooks/useScrollVisibility";
 import { useSiteIdleState } from "../../context/SiteIdleContext";
+import { useInertWhenHidden } from "../../hooks/useInertWhenHidden";
 
 import { headerNavItems } from "../../config/routes";
 
@@ -35,6 +36,7 @@ const motionEase = { out: [0.22, 1, 0.36, 1] };
 
 function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const navRef = useRef(null);
   const { theme, toggleTheme } = useTheme();
   const { track } = useAchievements();
   const location = useLocation();
@@ -44,6 +46,14 @@ function Header() {
   });
   const { hideChrome } = useSiteIdleState();
   const showChrome = isVisible && !hideChrome;
+  useInertWhenHidden(navRef, !showChrome);
+
+  useEffect(() => {
+    const el = navRef.current;
+    if (el?.contains(document.activeElement)) {
+      document.activeElement?.blur?.();
+    }
+  }, [location.pathname]);
 
   useEffect(() => {
     if (!showChrome) setIsMenuOpen(false);
@@ -57,6 +67,7 @@ function Header() {
   return (
     <>
       <motion.nav
+        ref={navRef}
         initial={{ y: 0, opacity: 1 }}
         animate={{ y: showChrome ? 0 : "-100%", opacity: showChrome ? 1 : 0 }}
         transition={{ type: "spring", stiffness: 280, damping: 34, mass: 0.9 }}
@@ -67,7 +78,6 @@ function Header() {
             : "border-outline shadow-[0_8px_0_0_var(--shadow-color)]"
         } ${showChrome ? "pointer-events-auto" : "pointer-events-none"}`}
         style={{ backgroundColor: "color-mix(in srgb, var(--color-surface) 96%, transparent)" }}
-        aria-hidden={!showChrome}
       >
             <div
               className="flex justify-between items-center gap-2 px-3 md:px-6 lg:px-5 xl:px-8 w-full h-16 md:h-[4.25rem] xl:h-20 min-w-0"
