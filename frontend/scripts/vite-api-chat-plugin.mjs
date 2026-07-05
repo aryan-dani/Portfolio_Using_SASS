@@ -1,8 +1,8 @@
 import { loadEnv } from "vite";
 import { generateIshaniReply } from "../api/ishaniChat.js";
 import { handleGuestbookRequest } from "../api/guestbook.js";
-import { handleGitHubStatsRequest } from "../api/githubStats.js";
-import { handleGitHubEventsRequest } from "../api/githubEvents.js";
+import { handleGitHubStatsRequest } from "../api/github-stats.js";
+import { handleGitHubEventsRequest } from "../api/github-events.js";
 
 function readJsonBody(req) {
   return new Promise((resolve, reject) => {
