@@ -3,11 +3,12 @@ import { motion, AnimatePresence } from "framer-motion";
 
 const ToastContext = createContext();
 
-let toastIdCounter = 0;
-
 export function ToastProvider({ children }) {
   const [toasts, setToasts] = useState([]);
   const timersRef = useRef(new Map());
+  // useRef keeps the counter scoped to the provider instance (not a module global),
+  // which is safer for testing and avoids counter drift on re-mounts.
+  const counterRef = useRef(0);
 
   const removeToast = useCallback((id) => {
     const timer = timersRef.current.get(id);
@@ -20,10 +21,7 @@ export function ToastProvider({ children }) {
 
   const addToast = useCallback(
     (message, type = "info", options = {}) => {
-      // A monotonic counter (not Date.now()) guarantees unique IDs even when
-      // multiple toasts fire within the same millisecond - colliding IDs
-      // used to let one toast's dismiss timer delete a sibling toast early.
-      const id = ++toastIdCounter;
+      const id = ++counterRef.current;
       const toast = {
         id,
         message,

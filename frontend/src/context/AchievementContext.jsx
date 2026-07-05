@@ -142,10 +142,15 @@ export function AchievementProvider({ children }) {
 
   useEffect(() => {
     let lastY = getPortfolioScrollY();
+    let throttled = false;
     const onScroll = () => {
+      if (throttled) return;
       const y = getPortfolioScrollY();
-      if (y > lastY) {
+      // Only track meaningful downward scroll distance to avoid spamming localStorage
+      if (y > lastY && y - lastY >= 200) {
+        throttled = true;
         track("scroll", { y });
+        setTimeout(() => { throttled = false; }, 500);
       }
       lastY = y;
     };

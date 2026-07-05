@@ -16,8 +16,6 @@ export function useModalLock(isOpen, onClose) {
     const lenis = window.__portfolioLenis;
     const lockAttr = "data-modal-lock-count";
 
-    const previousBodyOverflow = body.style.overflow;
-    const previousHtmlOverflow = html.style.overflow;
     const currentCount = Number.parseInt(html.getAttribute(lockAttr) || "0", 10);
     const nextCount = currentCount + 1;
 
@@ -36,8 +34,10 @@ export function useModalLock(isOpen, onClose) {
 
       if (reducedCount === 0) {
         html.removeAttribute(lockAttr);
-        body.style.overflow = previousBodyOverflow;
-        html.style.overflow = previousHtmlOverflow;
+        // Always reset to empty string — avoids restoring stale "hidden" values
+        // captured by a previously-open nested modal.
+        body.style.overflow = "";
+        html.style.overflow = "";
         html.classList.remove("lenis-stopped", "portfolio-modal-open");
         lenis?.start?.();
       } else {

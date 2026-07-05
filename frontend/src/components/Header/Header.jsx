@@ -1,11 +1,12 @@
-import { useState, useEffect, memo, useRef } from "react";
+import { useState, useEffect, memo, useRef, useCallback } from "react";
 import { NavLink, useLocation } from "react-router-dom";
 import { FaSun, FaMoon } from "react-icons/fa";
 import { HiMenuAlt3, HiX } from "react-icons/hi";
 import { motion, AnimatePresence } from "framer-motion";
 import { useTheme } from "../../context/ThemeContext";
 import { useAchievements } from "../../context/AchievementContext";
-import { snappySpring, defaultSpring } from "../../utils/motionVariants";
+// Fix #5: Import motionEase from the canonical shared location instead of re-declaring locally
+import { snappySpring, defaultSpring, motionEase } from "../../utils/motionVariants";
 import { useScrollVisibility } from "../../hooks/useScrollVisibility";
 import { useSiteIdleState } from "../../context/SiteIdleContext";
 import { useInertWhenHidden } from "../../hooks/useInertWhenHidden";
@@ -32,7 +33,37 @@ const menuItemVariants = {
   exit: { opacity: 0, x: 20 }
 };
 
-const motionEase = { out: [0.22, 1, 0.36, 1] };
+// Fix #7: Shared mobile nav class function — eliminates verbatim duplication across Home + nav items
+const mobileNavClass = ({ isActive }) =>
+  `block w-full text-center py-3 px-4 border-4 transition-all text-[var(--color-on-surface)] ${
+    isActive
+      ? "bg-[var(--color-primary-container)] text-[var(--color-on-primary-container)] border-outline shadow-[4px_4px_0_0_var(--shadow-color)]"
+      : "border-transparent hover:border-outline hover:bg-[var(--color-primary-container)] hover:text-[var(--color-on-primary-container)]"
+  }`;
+
+// Fix #6: Extract shared ThemeToggleButton to eliminate 40-line duplication between desktop and mobile
+function ThemeToggleButton({ theme, onToggle, className, springConfig }) {
+  return (
+    <motion.button
+      onClick={onToggle}
+      className={className}
+      aria-label="Toggle theme"
+      whileTap={{ scale: 0.9 }}
+    >
+      <AnimatePresence mode="wait" initial={false}>
+        <motion.span
+          key={theme}
+          initial={{ rotate: -90, opacity: 0, scale: 0.5 }}
+          animate={{ rotate: 0, opacity: 1, scale: 1 }}
+          exit={{ rotate: 90, opacity: 0, scale: 0.5 }}
+          transition={springConfig}
+        >
+          {theme === "dark" ? <FaSun className="text-xl" /> : <FaMoon className="text-xl" />}
+        </motion.span>
+      </AnimatePresence>
+    </motion.button>
+  );
+}
 
 function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -59,10 +90,12 @@ function Header() {
     if (!showChrome) setIsMenuOpen(false);
   }, [showChrome]);
 
-  const handleToggleTheme = () => {
+  const handleToggleTheme = useCallback(() => {
     toggleTheme();
     track("theme_toggle");
-  };
+  }, [toggleTheme, track]);
+
+  const closeMenu = useCallback(() => setIsMenuOpen(false), []);
 
   return (
     <>
@@ -86,7 +119,7 @@ function Header() {
               <div className="flex-shrink-0">
                 <NavLink
                   to="/"
-                  onClick={() => setIsMenuOpen(false)}
+                  onClick={closeMenu}
                   className="block text-base lg:text-lg xl:text-2xl font-black tracking-tighter text-[var(--color-on-primary-container)] border-4 border-outline px-2.5 lg:px-3 xl:px-4 py-1.5 lg:py-2 bg-[var(--color-primary-container)] shadow-[4px_4px_0_0_var(--shadow-color)] hover:translate-x-1 hover:translate-y-1 hover:shadow-[2px_2px_0_0_var(--shadow-color)] transition-all duration-[220ms] ease-[cubic-bezier(0.22,1,0.36,1)] select-none whitespace-nowrap hover-gpu"
                 >
                   ARYAN DANI
@@ -133,51 +166,24 @@ function Header() {
                   Work with me
                 </NavLink>
 
-                {/* Theme Toggle */}
-                <motion.button
-                  onClick={handleToggleTheme}
+                {/* Desktop Theme Toggle */}
+                <ThemeToggleButton
+                  theme={theme}
+                  onToggle={handleToggleTheme}
                   className="bg-[var(--color-surface)] text-[var(--color-on-surface)] border-4 border-outline w-10 h-10 xl:w-12 xl:h-12 flex items-center justify-center text-base xl:text-lg shadow-[4px_4px_0_0_var(--shadow-color)] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none active:translate-x-[4px] active:translate-y-[4px] transition-all duration-[220ms] ease-[cubic-bezier(0.22,1,0.36,1)] cursor-none overflow-hidden"
-                  aria-label="Toggle theme"
-                  whileTap={{ scale: 0.9 }}
-                >
-                  <AnimatePresence mode="wait" initial={false}>
-                    <motion.span
-                      key={theme}
-                      initial={{ rotate: -90, opacity: 0, scale: 0.5 }}
-                      animate={{ rotate: 0, opacity: 1, scale: 1 }}
-                      exit={{ rotate: 90, opacity: 0, scale: 0.5 }}
-                      transition={snappySpring}
-                    >
-                      {theme === "dark" ? (
-                        <FaSun className="text-xl" />
-                      ) : (
-                        <FaMoon className="text-xl" />
-                      )}
-                    </motion.span>
-                  </AnimatePresence>
-                </motion.button>
+                  springConfig={snappySpring}
+                />
               </div>
 
               {/* Mobile actions */}
               <div className="flex lg:hidden items-center gap-2">
-                <motion.button
-                  onClick={handleToggleTheme}
+                {/* Mobile Theme Toggle */}
+                <ThemeToggleButton
+                  theme={theme}
+                  onToggle={handleToggleTheme}
                   className="bg-[var(--color-surface)] text-[var(--color-on-surface)] border-4 border-outline w-10 h-10 flex items-center justify-center text-base shadow-[2px_2px_0_0_var(--shadow-color)] hover:shadow-none transition-all cursor-none overflow-hidden"
-                  aria-label="Toggle theme"
-                  whileTap={{ scale: 0.9 }}
-                >
-                  <AnimatePresence mode="wait" initial={false}>
-                    <motion.span
-                      key={theme}
-                      initial={{ rotate: -90, opacity: 0 }}
-                      animate={{ rotate: 0, opacity: 1 }}
-                      exit={{ rotate: 90, opacity: 0 }}
-                      transition={{ duration: 0.28, ease: motionEase.out }}
-                    >
-                      {theme === "dark" ? <FaSun /> : <FaMoon />}
-                    </motion.span>
-                  </AnimatePresence>
-                </motion.button>
+                  springConfig={{ duration: 0.28, ease: motionEase.out }}
+                />
 
                 <button
                   className="text-[var(--color-on-surface)] p-2 hover:bg-[var(--color-surface-variant)] transition-colors rounded-sm"
@@ -214,34 +220,14 @@ function Header() {
           >
             {/* Home item */}
             <motion.div variants={menuItemVariants} className="w-[80%]">
-              <NavLink
-                to="/"
-                onClick={() => setIsMenuOpen(false)}
-                className={({ isActive }) =>
-                  `block w-full text-center py-3 px-4 border-4 transition-all text-[var(--color-on-surface)] ${
-                    isActive
-                      ? "bg-[var(--color-primary-container)] text-[var(--color-on-primary-container)] border-outline shadow-[4px_4px_0_0_var(--shadow-color)]"
-                      : "border-transparent hover:border-outline hover:bg-[var(--color-primary-container)] hover:text-[var(--color-on-primary-container)]"
-                  }`
-                }
-              >
+              <NavLink to="/" onClick={closeMenu} className={mobileNavClass}>
                 Home
               </NavLink>
             </motion.div>
 
             {headerNavItems.map((item) => (
               <motion.div key={item.path} variants={menuItemVariants} className="w-[80%]">
-                <NavLink
-                  to={item.path}
-                  onClick={() => setIsMenuOpen(false)}
-                  className={({ isActive }) =>
-                    `block w-full text-center py-3 px-4 border-4 transition-all text-[var(--color-on-surface)] ${
-                      isActive
-                        ? "bg-[var(--color-primary-container)] text-[var(--color-on-primary-container)] border-outline shadow-[4px_4px_0_0_var(--shadow-color)]"
-                        : "border-transparent hover:border-outline hover:bg-[var(--color-primary-container)] hover:text-[var(--color-on-primary-container)]"
-                    }`
-                  }
-                >
+                <NavLink to={item.path} onClick={closeMenu} className={mobileNavClass}>
                   {item.label}
                 </NavLink>
               </motion.div>
@@ -250,7 +236,7 @@ function Header() {
             <motion.div variants={menuItemVariants} className="w-[80%] mt-2">
               <NavLink
                 to="/contact"
-                onClick={() => setIsMenuOpen(false)}
+                onClick={closeMenu}
                 className="w-full flex justify-center items-center font-headline-md text-lg uppercase tracking-widest font-black text-[var(--color-on-primary-container)] bg-[var(--color-primary-container)] border-4 border-outline px-4 py-3 shadow-[6px_6px_0px_0px_var(--shadow-color)] hover:translate-x-1 hover:translate-y-1 hover:shadow-none transition-all"
               >
                 Work with me

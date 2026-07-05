@@ -75,7 +75,8 @@ export default defineConfig({
           "vendor-router": ["react-router-dom"],
           "vendor-motion": ["framer-motion"],
           "vendor-lenis": ["lenis"],
-          "vendor-icons": ["react-icons"],
+          // react-icons is intentionally excluded — it's tree-shakeable per icon set
+          // (react-icons/fa, react-icons/hi, etc.) and Vite handles splitting correctly.
           "vendor-analytics": ["@vercel/analytics"],
         },
       },

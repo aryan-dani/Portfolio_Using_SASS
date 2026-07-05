@@ -5,7 +5,7 @@ import {
   Route,
   useLocation,
 } from "react-router-dom";
-import { AnimatePresence, motion } from "framer-motion";
+import { AnimatePresence, motion, MotionConfig } from "framer-motion";
 import { pageVariants } from "./utils/motionVariants";
 import { scrollToTopImmediate } from "./utils/smoothScroll";
 import { SITE_ROUTES, routeOrder, PAGE_IMPORTS } from "./config/routes";
@@ -19,6 +19,8 @@ import { AchievementProvider } from "./context/AchievementContext";
 import { SiteIdleProvider } from "./context/SiteIdleContext";
 import { useMediaQuery } from "./hooks/useMediaQuery";
 import { MOBILE_LITE_QUERY } from "./utils/device";
+import { composeProviders } from "./utils/composeProviders";
+import { ErrorBoundary } from "./components/ErrorBoundary/ErrorBoundary";
 
 import BackToTop from "./components/BackToTop/BackToTop";
 import NoiseOverlay from "./components/NoiseOverlay/NoiseOverlay";
@@ -147,22 +149,26 @@ function AnimatedRoutes() {
             index={index}
             path={path}
             element={
-              <Suspense fallback={<PageFallback />}>
-                <PageTransition isFirstRender={isFirstRender} direction={direction} liteMode={liteMode}>
-                  <Component />
-                </PageTransition>
-              </Suspense>
+              <ErrorBoundary>
+                <Suspense fallback={<PageFallback />}>
+                  <PageTransition isFirstRender={isFirstRender} direction={direction} liteMode={liteMode}>
+                    <Component />
+                  </PageTransition>
+                </Suspense>
+              </ErrorBoundary>
             }
           />
         ))}
         <Route
           path="*"
           element={
-            <Suspense fallback={<PageFallback />}>
-              <PageTransition isFirstRender={isFirstRender} direction={direction}>
-                <NotFound />
-              </PageTransition>
-            </Suspense>
+            <ErrorBoundary>
+              <Suspense fallback={<PageFallback />}>
+                <PageTransition isFirstRender={isFirstRender} direction={direction}>
+                  <NotFound />
+                </PageTransition>
+              </Suspense>
+            </ErrorBoundary>
           }
         />
       </Routes>
@@ -186,39 +192,40 @@ function CustomCursorGate() {
   return <CustomCursor />;
 }
 
+// Outer providers — no router dependency (safe to wrap Router itself)
+const OuterProviders = composeProviders(ThemeProvider, SmoothScrollProvider, SoundProvider, ToastProvider);
+
 function App() {
   return (
-    <ThemeProvider>
-      <SmoothScrollProvider>
-        <SoundProvider>
-          <ToastProvider>
-            <NoiseOverlay />
-            <CustomCursorGate />
-            <PageLoader />
-            <Router
-              basename={basename}
-              future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
-            >
-              <AchievementProvider>
-                <SiteIdleProvider>
-                  <HackModeListener />
-                  <Suspense fallback={null}>
-                    <EasterEggs />
-                    <DevTools />
-                    <ChatWidget />
-                  </Suspense>
-                  <BackToTop />
-                  <Layout>
-                    <AnimatedRoutes />
-                  </Layout>
-                  {import.meta.env.PROD && <Analytics />}
-                </SiteIdleProvider>
-              </AchievementProvider>
-            </Router>
-          </ToastProvider>
-        </SoundProvider>
-      </SmoothScrollProvider>
-    </ThemeProvider>
+    // MotionConfig with reducedMotion="user" instructs Framer Motion to
+    // automatically disable animations for users with prefers-reduced-motion set.
+    <MotionConfig reducedMotion="user">
+      <OuterProviders>
+        <NoiseOverlay />
+        <CustomCursorGate />
+        <PageLoader />
+        <Router
+          basename={basename}
+          future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
+        >
+          <AchievementProvider>
+            <SiteIdleProvider>
+              <HackModeListener />
+              <Suspense fallback={null}>
+                <EasterEggs />
+                <DevTools />
+                <ChatWidget />
+              </Suspense>
+              <BackToTop />
+              <Layout>
+                <AnimatedRoutes />
+              </Layout>
+              {import.meta.env.PROD && <Analytics />}
+            </SiteIdleProvider>
+          </AchievementProvider>
+        </Router>
+      </OuterProviders>
+    </MotionConfig>
   );
 }
 

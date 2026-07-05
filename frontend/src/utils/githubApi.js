@@ -5,31 +5,23 @@ const CACHE_MS = 10 * 60 * 1000;
 const DASHBOARD_CACHE_MS = 30 * 60 * 1000;
 
 export async function fetchGitHubEvents() {
+  // Parse cache once to avoid duplicate JSON.parse calls and double-throw on corrupt entries.
+  let cachedEntry = null;
+  try { cachedEntry = JSON.parse(sessionStorage.getItem(CACHE_KEY)); } catch { /* ignore */ }
+
   try {
-    const cached = sessionStorage.getItem(CACHE_KEY);
-    if (cached) {
-      const { ts, data } = JSON.parse(cached);
-      if (Date.now() - ts < CACHE_MS) return data;
-    }
+    if (cachedEntry && Date.now() - cachedEntry.ts < CACHE_MS) return cachedEntry.data;
+
     const res = await fetch("/api/github-events");
     if (res.ok) {
       const data = await res.json();
       sessionStorage.setItem(CACHE_KEY, JSON.stringify({ ts: Date.now(), data }));
       return data;
     }
-    if (cached) {
-      const { data } = JSON.parse(cached);
-      return data;
-    }
+    if (cachedEntry) return cachedEntry.data;
     throw new Error("GitHub events unavailable");
   } catch {
-    try {
-      const cached = sessionStorage.getItem(CACHE_KEY);
-      if (cached) return JSON.parse(cached).data;
-    } catch {
-      /* ignore */
-    }
-    return [];
+    return cachedEntry?.data ?? [];
   }
 }
 
@@ -105,14 +97,12 @@ export function formatRelativeTime(iso) {
 
 /** Aggregated profile stats from GitHub REST API (via /api/github-stats). */
 export async function fetchGitHubDashboard() {
-  let stale = null;
+  // Parse cache once to avoid duplicate JSON.parse calls and double-throw on corrupt entries.
+  let cachedEntry = null;
+  try { cachedEntry = JSON.parse(sessionStorage.getItem(DASHBOARD_CACHE_KEY)); } catch { /* ignore */ }
+
   try {
-    const cached = sessionStorage.getItem(DASHBOARD_CACHE_KEY);
-    if (cached) {
-      const parsed = JSON.parse(cached);
-      stale = parsed.data;
-      if (Date.now() - parsed.ts < DASHBOARD_CACHE_MS) return parsed.data;
-    }
+    if (cachedEntry && Date.now() - cachedEntry.ts < DASHBOARD_CACHE_MS) return cachedEntry.data;
 
     const res = await fetch("/api/github-stats");
     const data = await res.json().catch(() => null);
@@ -120,9 +110,8 @@ export async function fetchGitHubDashboard() {
       sessionStorage.setItem(DASHBOARD_CACHE_KEY, JSON.stringify({ ts: Date.now(), data }));
       return data;
     }
-    if (stale) return stale;
-    return null;
+    return cachedEntry?.data ?? null;
   } catch {
-    return stale;
+    return cachedEntry?.data ?? null;
   }
 }

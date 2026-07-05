@@ -87,7 +87,7 @@ async function postGuestbook(entry) {
       const local = [localEntry, ...loadLocal()];
       saveLocal(local);
       rememberOwnedId(localEntry.id);
-      return { entries: local.map(({ owner_token, ...rest }) => rest), localMode: true };
+      return { entries: local.map(({ owner_token: _owner_token, ...rest }) => rest), localMode: true };
     }
     throw error;
   }
@@ -116,7 +116,7 @@ async function removeGuestbookEntry(id) {
       saveLocal(local);
       forgetOwnedId(id);
       return {
-        entries: local.map(({ owner_token, ...rest }) => rest),
+        entries: local.map(({ owner_token: _owner_token, ...rest }) => rest),
         localMode: true,
       };
     }

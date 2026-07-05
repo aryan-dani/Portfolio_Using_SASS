@@ -2,9 +2,7 @@ import {
   GITHUB_USER,
   githubFetch,
   getGitHubToken,
-  readGithubCache,
   readStaleMemoryCache,
-  writeGithubCache,
   writeMemoryCache,
 } from "./githubApiShared.js";
 

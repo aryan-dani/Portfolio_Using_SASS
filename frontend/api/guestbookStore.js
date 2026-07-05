@@ -54,7 +54,7 @@ function normalizeEntry(item) {
 
 function publicEntry(entry) {
   if (!entry) return null;
-  const { owner_token, ...safe } = entry;
+  const { owner_token: _owner_token, ...safe } = entry;
   return safe;
 }
 

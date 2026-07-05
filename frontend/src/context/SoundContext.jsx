@@ -80,6 +80,11 @@ export function SoundProvider({ children }) {
     };
   }, [enabled, play]);
 
+  // Close AudioContext on unmount to free hardware audio resources
+  useEffect(() => {
+    return () => { audioRef.current?.close(); };
+  }, []);
+
   const value = useMemo(() => ({ enabled, toggleSound, play }), [enabled, play, toggleSound]);
   return <SoundContext.Provider value={value}>{children}</SoundContext.Provider>;
 }
