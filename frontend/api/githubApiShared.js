@@ -5,8 +5,16 @@ const memoryStore = new Map();
 
 export { GITHUB_USER, API_VERSION };
 
+function cleanSecret(value) {
+  if (typeof value !== "string") return "";
+  return value
+    .trim()
+    .replace(/^["'“”‘’`]+|["'“”‘’`]+$/g, "")
+    .replace(/[^\x20-\x7E]/g, "");
+}
+
 export function getGitHubToken() {
-  return process.env.GITHUB_TOKEN || process.env.GITHUB_PAT || "";
+  return cleanSecret(process.env.GITHUB_TOKEN || process.env.GITHUB_PAT || "");
 }
 
 export function authHeaders(token = getGitHubToken()) {
