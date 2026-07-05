@@ -8,4 +8,4 @@ GitHub: https://github.com/aryan-dani
 /* SITE */
 Stack: React, Vite, Framer Motion, Lenis, Tailwind CSS
 Language: English
-Last updated: 2026-07-02
+Last updated: 2026-07-05
