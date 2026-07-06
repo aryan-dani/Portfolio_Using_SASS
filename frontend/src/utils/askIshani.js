@@ -1,4 +1,4 @@
-export async function askIshani(message, { history = [], currentPath = "/" } = {}) {
+export async function askIshani(message, { history = [], currentPath = "/", siteState = null } = {}) {
   const response = await fetch("/api/chat", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -6,6 +6,7 @@ export async function askIshani(message, { history = [], currentPath = "/" } = {
       message,
       history: history.map((m) => ({ role: m.role, content: m.text })),
       currentPath,
+      siteState,
     }),
   });
   if (!response.ok) {
@@ -16,5 +17,6 @@ export async function askIshani(message, { history = [], currentPath = "/" } = {
   return {
     reply: data.reply || "No response.",
     actions: Array.isArray(data.actions) ? data.actions : [],
+    intent: data.intent,
   };
 }

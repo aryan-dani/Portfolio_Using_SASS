@@ -4,9 +4,9 @@ export const KURO_PAGES_KEY = "portfolio_kuro_pages";
 const LEGACY_WELCOME_KEY = "portfolio_ishani_welcome";
 
 export const KURO_WELCOME_LINES = [
-  "Hey! I'm Kuro. Ask me to navigate, toggle themes, or hack the site!",
-  "Yo! New here? I'm Kuro, your co-pilot. Let's explore.",
-  "What's up! I'm Kuro. Try 'go to projects' or 'hack mode'.",
+  "Hey—I'm Kuro. Ask about Aryan, or tell me where to go.",
+  "Yo. I'm the dog in the corner. Projects, hack mode, whatever—your call.",
+  "What's up. I'm Kuro. Compliments welcome. Random theme flips, not so much.",
 ];
 
 export const KURO_PAGE_LINES = {

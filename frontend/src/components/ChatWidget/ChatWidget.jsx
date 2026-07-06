@@ -16,7 +16,7 @@ import { useSiteIdle } from "../../hooks/useSiteIdle";
 
 import { askIshani } from "../../utils/askIshani";
 
-import { executeIshaniActions } from "../../utils/ishaniActions";
+import { executeIshaniActions, describeKuroActions } from "../../utils/ishaniActions";
 
 import {
 
@@ -37,8 +37,41 @@ import {
 
 
 const EYE_RANGE = 3.2;
-
 const PET_LINES = ["*tail wag*", "*happy pant*", "Good boy.", "*ear flop*", "*lean*", "More pets please."];
+const CHAT_STORAGE_KEY = "portfolio_kuro_chat";
+const THINKING_LINES = [
+  "*sniffing the question*",
+  "*tail wag while processing*",
+  "*ears perk up*",
+  "*consulting the portfolio*",
+];
+const SUGGESTION_CHIPS = ["Projects", "Hack mode", "Who built this?"];
+const INPUT_PLACEHOLDERS = [
+  "Ask about Aryan, or say 'go to projects'",
+  "Try: who built this?",
+  "Try: take me to skills",
+];
+
+function loadChatHistory() {
+  try {
+    const raw = sessionStorage.getItem(CHAT_STORAGE_KEY);
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      if (Array.isArray(parsed) && parsed.length) return parsed;
+    }
+  } catch {
+    /* ignore */
+  }
+  return [{ role: "assistant", text: getKuroWelcomeLine() }];
+}
+
+function saveChatHistory(messages) {
+  try {
+    sessionStorage.setItem(CHAT_STORAGE_KEY, JSON.stringify(messages.slice(-24)));
+  } catch {
+    /* ignore */
+  }
+}
 
 
 
@@ -235,23 +268,19 @@ const ChatWidget = memo(function ChatWidget() {
 
   const [input, setInput] = useState("");
 
-  const [messages, setMessages] = useState([
-
-    {
-
-      role: "assistant",
-
-      text: "Hey! I'm Kuro. Ask me to navigate, toggle themes, or hack the site!",
-
-    },
-
-  ]);
+  const [messages, setMessages] = useState(loadChatHistory);
 
   const [loading, setLoading] = useState(false);
 
+  const [thinkingLine, setThinkingLine] = useState(THINKING_LINES[0]);
+
+  const [placeholder] = useState(
+    () => INPUT_PLACEHOLDERS[Math.floor(Math.random() * INPUT_PLACEHOLDERS.length)],
+  );
+
   const { track } = useAchievements();
 
-  const { toggleTheme, setCrtMode, setAccent } = useTheme();
+  const { toggleTheme, setCrtMode, setAccent, theme, crtMode, accent } = useTheme();
 
   const navigate = useNavigate();
 
@@ -278,6 +307,10 @@ const ChatWidget = memo(function ChatWidget() {
   const eyeRafRef = useRef(0);
 
   const lastPointerRef = useRef({ x: 0, y: 0 });
+
+  const lastActionRef = useRef(null);
+
+  const hasStoredChat = useRef(sessionStorage.getItem(CHAT_STORAGE_KEY) != null);
 
 
 
@@ -385,13 +418,45 @@ const ChatWidget = memo(function ChatWidget() {
 
         track,
 
+        onAction: (executed) => {
+
+          if (executed.length) {
+
+            lastActionRef.current = {
+
+              type: executed[0].type,
+
+              enabled: executed[0].enabled,
+
+              page: executed[0].page,
+
+              label: executed[0].label,
+
+              at: Date.now(),
+
+            };
+
+          }
+
+        },
+
       });
+
+      return describeKuroActions(actions);
 
     },
 
     [navigate, toggleTheme, setCrtMode, setAccent, track],
 
   );
+
+
+
+  useEffect(() => {
+
+    saveChatHistory(messages);
+
+  }, [messages]);
 
 
 
@@ -503,15 +568,17 @@ const ChatWidget = memo(function ChatWidget() {
 
 
 
-  const send = async () => {
+  const sendMessage = async (text) => {
 
-    const text = input.trim();
+    const clean = text.trim();
 
-    if (!text || loading) return;
+    if (!clean || loading) return;
 
     setInput("");
 
-    const nextMessages = [...messages, { role: "user", text }];
+    setThinkingLine(THINKING_LINES[Math.floor(Math.random() * THINKING_LINES.length)]);
+
+    const nextMessages = [...messages, { role: "user", text: clean }];
 
     setMessages(nextMessages);
 
@@ -519,19 +586,39 @@ const ChatWidget = memo(function ChatWidget() {
 
     track("ai_ask");
 
+    const siteState = {
+
+      theme,
+
+      hackMode: crtMode,
+
+      accent: accent || "mono",
+
+      lastAction: lastActionRef.current,
+
+    };
+
     try {
 
-      const { reply, actions } = await askIshani(text, {
+      const { reply, actions } = await askIshani(clean, {
 
-        history: nextMessages.slice(-8),
+        history: nextMessages.slice(-12),
 
         currentPath: location.pathname,
 
+        siteState,
+
       });
 
-      setMessages((m) => [...m, { role: "assistant", text: reply }]);
+      const actionLabel = actions.length ? runActions(actions) : "";
 
-      if (actions.length) runActions(actions);
+      setMessages((m) => [
+
+        ...m,
+
+        { role: "assistant", text: reply, actionLabel: actionLabel || undefined },
+
+      ]);
 
     } catch (e) {
 
@@ -544,6 +631,10 @@ const ChatWidget = memo(function ChatWidget() {
     }
 
   };
+
+
+
+  const send = () => sendMessage(input);
 
 
 
@@ -598,35 +689,93 @@ const ChatWidget = memo(function ChatWidget() {
 
               <div className="flex-1 overflow-y-auto p-3 space-y-3 text-sm min-h-[112px]" data-lenis-prevent>
 
+                {hasStoredChat.current && messages.length > 1 && (
+
+                  <p className="font-mono text-[9px] uppercase text-[var(--color-text-muted)] text-center">
+
+                    Kuro remembers this visit
+
+                  </p>
+
+                )}
+
                 {messages.map((msg, i) => (
 
-                  <div
+                  <div key={i} className={msg.role === "user" ? "ml-4" : "mr-4"}>
 
-                    key={i}
+                    <div
 
-                    className={`border-2 border-outline p-2 ${
+                      className={`border-2 border-outline p-2 ${
 
-                      msg.role === "user"
+                        msg.role === "user"
 
-                        ? "bg-[var(--color-on-background)] text-[var(--color-background)] ml-4"
+                          ? "bg-[var(--color-on-background)] text-[var(--color-background)]"
 
-                        : "bg-[var(--color-surface-variant)] mr-4"
+                          : "bg-[var(--color-surface-variant)]"
 
-                    }`}
+                      }`}
 
-                  >
+                    >
 
-                    {msg.text}
+                      {msg.text}
+
+                    </div>
+
+                    {msg.actionLabel && (
+
+                      <p className="font-mono text-[9px] uppercase text-[var(--color-text-muted)] mt-1 pl-1">
+
+                        {msg.actionLabel}
+
+                      </p>
+
+                    )}
 
                   </div>
 
                 ))}
 
-                {loading && <p className="font-mono text-xs animate-pulse">thinking…</p>}
+                {loading && (
+
+                  <p className="font-mono text-xs animate-pulse text-[var(--color-text-muted)]">
+
+                    {thinkingLine}
+
+                  </p>
+
+                )}
 
                 <div ref={endRef} />
 
               </div>
+
+              {messages.length <= 2 && !loading && (
+
+                <div className="px-2 pb-2 flex flex-wrap gap-1.5 border-t-2 border-dashed border-outline-variant">
+
+                  {SUGGESTION_CHIPS.map((chip) => (
+
+                    <button
+
+                      key={chip}
+
+                      type="button"
+
+                      onClick={() => sendMessage(chip)}
+
+                      className="border-2 border-outline px-2 py-1 font-mono text-[10px] uppercase bg-[var(--color-surface-variant)] hover:bg-[var(--color-primary-container)] hover:text-[var(--color-on-primary-container)] transition-colors"
+
+                    >
+
+                      {chip}
+
+                    </button>
+
+                  ))}
+
+                </div>
+
+              )}
 
               <div className="border-t-4 border-outline p-2 flex gap-2">
 
@@ -638,7 +787,7 @@ const ChatWidget = memo(function ChatWidget() {
 
                   onKeyDown={(e) => e.key === "Enter" && send()}
 
-                  placeholder="Go to projects, hack mode, dark theme…"
+                  placeholder={placeholder}
 
                   className="flex-1 border-2 border-outline px-2 py-2 bg-[var(--color-surface)] font-body-md text-sm"
 

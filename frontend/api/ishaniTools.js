@@ -22,7 +22,8 @@ export const ISHANI_TOOLS = [
     type: "function",
     function: {
       name: "navigate",
-      description: "Navigate the visitor to a portfolio page. Use when they ask to go somewhere, open a section, or see projects/skills/etc.",
+      description:
+        "Navigate to a portfolio page. ONLY when the user explicitly asks to go somewhere (e.g. 'go to projects'). Never on compliments or reactions.",
       parameters: {
         type: "object",
         properties: {
@@ -40,7 +41,7 @@ export const ISHANI_TOOLS = [
     type: "function",
     function: {
       name: "toggle_theme",
-      description: "Switch between light and dark theme.",
+      description: "Switch light/dark theme. ONLY when user explicitly asks to change theme or toggle lights.",
       parameters: { type: "object", properties: {} },
     },
   },
@@ -48,7 +49,8 @@ export const ISHANI_TOOLS = [
     type: "function",
     function: {
       name: "set_hack_mode",
-      description: "Enable or disable CRT hacker / berserk visual mode.",
+      description:
+        "Enable or disable CRT hacker mode. ONLY when user says hackmode, unhack, turn it back, or similar explicit commands.",
       parameters: {
         type: "object",
         properties: {
@@ -62,7 +64,7 @@ export const ISHANI_TOOLS = [
     type: "function",
     function: {
       name: "scroll_to_top",
-      description: "Scroll the page back to the top.",
+      description: "Scroll to page top. ONLY when user explicitly asks to scroll up or go back to top.",
       parameters: { type: "object", properties: {} },
     },
   },
@@ -87,7 +89,7 @@ export const ISHANI_TOOLS = [
     type: "function",
     function: {
       name: "open_command_palette",
-      description: "Open the site command palette search (Ctrl+K).",
+      description: "Open command palette (Ctrl+K). ONLY when user explicitly asks for search/palette.",
       parameters: { type: "object", properties: {} },
     },
   },
