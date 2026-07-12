@@ -36,29 +36,17 @@ function buildSphereNodes(skills) {
   });
 }
 
-function drawHatch(ctx, w, h, outline) {
-  const spacing = 10;
-  ctx.save();
-  ctx.strokeStyle = outline;
-  ctx.globalAlpha = 0.14;
-  ctx.lineWidth = 1;
-  for (let x = -h; x < w + h; x += spacing) {
-    ctx.beginPath();
-    ctx.moveTo(x, 0);
-    ctx.lineTo(x + h, h);
-    ctx.stroke();
-  }
-  ctx.restore();
-}
-
 function drawCenterPlate(ctx, cx, cy, size, bg, outline) {
   const half = size / 2;
+  const shadow = 4;
   ctx.save();
   ctx.globalAlpha = 1;
+  ctx.fillStyle = outline;
+  ctx.fillRect(cx - half + shadow, cy - half + shadow, size, size);
   ctx.fillStyle = bg;
   ctx.fillRect(cx - half, cy - half, size, size);
   ctx.strokeStyle = outline;
-  ctx.lineWidth = 2;
+  ctx.lineWidth = 2.5;
   ctx.strokeRect(cx - half, cy - half, size, size);
   ctx.restore();
 }
@@ -226,8 +214,7 @@ const TechGlobe = memo(function TechGlobe() {
       ctx.clearRect(0, 0, width, height);
       ctx.fillStyle = colors.bg;
       ctx.fillRect(0, 0, width, height);
-      drawHatch(ctx, width, height, colors.outline);
-      drawCenterPlate(ctx, centerX, centerY, globeRadius * 0.38, colors.bg, colors.outline);
+      drawCenterPlate(ctx, centerX, centerY, globeRadius * 0.38, colors.surfaceAlt, colors.outline);
 
       const rotation = rotationRef.current;
       const pointer = pointerRef.current;
@@ -403,7 +390,7 @@ const TechGlobe = memo(function TechGlobe() {
 
   return (
     <div ref={wrapperRef} className="relative w-full max-w-[620px] aspect-[1.24] min-h-[360px]">
-      <div className="absolute -inset-3 border-4 border-outline bg-hatch pointer-events-none" />
+      <div className="absolute -inset-3 border-4 border-outline bg-[var(--color-surface-variant)] pointer-events-none" />
       <div className="absolute -bottom-5 -left-5 h-20 w-20 border-l-8 border-b-8 border-outline pointer-events-none" />
       <canvas
         ref={canvasRef}

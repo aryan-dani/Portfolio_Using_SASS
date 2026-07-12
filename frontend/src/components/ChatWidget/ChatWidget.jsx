@@ -1,40 +1,21 @@
 import { memo, useCallback, useEffect, useRef, useState } from "react";
-
 import { createPortal } from "react-dom";
-
 import { motion, AnimatePresence } from "framer-motion";
-
 import { useLocation, useNavigate } from "react-router-dom";
-
 import { useAchievements } from "../../context/AchievementContext";
-
 import { useTheme } from "../../context/ThemeContext";
-
 import { isFinePointerDevice } from "../../utils/device";
-
 import { useSiteIdle } from "../../hooks/useSiteIdle";
-
 import { askIshani } from "../../utils/askIshani";
-
 import { executeIshaniActions, describeKuroActions } from "../../utils/ishaniActions";
-
 import {
-
   getKuroWelcomeLine,
-
   getKuroPageLine,
-
   hasMetKuro,
-
   hasVisitedPage,
-
   markKuroMet,
-
   markPageVisited,
-
 } from "../../data/ishaniRouteLines";
-
-
 
 const EYE_RANGE = 3.2;
 const PET_LINES = ["*tail wag*", "*happy pant*", "Good boy.", "*ear flop*", "*lean*", "More pets please."];
@@ -45,7 +26,11 @@ const THINKING_LINES = [
   "*ears perk up*",
   "*consulting the portfolio*",
 ];
-const SUGGESTION_CHIPS = ["Projects", "Hack mode", "Who built this?"];
+const SUGGESTION_CHIPS = [
+  { label: "Projects", send: "go to projects" },
+  { label: "Hack mode", send: "hack mode" },
+  { label: "Who built this?", send: "Who built this?" },
+];
 const INPUT_PLACEHOLDERS = [
   "Ask about Aryan, or say 'go to projects'",
   "Try: who built this?",
@@ -72,8 +57,6 @@ function saveChatHistory(messages) {
     /* ignore */
   }
 }
-
-
 
 const OUTLINE = "#131316";
 const FUR = "#f0d4a8";
@@ -148,7 +131,6 @@ const KuroFace = memo(function KuroFace({ pupilsRef, mood, bliss, sleeping, size
           : { type: "spring", stiffness: 420, damping: 24 }
       }
     >
-      {/* Ears */}
       <motion.g
         animate={bliss ? { rotate: -28 } : { rotate: -22 }}
         transition={{ type: "spring", stiffness: 420, damping: 24 }}
@@ -164,10 +146,8 @@ const KuroFace = memo(function KuroFace({ pupilsRef, mood, bliss, sleeping, size
         <rect x="64" y="14" width="11" height="20" fill={FUR_EAR} stroke={OUTLINE} strokeWidth="2" />
       </motion.g>
 
-      {/* Head */}
       <rect x="28" y="20" width="40" height="36" fill={FUR} stroke={OUTLINE} strokeWidth="2.5" />
 
-      {/* Cheek blush when petted / hovered */}
       {bliss && (
         <>
           <rect x="29" y="39" width="7" height="4" fill="#e8a898" opacity="0.55" />
@@ -175,7 +155,6 @@ const KuroFace = memo(function KuroFace({ pupilsRef, mood, bliss, sleeping, size
         </>
       )}
 
-      {/* Muzzle */}
       <rect x="34" y="42" width="28" height="14" fill={SNOUT} stroke={OUTLINE} strokeWidth="2" />
 
       {asleep ? (
@@ -190,11 +169,7 @@ const KuroFace = memo(function KuroFace({ pupilsRef, mood, bliss, sleeping, size
         </>
       ) : (
         <motion.g
-          animate={
-            thinking
-              ? { opacity: 1 }
-              : { scaleY: [1, 1, 0.08, 1, 1] }
-          }
+          animate={thinking ? { opacity: 1 } : { scaleY: [1, 1, 0.08, 1, 1] }}
           transition={
             thinking
               ? { duration: 0.2 }
@@ -213,7 +188,6 @@ const KuroFace = memo(function KuroFace({ pupilsRef, mood, bliss, sleeping, size
         </motion.g>
       )}
 
-      {/* Nose */}
       <rect x="44" y="44" width="8" height="6" fill={OUTLINE} />
       {bliss && <rect x="46" y="45" width="2" height="1.5" fill="#5a5960" opacity="0.45" />}
 
@@ -222,13 +196,13 @@ const KuroFace = memo(function KuroFace({ pupilsRef, mood, bliss, sleeping, size
       )}
 
       {thinking && !asleep && (
-        <text x="64" y="24" fontSize="9" fontWeight="bold" fill={OUTLINE}>?</text>
+        <text x="64" y="24" fontSize="9" fontWeight="bold" fill={OUTLINE}>
+          ?
+        </text>
       )}
     </motion.svg>
   );
 });
-
-
 
 function RouteBubble({ text }) {
   return (
@@ -248,303 +222,173 @@ function RouteBubble({ text }) {
   );
 }
 
-
+function ThinkingDots() {
+  return (
+    <span className="inline-flex items-center gap-1 ml-1" aria-hidden="true">
+      {[0, 1, 2].map((i) => (
+        <motion.span
+          key={i}
+          className="block h-1.5 w-1.5 bg-[var(--color-on-surface)]"
+          animate={{ opacity: [0.25, 1, 0.25], y: [0, -2, 0] }}
+          transition={{ duration: 0.9, repeat: Infinity, delay: i * 0.15, ease: "easeInOut" }}
+        />
+      ))}
+    </span>
+  );
+}
 
 const ChatWidget = memo(function ChatWidget() {
-
   const finePointer = isFinePointerDevice();
-
   const isIdle = useSiteIdle(9000);
-
   const [chatOpen, setChatOpen] = useState(false);
-
   const [welcomeBubble, setWelcomeBubble] = useState(null);
-
   const [petBubble, setPetBubble] = useState(null);
-
   const [petting, setPetting] = useState(false);
-
   const [dogHovered, setDogHovered] = useState(false);
-
   const [input, setInput] = useState("");
-
   const [messages, setMessages] = useState(loadChatHistory);
-
   const [loading, setLoading] = useState(false);
-
   const [thinkingLine, setThinkingLine] = useState(THINKING_LINES[0]);
-
   const [placeholder] = useState(
     () => INPUT_PLACEHOLDERS[Math.floor(Math.random() * INPUT_PLACEHOLDERS.length)],
   );
+  const [inputFocused, setInputFocused] = useState(false);
 
   const { track } = useAchievements();
-
   const { toggleTheme, setCrtMode, setAccent, theme, crtMode, accent } = useTheme();
-
   const navigate = useNavigate();
-
   const location = useLocation();
 
   const endRef = useRef(null);
-
+  const inputRef = useRef(null);
   const dogRef = useRef(null);
-
   const pupilsRef = useRef(null);
-
   const closeTimerRef = useRef(0);
-
   const bubbleTimerRef = useRef(0);
-
   const petTimerRef = useRef(0);
-
   const welcomeShownRef = useRef(hasMetKuro());
-
   const sleepingRef = useRef(false);
-
   const blissRef = useRef(false);
-
   const eyeRafRef = useRef(0);
-
   const lastPointerRef = useRef({ x: 0, y: 0 });
-
   const lastActionRef = useRef(null);
-
   const hasStoredChat = useRef(sessionStorage.getItem(CHAT_STORAGE_KEY) != null);
 
-
-
   const sleeping = isIdle && !chatOpen && !petting && !dogHovered && !loading;
-
   const bliss = petting || dogHovered;
 
-
-
   useEffect(() => {
-
     sleepingRef.current = sleeping;
-
     blissRef.current = bliss;
-
     if ((sleeping || bliss) && pupilsRef.current) {
-
       pupilsRef.current.setAttribute("transform", "translate(0 0)");
-
     }
-
   }, [sleeping, bliss]);
 
-
-
   const showBubble = useCallback((text, ms = 6500) => {
-
     setWelcomeBubble(text);
-
     clearTimeout(bubbleTimerRef.current);
-
     bubbleTimerRef.current = window.setTimeout(() => setWelcomeBubble(null), ms);
-
   }, []);
-
-
 
   const showFirstVisitWelcome = useCallback(() => {
-
     if (welcomeShownRef.current) return;
-
     welcomeShownRef.current = true;
-
     markKuroMet();
-
     showBubble(getKuroWelcomeLine(), 7000);
-
   }, [showBubble]);
 
-
-
   useEffect(() => {
-
     const path = location.pathname;
-
     if (hasVisitedPage(path)) return;
-
     markPageVisited(path);
-
     const timer = window.setTimeout(() => {
-
       showBubble(getKuroPageLine(path), 6000);
-
     }, 400);
-
     return () => clearTimeout(timer);
-
   }, [location.pathname, showBubble]);
 
-
-
   const petDog = useCallback(() => {
-
     setPetting(true);
-
     setPetBubble(PET_LINES[Math.floor(Math.random() * PET_LINES.length)]);
-
     clearTimeout(petTimerRef.current);
-
     petTimerRef.current = window.setTimeout(() => {
-
       setPetting(false);
-
       setPetBubble(null);
-
     }, 1600);
-
   }, []);
 
-
-
   const runActions = useCallback(
-
     (actions) => {
-
       executeIshaniActions(actions, {
-
         navigate,
-
         toggleTheme,
-
         setCrtMode,
-
         setAccent,
-
         track,
-
         onAction: (executed) => {
-
           if (executed.length) {
-
             lastActionRef.current = {
-
               type: executed[0].type,
-
               enabled: executed[0].enabled,
-
               page: executed[0].page,
-
               label: executed[0].label,
-
               at: Date.now(),
-
             };
-
           }
-
         },
-
       });
-
       return describeKuroActions(actions);
-
     },
-
     [navigate, toggleTheme, setCrtMode, setAccent, track],
-
   );
 
-
-
   useEffect(() => {
-
     saveChatHistory(messages);
-
   }, [messages]);
 
-
-
   useEffect(() => {
-
     endRef.current?.scrollIntoView({ behavior: "smooth" });
-
   }, [messages, loading]);
 
-
-
   useEffect(() => {
-
     if (!finePointer) return undefined;
 
-
-
     const aimEyes = () => {
-
       eyeRafRef.current = 0;
-
       if (sleepingRef.current || blissRef.current) return;
-
       const dog = dogRef.current;
-
       const pupils = pupilsRef.current;
-
       if (!dog || !pupils) return;
-
       const rect = dog.getBoundingClientRect();
-
       const cx = rect.left + rect.width / 2;
-
       const cy = rect.top + rect.height * 0.38;
-
       const dx = lastPointerRef.current.x - cx;
-
       const dy = lastPointerRef.current.y - cy;
-
       const dist = Math.hypot(dx, dy) || 1;
-
       const scale = Math.min(EYE_RANGE, dist / 20);
-
       const px = (dx / dist) * scale;
-
       const py = (dy / dist) * scale;
-
       pupils.setAttribute("transform", `translate(${px.toFixed(2)} ${py.toFixed(2)})`);
-
     };
-
-
 
     const onPointerMove = (event) => {
-
       lastPointerRef.current.x = event.clientX;
-
       lastPointerRef.current.y = event.clientY;
-
       showFirstVisitWelcome();
-
       if (!eyeRafRef.current) {
-
         eyeRafRef.current = requestAnimationFrame(aimEyes);
-
       }
-
     };
-
-
 
     window.addEventListener("pointermove", onPointerMove, { passive: true });
-
     return () => {
-
       window.removeEventListener("pointermove", onPointerMove);
-
       clearTimeout(petTimerRef.current);
-
       clearTimeout(bubbleTimerRef.current);
-
       if (eyeRafRef.current) cancelAnimationFrame(eyeRafRef.current);
-
     };
-
   }, [finePointer, showFirstVisitWelcome]);
-
-
 
   const openChat = useCallback(() => {
     clearTimeout(closeTimerRef.current);
@@ -554,263 +398,241 @@ const ChatWidget = memo(function ChatWidget() {
     setChatOpen(true);
   }, []);
 
-
-
   const closeChat = useCallback(() => {
-
+    if (inputFocused) return;
     closeTimerRef.current = window.setTimeout(() => {
-
       setChatOpen(false);
-
     }, 280);
+  }, [inputFocused]);
 
+  const forceCloseChat = useCallback(() => {
+    clearTimeout(closeTimerRef.current);
+    setInputFocused(false);
+    setChatOpen(false);
   }, []);
 
-
-
   const sendMessage = async (text) => {
-
     const clean = text.trim();
-
     if (!clean || loading) return;
-
     setInput("");
-
     setThinkingLine(THINKING_LINES[Math.floor(Math.random() * THINKING_LINES.length)]);
-
     const nextMessages = [...messages, { role: "user", text: clean }];
-
     setMessages(nextMessages);
-
     setLoading(true);
-
     track("ai_ask");
 
     const siteState = {
-
       theme,
-
       hackMode: crtMode,
-
       accent: accent || "mono",
-
       lastAction: lastActionRef.current,
-
     };
 
     try {
-
       const { reply, actions } = await askIshani(clean, {
-
         history: nextMessages.slice(-12),
-
         currentPath: location.pathname,
-
         siteState,
-
       });
-
       const actionLabel = actions.length ? runActions(actions) : "";
-
       setMessages((m) => [
-
         ...m,
-
         { role: "assistant", text: reply, actionLabel: actionLabel || undefined },
-
       ]);
-
     } catch (e) {
-
       setMessages((m) => [...m, { role: "assistant", text: e.message }]);
-
     } finally {
-
       setLoading(false);
-
     }
-
   };
-
-
 
   const send = () => sendMessage(input);
 
-
+  useEffect(() => {
+    if (chatOpen) {
+      const timer = window.setTimeout(() => inputRef.current?.focus(), 220);
+      return () => clearTimeout(timer);
+    }
+    return undefined;
+  }, [chatOpen]);
 
   if (!finePointer) return null;
 
-
-
   const mood = loading ? "thinking" : chatOpen ? "excited" : "happy";
-
-
+  const showSuggestions = messages.length <= 2 && !loading;
+  const canSend = Boolean(input.trim()) && !loading;
 
   return createPortal(
-
     <div className="fixed left-7 bottom-4 z-[68] hidden md:block pointer-events-none">
-
       <motion.div
-
         className="relative flex flex-col items-start pointer-events-auto"
-
         onMouseEnter={openChat}
-
         onMouseLeave={closeChat}
-
       >
-
         <AnimatePresence>
           {chatOpen && (
             <motion.div
-              className="relative z-20 w-[min(calc(100vw-2rem),340px)] border-4 border-outline bg-[var(--color-surface)] shadow-[8px_8px_0_var(--shadow-color)] flex flex-col max-h-[min(46vh,400px)] mb-2"
-
-              initial={{ opacity: 0, y: 8, scale: 0.98 }}
-
+              className="relative z-20 mb-3 w-[min(calc(100vw-2rem),380px)] flex flex-col max-h-[min(54vh,460px)] border-4 border-outline bg-[var(--color-surface)] shadow-[10px_10px_0_var(--shadow-color)] overflow-hidden"
+              initial={{ opacity: 0, y: 14, scale: 0.96 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
-
-              exit={{ opacity: 0, y: 6, scale: 0.98 }}
-
-              transition={{ type: "spring", stiffness: 400, damping: 28 }}
-
+              exit={{ opacity: 0, y: 10, scale: 0.97 }}
+              transition={{ type: "spring", stiffness: 420, damping: 30 }}
               role="dialog"
-
               aria-label="Kuro chat"
-
             >
-
-              <div className="flex items-center justify-between border-b-4 border-outline px-3 py-2.5 bg-[var(--color-primary-container)] text-[var(--color-on-primary-container)]">
-
-                <span className="font-label-bold uppercase text-sm tracking-wide">Kuro</span>
-
-                <span className="font-mono text-[10px] uppercase opacity-70">nav · hack · theme</span>
-
+              {/* Header */}
+              <div className="flex items-center gap-3 border-b-4 border-outline px-3.5 py-3 bg-[var(--color-primary-container)] text-[var(--color-on-primary-container)]">
+                <div className="relative shrink-0">
+                  <div className="border-2 border-[var(--color-on-primary-container)] bg-[var(--color-surface)] p-0.5">
+                    <KuroFace pupilsRef={null} mood={mood} bliss={false} sleeping={false} size={36} />
+                  </div>
+                  <span
+                    className={`absolute -right-1 -bottom-1 h-2.5 w-2.5 border-2 border-[var(--color-primary-container)] ${
+                      loading ? "bg-[var(--color-surface-variant)] animate-pulse" : "bg-[#7dcea0]"
+                    }`}
+                    aria-hidden="true"
+                  />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-baseline gap-2">
+                    <h2 className="font-label-bold uppercase text-sm tracking-[0.14em]">Kuro</h2>
+                    <span className="font-mono text-[9px] uppercase opacity-65">
+                      {loading ? "thinking" : "online"}
+                    </span>
+                  </div>
+                  <p className="font-mono text-[9px] uppercase tracking-[0.12em] opacity-70 truncate">
+                    Co-pilot · nav · hack · theme
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={forceCloseChat}
+                  className="shrink-0 h-8 w-8 border-2 border-[var(--color-on-primary-container)] bg-[var(--color-surface)] text-[var(--color-on-surface)] font-label-bold text-xs hover:translate-x-px hover:translate-y-px transition-transform"
+                  aria-label="Close chat"
+                >
+                  ✕
+                </button>
               </div>
 
-              <div className="flex-1 overflow-y-auto p-3 space-y-3 text-sm min-h-[112px]" data-lenis-prevent>
-
+              {/* Messages */}
+              <div
+                className="flex-1 overflow-y-auto px-3.5 py-3.5 space-y-3.5 text-sm min-h-[140px] bg-[var(--color-surface)]"
+                data-lenis-prevent
+              >
                 {hasStoredChat.current && messages.length > 1 && (
-
-                  <p className="font-mono text-[9px] uppercase text-[var(--color-text-muted)] text-center">
-
+                  <p className="font-mono text-[9px] uppercase tracking-[0.16em] text-[var(--color-text-muted)] text-center">
                     Kuro remembers this visit
-
                   </p>
-
                 )}
 
-                {messages.map((msg, i) => (
-
-                  <div key={i} className={msg.role === "user" ? "ml-4" : "mr-4"}>
-
-                    <div
-
-                      className={`border-2 border-outline p-2 ${
-
-                        msg.role === "user"
-
-                          ? "bg-[var(--color-on-background)] text-[var(--color-background)]"
-
-                          : "bg-[var(--color-surface-variant)]"
-
-                      }`}
-
+                {messages.map((msg, i) => {
+                  const isUser = msg.role === "user";
+                  return (
+                    <motion.div
+                      key={`${i}-${msg.role}`}
+                      className={`flex flex-col gap-1 ${isUser ? "items-end" : "items-start"}`}
+                      initial={{ opacity: 0, y: 6 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ type: "spring", stiffness: 400, damping: 28 }}
                     >
-
-                      {msg.text}
-
-                    </div>
-
-                    {msg.actionLabel && (
-
-                      <p className="font-mono text-[9px] uppercase text-[var(--color-text-muted)] mt-1 pl-1">
-
-                        {msg.actionLabel}
-
-                      </p>
-
-                    )}
-
-                  </div>
-
-                ))}
+                      <span className="font-mono text-[9px] uppercase tracking-[0.14em] text-[var(--color-text-muted)] px-0.5">
+                        {isUser ? "You" : "Kuro"}
+                      </span>
+                      <div
+                        className={`max-w-[92%] border-2 border-outline px-3 py-2.5 leading-snug shadow-[3px_3px_0_var(--shadow-color)] ${
+                          isUser
+                            ? "bg-[var(--color-on-background)] text-[var(--color-background)]"
+                            : "bg-[var(--color-surface-variant)] text-[var(--color-on-surface)]"
+                        }`}
+                      >
+                        {msg.text}
+                      </div>
+                      {msg.actionLabel && (
+                        <p className="font-mono text-[9px] uppercase tracking-[0.1em] text-[var(--color-text-muted)] px-0.5">
+                          {msg.actionLabel}
+                        </p>
+                      )}
+                    </motion.div>
+                  );
+                })}
 
                 {loading && (
-
-                  <p className="font-mono text-xs animate-pulse text-[var(--color-text-muted)]">
-
-                    {thinkingLine}
-
-                  </p>
-
+                  <motion.div
+                    className="flex flex-col items-start gap-1"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                  >
+                    <span className="font-mono text-[9px] uppercase tracking-[0.14em] text-[var(--color-text-muted)] px-0.5">
+                      Kuro
+                    </span>
+                    <div className="inline-flex items-center border-2 border-outline bg-[var(--color-surface-variant)] px-3 py-2.5 shadow-[3px_3px_0_var(--shadow-color)]">
+                      <span className="font-mono text-xs text-[var(--color-text-muted)]">{thinkingLine}</span>
+                      <ThinkingDots />
+                    </div>
+                  </motion.div>
                 )}
-
                 <div ref={endRef} />
-
               </div>
 
-              {messages.length <= 2 && !loading && (
+              {/* Suggestions */}
+              <AnimatePresence>
+                {showSuggestions && (
+                  <motion.div
+                    className="px-3.5 pb-3 flex flex-wrap gap-2 border-t-2 border-dashed border-outline"
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: "auto" }}
+                    exit={{ opacity: 0, height: 0 }}
+                  >
+                    <span className="w-full pt-2.5 font-mono text-[9px] uppercase tracking-[0.16em] text-[var(--color-text-muted)]">
+                      Try saying
+                    </span>
+                    {SUGGESTION_CHIPS.map((chip) => (
+                      <button
+                        key={chip.label}
+                        type="button"
+                        onClick={() => sendMessage(chip.send)}
+                        className="border-2 border-outline px-2.5 py-1.5 font-mono text-[10px] uppercase tracking-wide bg-[var(--color-surface)] text-[var(--color-on-surface)] shadow-[2px_2px_0_var(--shadow-color)] hover:bg-[var(--color-primary-container)] hover:text-[var(--color-on-primary-container)] hover:translate-x-px hover:translate-y-px hover:shadow-[1px_1px_0_var(--shadow-color)] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition-all"
+                      >
+                        {chip.label}
+                      </button>
+                    ))}
+                  </motion.div>
+                )}
+              </AnimatePresence>
 
-                <div className="px-2 pb-2 flex flex-wrap gap-1.5 border-t-2 border-dashed border-outline-variant">
-
-                  {SUGGESTION_CHIPS.map((chip) => (
-
-                    <button
-
-                      key={chip}
-
-                      type="button"
-
-                      onClick={() => sendMessage(chip)}
-
-                      className="border-2 border-outline px-2 py-1 font-mono text-[10px] uppercase bg-[var(--color-surface-variant)] hover:bg-[var(--color-primary-container)] hover:text-[var(--color-on-primary-container)] transition-colors"
-
-                    >
-
-                      {chip}
-
-                    </button>
-
-                  ))}
-
-                </div>
-
-              )}
-
-              <div className="border-t-4 border-outline p-2 flex gap-2">
-
-                <input
-
-                  value={input}
-
-                  onChange={(e) => setInput(e.target.value)}
-
-                  onKeyDown={(e) => e.key === "Enter" && send()}
-
-                  placeholder={placeholder}
-
-                  className="flex-1 border-2 border-outline px-2 py-2 bg-[var(--color-surface)] font-body-md text-sm"
-
-                />
-
-                <button
-
-                  type="button"
-
-                  onClick={send}
-
-                  className="border-2 border-outline px-3 font-label-bold uppercase text-xs bg-[var(--color-primary-container)] text-[var(--color-on-primary-container)]"
-
+              {/* Composer */}
+              <div className="border-t-4 border-outline p-2.5 bg-[var(--color-surface-variant)]">
+                <div
+                  className={`flex gap-2 border-2 border-outline bg-[var(--color-surface)] p-1.5 shadow-[3px_3px_0_var(--shadow-color)] transition-shadow ${
+                    inputFocused ? "shadow-[4px_4px_0_var(--shadow-color)]" : ""
+                  }`}
                 >
-
-                  Send
-
-                </button>
-
+                  <input
+                    ref={inputRef}
+                    value={input}
+                    onChange={(e) => setInput(e.target.value)}
+                    onKeyDown={(e) => e.key === "Enter" && send()}
+                    onFocus={() => setInputFocused(true)}
+                    onBlur={() => setInputFocused(false)}
+                    placeholder={placeholder}
+                    className="flex-1 min-w-0 bg-transparent px-2 py-2 font-body-md text-sm text-[var(--color-on-surface)] placeholder:text-[var(--color-text-muted)] outline-none"
+                    aria-label="Message Kuro"
+                  />
+                  <button
+                    type="button"
+                    onClick={send}
+                    disabled={!canSend}
+                    className={`shrink-0 border-2 border-outline px-3.5 py-2 font-label-bold uppercase text-xs tracking-wide transition-all ${
+                      canSend
+                        ? "bg-[var(--color-primary-container)] text-[var(--color-on-primary-container)] shadow-[2px_2px_0_var(--shadow-color)] hover:translate-x-px hover:translate-y-px hover:shadow-none"
+                        : "bg-[var(--color-surface-variant)] text-[var(--color-text-muted)] opacity-60 cursor-not-allowed"
+                    }`}
+                  >
+                    Send
+                  </button>
+                </div>
               </div>
-
             </motion.div>
-
           )}
         </AnimatePresence>
 
@@ -842,19 +664,10 @@ const ChatWidget = memo(function ChatWidget() {
             />
           </button>
         </div>
-
       </motion.div>
-
     </div>,
-
     document.body,
-
   );
-
 });
 
-
-
 export default ChatWidget;
-
-
