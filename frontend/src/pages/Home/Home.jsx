@@ -9,6 +9,7 @@ import { usePageSEO } from "../../utils/seo";
 import { containerVariants, itemVariants } from "../../utils/motionVariants";
 import { useMediaQuery } from "../../hooks/useMediaQuery";
 import { MOBILE_LITE_QUERY, FINE_POINTER_QUERY } from "../../utils/device";
+import { usePrefetchPortfolioImages } from "../../hooks/usePrefetchPortfolioImages";
 import TechGlobeFallback from "../../components/TechGlobe/TechGlobeFallback";
 
 const TechGlobe = lazy(() => import("../../components/TechGlobe/TechGlobe"));
@@ -31,6 +32,7 @@ const Home = memo(function Home() {
   usePageSEO();
   const preferLiteHero = useMediaQuery(MOBILE_LITE_QUERY);
   const showCommandHint = useMediaQuery(FINE_POINTER_QUERY);
+  usePrefetchPortfolioImages({ enabled: !preferLiteHero });
   const totalProjects = portfolioStats.projects;
   const totalSkills   = portfolioStats.skills;
   const totalCerts    = portfolioStats.certifications;

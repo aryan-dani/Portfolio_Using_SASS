@@ -8,6 +8,7 @@ import { containerVariants, cardVariants } from "../../utils/motionVariants";
 import { useModalLock } from "../../hooks/useModalLock";
 import { usePageSEO } from "../../utils/seo";
 import PageHeader from "../../components/PageHeader/PageHeader";
+import ProgressiveImage from "../../components/ProgressiveImage/ProgressiveImage";
 
 function Certifications() {
   const seoData = useMemo(() => ({ certifications }), []);
@@ -169,17 +170,17 @@ const CertCard = memo(function CertCard({ cert, index, onPreview }) {
           onClick={onPreview}
           aria-label={`Preview certificate image for ${cert.title}`}
         >
-          <motion.img
+          <ProgressiveImage
             src={getAssetPath(cert.image)}
             alt={cert.imageAlt || `${cert.title} certificate issued by ${cert.issuer}`}
             width="640"
             height="480"
             sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
-            loading="lazy"
-            decoding="async"
-            className="w-full h-full object-contain pointer-events-none"
-            whileHover={{ scale: 1.05 }}
-            transition={{ duration: 0.35, ease: "easeOut" }}
+            loading={index < 3 ? "eager" : "lazy"}
+            fetchPriority={index < 3 ? "high" : undefined}
+            className="w-full h-full"
+            objectFit="contain"
+            hoverScale
           />
           <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center pointer-events-none">
             <FaEye className="text-white text-3xl" />
@@ -305,13 +306,17 @@ const ImagePreviewModal = memo(function ImagePreviewModal({ src, title, onClose 
           </button>
         </div>
 
-        <div className="p-2 md:p-4 bg-white flex justify-center items-center">
-          <img
+        <div className="p-2 md:p-4 bg-white flex justify-center items-center min-h-[200px]">
+          <ProgressiveImage
             src={getAssetPath(src)}
             alt={`${title} certificate full preview`}
             width="1200"
             height="900"
-            className="w-full h-auto object-contain max-h-[75vh]"
+            loading="eager"
+            fetchPriority="high"
+            className="w-full max-h-[75vh]"
+            imgClassName="w-full h-auto max-h-[75vh]"
+            objectFit="contain"
           />
         </div>
       </motion.div>

@@ -12,6 +12,7 @@ import { usePageSEO } from "../../utils/seo";
 import PageHeader from "../../components/PageHeader/PageHeader";
 import { containerVariants, itemVariants } from "../../utils/motionVariants";
 import { socialIconMap } from "../../utils/socialIcons";
+import ProgressiveImage from "../../components/ProgressiveImage/ProgressiveImage";
 
 import GitHubTicker from "../../components/GitHubTicker/GitHubTicker";
 import GitCareerTimeline from "../../components/GitCareerTimeline/GitCareerTimeline";
@@ -77,15 +78,15 @@ function PhotoCarousel() {
               animate="center"
               exit="exit"
             >
-              <img
+              <ProgressiveImage
                 src={getAssetPath(photos[index].src)}
                 alt={photos[index].alt}
                 width="720"
                 height="720"
                 sizes="(min-width: 1024px) 40vw, 100vw"
-                className="w-full h-full object-cover"
+                className="w-full h-full"
                 loading={index === 0 ? "eager" : "lazy"}
-                decoding="async"
+                fetchPriority={index === 0 ? "high" : undefined}
               />
             </motion.div>
           </AnimatePresence>

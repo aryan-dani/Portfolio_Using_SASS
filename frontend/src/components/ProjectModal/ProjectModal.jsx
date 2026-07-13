@@ -5,6 +5,7 @@ import { FaTimes, FaEye, FaGithub, FaArrowRight } from "react-icons/fa";
 import { getSkillsForProject } from "../../data/skills";
 import { getAssetPath } from "../../utils/paths";
 import { modalBackdropVariants, modalContentVariants } from "../../utils/motionVariants";
+import ProgressiveImage from "../ProgressiveImage/ProgressiveImage";
 
 const ProjectModal = memo(function ProjectModal({ project, onClose, onSkillClick }) {
   const projectSkills = getSkillsForProject(project.id);
@@ -48,17 +49,16 @@ const ProjectModal = memo(function ProjectModal({ project, onClose, onSkillClick
         </div>
 
         {/* Hero Image Without Gradient */}
-        <div className="h-56 md:h-80 border-b-8 border-outline relative overflow-hidden bg-[var(--color-surface-variant)] shrink-0">
-          <motion.img
-            initial={{ scale: 1.05 }}
-            animate={{ scale: 1 }}
-            transition={{ duration: 0.6, ease: "easeOut" }}
+        <div className="h-56 md:h-80 border-b-8 border-outline relative overflow-hidden shrink-0">
+          <ProgressiveImage
             src={getAssetPath(project.image)}
             alt={project.imageAlt || `${project.title} project screenshot by Aryan Dani`}
             width="1200"
             height="675"
             sizes="(min-width: 1024px) 960px, 100vw"
-            className="w-full h-full object-cover"
+            loading="eager"
+            fetchPriority="high"
+            className="h-full w-full"
           />
         </div>
 

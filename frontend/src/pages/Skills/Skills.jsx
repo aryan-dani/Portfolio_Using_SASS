@@ -22,6 +22,7 @@ import { useModalLock } from "../../hooks/useModalLock";
 import StatCard from "../../components/StatCard/StatCard";
 import SkillsGraph from "../../components/SkillsGraph/SkillsGraph";
 import PageHeader from "../../components/PageHeader/PageHeader";
+import ProgressiveImage from "../../components/ProgressiveImage/ProgressiveImage";
 
 const iconMap = {
   FaHtml5, FaCss3Alt, FaSass, FaJs, FaReact, FaAngular,
@@ -596,15 +597,14 @@ function SkillModal({ skill, icon, onClose, onProjectClick }) {
                   className="bg-[var(--color-surface)] border-2 border-outline p-3 flex items-center gap-4 shadow-[3px_3px_0px_0px_var(--shadow-color)] hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-[1px_1px_0px_0px_var(--shadow-color)] group text-left w-full cursor-none"
                   whileHover={{ x: 2, y: 2, transition: { duration: 0.1 } }}
                 >
-                  <div className="w-14 h-14 border-2 border-outline overflow-hidden shrink-0 bg-[var(--color-surface-variant)]">
-                    <img
+                  <div className="w-14 h-14 border-2 border-outline overflow-hidden shrink-0">
+                    <ProgressiveImage
                       src={getAssetPath(project.image)}
                       alt={project.imageAlt || `${project.title} project thumbnail`}
                       width="56"
                       height="56"
-                      className="w-full h-full object-cover"
+                      className="w-full h-full"
                       loading="lazy"
-                      decoding="async"
                     />
                   </div>
                   <div className="flex-1 min-w-0">

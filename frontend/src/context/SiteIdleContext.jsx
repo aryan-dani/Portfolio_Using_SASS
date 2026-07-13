@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useMemo, useRef, useState } from "react";
+import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 import { useLocation } from "react-router-dom";
 import { getPortfolioScrollY, subscribePortfolioScroll } from "../utils/smoothScroll";
 import { useAchievements } from "./AchievementContext";
@@ -31,6 +31,7 @@ export function SiteIdleProvider({ children }) {
   const [phase, setPhase] = useState(0);
   const pointerRef = useRef({ x: 0, y: 0, moved: 0 });
   const scrollYRef = useRef(0);
+  const wakeRef = useRef(() => {});
 
   useEffect(() => {
     let restingTimer = 0;
@@ -54,6 +55,7 @@ export function SiteIdleProvider({ children }) {
       setPhase(0);
       armIdle();
     };
+    wakeRef.current = bump;
 
     const onPointerMove = (e) => {
       const prev = pointerRef.current;
@@ -89,11 +91,16 @@ export function SiteIdleProvider({ children }) {
 
     return () => {
       clearTimers();
+      wakeRef.current = () => {};
       instantEvents.forEach((event) => window.removeEventListener(event, bump));
       window.removeEventListener("pointermove", onPointerMove);
       unsubScroll();
     };
   }, [pathname]);
+
+  const wake = useCallback(() => {
+    wakeRef.current();
+  }, []);
 
   const isResting = phase >= 1;
   const hideChrome = phase >= 2;
@@ -105,8 +112,8 @@ export function SiteIdleProvider({ children }) {
   }, [isStale]);
 
   const value = useMemo(
-    () => ({ phase, isResting, hideChrome, isStale }),
-    [phase, isResting, hideChrome, isStale],
+    () => ({ phase, isResting, hideChrome, isStale, wake }),
+    [phase, isResting, hideChrome, isStale, wake],
   );
 
   return (

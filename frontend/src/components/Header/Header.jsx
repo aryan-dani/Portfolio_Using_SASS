@@ -71,13 +71,18 @@ function Header() {
   const { theme, toggleTheme } = useTheme();
   const { track } = useAchievements();
   const location = useLocation();
-  const { isVisible, isScrolled } = useScrollVisibility({
+  const { isVisible, isScrolled, reveal } = useScrollVisibility({
     topThreshold: 84,
     deltaThreshold: 16,
   });
-  const { hideChrome } = useSiteIdleState();
+  const { hideChrome, wake } = useSiteIdleState();
   const showChrome = isVisible && !hideChrome;
   useInertWhenHidden(navRef, !showChrome);
+
+  const revealChrome = useCallback(() => {
+    wake();
+    reveal();
+  }, [wake, reveal]);
 
   useEffect(() => {
     const el = navRef.current;
@@ -99,6 +104,14 @@ function Header() {
 
   return (
     <>
+      {!showChrome && (
+        <div
+          className="fixed inset-x-0 top-0 z-40 h-24 pointer-events-auto"
+          onPointerEnter={revealChrome}
+          onMouseEnter={revealChrome}
+          aria-hidden="true"
+        />
+      )}
       <motion.nav
         ref={navRef}
         initial={{ y: 0, opacity: 1 }}

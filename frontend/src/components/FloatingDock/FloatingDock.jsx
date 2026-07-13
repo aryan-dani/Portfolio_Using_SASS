@@ -1,4 +1,4 @@
-import { memo, useRef, useEffect } from "react";
+import { memo, useRef, useEffect, useCallback } from "react";
 import { NavLink, useLocation } from "react-router-dom";
 import { motion } from "framer-motion";
 import { HiVolumeUp, HiVolumeOff } from "react-icons/hi";
@@ -19,9 +19,14 @@ function FloatingDock() {
     revealOnBottomProximity: true,
     bottomProximity: 160,
   });
-  const { hideChrome } = useSiteIdleState();
+  const { hideChrome, wake } = useSiteIdleState();
   const showDock = isVisible && !hideChrome;
   useInertWhenHidden(dockRef, !showDock);
+
+  const revealDock = useCallback(() => {
+    wake();
+    reveal();
+  }, [wake, reveal]);
 
   useEffect(() => {
     const el = dockRef.current;
@@ -35,8 +40,8 @@ function FloatingDock() {
       {!showDock && (
         <div
           className="fixed inset-x-0 bottom-0 z-40 h-32 pointer-events-auto"
-          onPointerEnter={reveal}
-          onMouseEnter={reveal}
+          onPointerEnter={revealDock}
+          onMouseEnter={revealDock}
           aria-hidden="true"
         />
       )}

@@ -3,9 +3,11 @@ import { motion } from "framer-motion";
 import { FaEye, FaGithub } from "react-icons/fa";
 import { getAssetPath } from "../../utils/paths";
 import { cardVariants } from "../../utils/motionVariants";
+import ProgressiveImage from "../ProgressiveImage/ProgressiveImage";
 
 const ProjectCard = memo(function ProjectCard({ project, onOpenModal, index, isHighlighted }) {
   const isFeatured = project.featured || false;
+  const eager = typeof index === "number" && index < 3;
 
   return (
     <motion.div
@@ -27,21 +29,20 @@ const ProjectCard = memo(function ProjectCard({ project, onOpenModal, index, isH
         whileTap={{ scale: 0.99 }}
       >
         {/* Image */}
-        <div className="h-48 md:h-56 border-b-4 border-outline bg-[var(--color-surface-variant)] overflow-hidden relative">
-          <motion.img
+        <div className="h-48 md:h-56 border-b-4 border-outline overflow-hidden relative">
+          <ProgressiveImage
             src={getAssetPath(project.image)}
             alt={project.imageAlt || `${project.title} project preview by Aryan Dani`}
             width="640"
             height="420"
             sizes="(min-width: 1024px) 33vw, (min-width: 768px) 50vw, 100vw"
-            loading="lazy"
-            decoding="async"
-            className="w-full h-full object-cover pointer-events-none gpu-layer"
-            initial={{ scale: 1 }}
-            whileHover={{ scale: 1.04 }}
-            transition={{ duration: 0.4, ease: "easeOut" }}
+            loading={eager ? "eager" : "lazy"}
+            fetchPriority={eager ? "high" : undefined}
+            className="h-full w-full"
+            imgClassName="w-full h-full gpu-layer"
+            hoverScale
           />
-          <div className="absolute left-3 top-3 flex flex-wrap gap-2">
+          <div className="absolute left-3 top-3 flex flex-wrap gap-2 z-10">
             <span className="bg-[var(--color-on-background)] text-[var(--color-background)] border-2 border-outline px-2 py-1 font-label-bold text-[10px] uppercase shadow-[2px_2px_0px_0px_var(--shadow-color)]">
               {project.year}
             </span>
@@ -53,15 +54,14 @@ const ProjectCard = memo(function ProjectCard({ project, onOpenModal, index, isH
           </div>
           {isFeatured && (
             <motion.div
-              className="absolute top-3 right-3 bg-[var(--color-primary-container)] text-[var(--color-on-primary-container)] border-4 border-outline px-3 py-1 font-label-bold text-xs uppercase shadow-[2px_2px_0px_0px_var(--shadow-color)]"
+              className="absolute top-3 right-3 bg-[var(--color-primary-container)] text-[var(--color-on-primary-container)] border-4 border-outline px-3 py-1 font-label-bold text-xs uppercase shadow-[2px_2px_0px_0px_var(--shadow-color)] z-10"
               animate={{ rotate: [3, -3, 3] }}
               transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
             >
               Featured
             </motion.div>
           )}
-          {/* Diagonal clip reveal on hover */}
-          <div className="absolute inset-0 bg-gradient-to-br from-transparent via-transparent to-[var(--color-primary-container)] opacity-0 group-hover:opacity-10 transition-opacity duration-500 pointer-events-none" />
+          <div className="absolute inset-0 bg-gradient-to-br from-transparent via-transparent to-[var(--color-primary-container)] opacity-0 group-hover:opacity-10 transition-opacity duration-500 pointer-events-none z-[1]" />
         </div>
 
         {/* Content */}
