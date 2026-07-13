@@ -1,5 +1,19 @@
 const projectEntries = [
   {
+    id: 16,
+    title: "Samiksha",
+    category: "web-dev",
+    year: "2025 - 2026",
+    description: `Frontend for a Cloud Security Posture Management console — the operator UI for runtime and IaC findings, compliance posture, AI insights, and ticketing. I owned the React/TypeScript client: auth and routing shells, responsive layouts, light/dark theming, and consistent page chrome across the product surface. Live at samikshaunited.app (team backend handles scanners and cloud integrations).`,
+    image: "/Images/Projects/Samiksha.jpg",
+    tags: ["React", "TypeScript", "Vite", "CSS", "UI"],
+    skillIds: ["react", "typescript", "vite", "javascript", "html5", "css3", "git"],
+    links: {
+      github: "https://github.com/atamalajopyetie/CSPM_Capstone",
+      preview: "https://samikshaunited.app/",
+    },
+  },
+  {
     id: 1,
     title: "The Fourth Clover",
     category: "web-dev",

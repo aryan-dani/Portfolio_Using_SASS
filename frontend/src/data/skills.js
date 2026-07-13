@@ -10,7 +10,7 @@ export const skills = {
       level: 82,
       description:
         "Semantic HTML5 markup, accessibility standards, and modern web structure used across every web project - from SPAs to static pages.",
-      projectIds: [1, 7, 8, 12, 13, 14],
+      projectIds: [1, 7, 8, 12, 13, 14, 16],
     },
     {
       id: "css3",
@@ -19,7 +19,7 @@ export const skills = {
       level: 78,
       description:
         "Advanced CSS animations, Grid/Flexbox layouts, and responsive design. Styled the portfolio's neo-brutalist design system from scratch.",
-      projectIds: [1, 7, 8, 12, 13, 14],
+      projectIds: [1, 7, 8, 12, 13, 14, 16],
     },
     {
       id: "sass",
@@ -37,7 +37,7 @@ export const skills = {
       level: 72,
       description:
         "Core language across all web projects. ES6+ features, async/await, DOM manipulation, and event-driven architecture.",
-      projectIds: [1, 7, 8, 12, 13, 14],
+      projectIds: [1, 7, 8, 12, 13, 14, 16],
     },
     {
       id: "typescript",
@@ -45,8 +45,8 @@ export const skills = {
       icon: "SiTypescript",
       level: 65,
       description:
-        "Type-safe development with interfaces, generics, and strict typing. Used in production apps including The Fourth Clover and North-Star.",
-      projectIds: [1, 4, 13],
+        "Type-safe development with interfaces, generics, and strict typing. Used in production apps including The Fourth Clover, North-Star, and Samiksha.",
+      projectIds: [1, 4, 13, 16],
     },
     {
       id: "react",
@@ -55,7 +55,7 @@ export const skills = {
       level: 70,
       description:
         "Primary frontend framework - hooks, context API, component architecture, and state management used across 7+ production projects.",
-      projectIds: [1, 2, 4, 10, 11, 12, 13, 14, 15],
+      projectIds: [1, 2, 4, 10, 11, 12, 13, 14, 15, 16],
     },
     {
       id: "nextjs",
@@ -81,8 +81,8 @@ export const skills = {
       icon: "SiVite",
       level: 65,
       description:
-        "Modern build tool for lightning-fast HMR and optimized production builds. Powers this portfolio, Democrazy, and Ishani.",
-      projectIds: [12, 14, 15],
+        "Modern build tool for lightning-fast HMR and optimized production builds. Powers this portfolio, Democrazy, Ishani, and Samiksha.",
+      projectIds: [12, 14, 15, 16],
     },
     {
       id: "tailwind",
@@ -311,7 +311,7 @@ export const skills = {
       level: 78,
       description:
         "Version control, branching strategies, pull requests, and collaborative workflows. Every project lives on GitHub with proper commit history.",
-      projectIds: [1, 2, 3, 4, 5, 7, 10, 11, 12, 13],
+      projectIds: [1, 2, 3, 4, 5, 7, 10, 11, 12, 13, 16],
     },
     {
       id: "vercel",
