@@ -13,20 +13,31 @@ function FloatingDock() {
   const location = useLocation();
   const dockRef = useRef(null);
   const { enabled: soundEnabled, toggleSound, play } = useSound();
+  const { hideChrome, wake } = useSiteIdleState();
+  const revealDock = useCallback(() => {
+    wake();
+  }, [wake]);
+
   const { isVisible, reveal } = useScrollVisibility({
     topThreshold: 80,
     deltaThreshold: 18,
     revealOnBottomProximity: true,
     bottomProximity: 160,
+    onBottomProximity: revealDock,
   });
-  const { hideChrome, wake } = useSiteIdleState();
   const showDock = isVisible && !hideChrome;
   useInertWhenHidden(dockRef, !showDock);
+  const wasVisibleRef = useRef(isVisible);
 
-  const revealDock = useCallback(() => {
+  const revealDockFull = useCallback(() => {
     wake();
     reveal();
   }, [wake, reveal]);
+
+  useEffect(() => {
+    if (isVisible && !wasVisibleRef.current) wake();
+    wasVisibleRef.current = isVisible;
+  }, [isVisible, wake]);
 
   useEffect(() => {
     const el = dockRef.current;
@@ -35,13 +46,26 @@ function FloatingDock() {
     }
   }, [location.pathname]);
 
+  useEffect(() => {
+    if (!showDock || !dockRef.current) return undefined;
+    const el = dockRef.current;
+    const keepAwake = () => wake();
+    el.addEventListener("pointerenter", keepAwake);
+    el.addEventListener("pointermove", keepAwake);
+    return () => {
+      el.removeEventListener("pointerenter", keepAwake);
+      el.removeEventListener("pointermove", keepAwake);
+    };
+  }, [showDock, wake]);
+
   return (
     <>
       {!showDock && (
         <div
-          className="fixed inset-x-0 bottom-0 z-40 h-32 pointer-events-auto"
-          onPointerEnter={revealDock}
-          onMouseEnter={revealDock}
+          className="fixed inset-x-0 bottom-0 z-40 h-28 sm:h-36 pointer-events-auto"
+          onPointerEnter={revealDockFull}
+          onPointerMove={revealDockFull}
+          onMouseEnter={revealDockFull}
           aria-hidden="true"
         />
       )}

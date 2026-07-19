@@ -1,11 +1,16 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { getPortfolioScrollY, subscribePortfolioScroll } from "../utils/smoothScroll";
 
+/**
+ * Chrome show/hide from scroll position.
+ * Shows at page top (and optional bottom proximity). Does not re-show on mid-page scroll-up.
+ */
 export function useScrollVisibility({
   topThreshold = 72,
   deltaThreshold = 12,
   revealOnBottomProximity = false,
   bottomProximity = 120,
+  onBottomProximity,
 } = {}) {
   const [isVisible, setIsVisible] = useState(true);
   const [isScrolled, setIsScrolled] = useState(false);
@@ -43,7 +48,8 @@ export function useScrollVisibility({
       if (currentY <= topThreshold) {
         setVisible(true);
       } else if (Math.abs(delta) >= deltaThreshold) {
-        setVisible(delta < 0);
+        // Mid-page: hide on scroll-down only — never auto-reveal on scroll-up.
+        if (delta > 0) setVisible(false);
         lastYRef.current = currentY;
       }
 
@@ -64,6 +70,7 @@ export function useScrollVisibility({
         mouseMoveRaf = 0;
         if (window.innerHeight - event.clientY <= bottomProximity) {
           setVisible(true);
+          onBottomProximity?.();
         }
       });
     };
@@ -81,7 +88,7 @@ export function useScrollVisibility({
       }
       if (mouseMoveRaf) cancelAnimationFrame(mouseMoveRaf);
     };
-  }, [bottomProximity, deltaThreshold, revealOnBottomProximity, topThreshold]);
+  }, [bottomProximity, deltaThreshold, onBottomProximity, revealOnBottomProximity, topThreshold]);
 
   return { isVisible, isScrolled, reveal };
 }

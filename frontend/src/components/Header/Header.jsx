@@ -78,11 +78,18 @@ function Header() {
   const { hideChrome, wake } = useSiteIdleState();
   const showChrome = isVisible && !hideChrome;
   useInertWhenHidden(navRef, !showChrome);
+  const wasVisibleRef = useRef(isVisible);
 
   const revealChrome = useCallback(() => {
     wake();
     reveal();
   }, [wake, reveal]);
+
+  // Reaching the top (or top-edge reveal) should bring chrome back after idle hide.
+  useEffect(() => {
+    if (isVisible && !wasVisibleRef.current) wake();
+    wasVisibleRef.current = isVisible;
+  }, [isVisible, wake]);
 
   useEffect(() => {
     const el = navRef.current;
@@ -94,6 +101,19 @@ function Header() {
   useEffect(() => {
     if (!showChrome) setIsMenuOpen(false);
   }, [showChrome]);
+
+  // While chrome is visible, keep resetting the 2s idle timer on intentional nav hover.
+  useEffect(() => {
+    if (!showChrome || !navRef.current) return undefined;
+    const el = navRef.current;
+    const keepAwake = () => wake();
+    el.addEventListener("pointerenter", keepAwake);
+    el.addEventListener("pointermove", keepAwake);
+    return () => {
+      el.removeEventListener("pointerenter", keepAwake);
+      el.removeEventListener("pointermove", keepAwake);
+    };
+  }, [showChrome, wake]);
 
   const handleToggleTheme = useCallback(() => {
     toggleTheme();

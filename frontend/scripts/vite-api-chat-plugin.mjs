@@ -1,5 +1,5 @@
 import { loadEnv } from "vite";
-import { generateIshaniReply } from "../api/ishaniChat.js";
+import { handleChatRequest } from "../api/chat.js";
 import { handleGuestbookRequest } from "../api/guestbook.js";
 import { handleGitHubStatsRequest } from "../api/github-stats.js";
 import { handleGitHubEventsRequest } from "../api/github-events.js";
@@ -50,7 +50,6 @@ export function apiChatDevPlugin() {
     name: "api-chat-dev",
     configureServer(server) {
       const env = loadEnv(server.config.mode, server.config.root, "");
-      const apiKey = env.GROQ_API_KEY || process.env.GROQ_API_KEY;
 
       for (const [key, value] of Object.entries(env)) {
         if (value && !process.env[key]) process.env[key] = String(value).trim();
@@ -102,15 +101,10 @@ export function apiChatDevPlugin() {
 
         try {
           const body = await readJsonBody(req);
-          const result = await generateIshaniReply(
-            {
-              message: body.message,
-              history: body.history,
-              currentPath: body.currentPath,
-            },
-            apiKey,
+          await handleChatRequest(
+            { method: "POST", headers: req.headers, body },
+            createMockResponse(res),
           );
-          sendJson(res, 200, result);
         } catch (error) {
           sendJson(res, error.status || 500, { error: error.message || "Generation failed" });
         }

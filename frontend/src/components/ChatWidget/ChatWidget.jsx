@@ -62,8 +62,16 @@ const OUTLINE = "#131316";
 const FUR = "#f0d4a8";
 const FUR_EAR = "#b8894f";
 const SNOUT = "#faecd8";
+const ROBOT_BODY = "#1c2420";
+const ROBOT_PANEL = "#2a3830";
+const ROBOT_EAR = "#16331f";
+const ROBOT_SNOUT = "#24302a";
+const ROBOT_LED = "#39ff14";
+const ROBOT_DIM = "#1a4d28";
 
-function SleepSnores({ active }) {
+const SNORING_GLYPHS = ["z", "Z", "zz", "Zz", "zZ"];
+
+function SleepSnores({ active, onPop, robot = false }) {
   const [snores, setSnores] = useState([]);
   const snoreIdRef = useRef(0);
 
@@ -76,44 +84,78 @@ function SleepSnores({ active }) {
     const spawn = () => {
       snoreIdRef.current += 1;
       const id = snoreIdRef.current;
-      setSnores((prev) => [...prev.slice(-5), { id, x: 36 + Math.random() * 28, size: 9 + Math.random() * 5 }]);
+      setSnores((prev) => [
+        ...prev.slice(-7),
+        {
+          id,
+          x: 28 + Math.random() * 40,
+          size: 11 + Math.random() * 10,
+          drift: 10 + Math.random() * 18,
+          rotate: -18 + Math.random() * 36,
+          glyph: SNORING_GLYPHS[Math.floor(Math.random() * SNORING_GLYPHS.length)],
+          delay: Math.random() * 0.2,
+        },
+      ]);
     };
 
     spawn();
-    const timer = window.setInterval(spawn, 750);
+    const timer = window.setInterval(spawn, 520);
     return () => clearInterval(timer);
   }, [active]);
 
   if (!active) return null;
 
   return (
-    <div className="absolute inset-0 pointer-events-none overflow-visible" aria-hidden="true">
+    <div className="absolute -inset-6 pointer-events-none overflow-visible z-20" aria-hidden="true">
       <AnimatePresence>
         {snores.map((snore) => (
-          <motion.span
+          <motion.button
             key={snore.id}
-            className="absolute font-label-bold text-[#131316] leading-none select-none"
-            style={{ left: snore.x, bottom: "58%", fontSize: snore.size }}
-            initial={{ opacity: 1, y: 0, x: 0 }}
-            animate={{ opacity: 0, y: -32, x: 14 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 1.6, ease: "easeOut" }}
+            type="button"
+            className={`absolute font-label-bold leading-none select-none pointer-events-auto border-2 border-outline px-1 shadow-[2px_2px_0_var(--shadow-color)] ${
+              robot
+                ? "bg-[#0d1a10] text-[#39ff14]"
+                : "bg-[var(--color-surface)] text-[var(--color-on-surface)]"
+            }`}
+            style={{ left: snore.x, bottom: "62%", fontSize: snore.size }}
+            initial={{ opacity: 0, y: 6, x: 0, scale: 0.7, rotate: snore.rotate }}
+            animate={{
+              opacity: [0, 1, 1, 0],
+              y: -44 - snore.size,
+              x: snore.drift,
+              scale: [0.7, 1.05, 1],
+              rotate: snore.rotate + 8,
+            }}
+            exit={{ opacity: 0, scale: 0.5 }}
+            transition={{ duration: 1.9, delay: snore.delay, ease: "easeOut" }}
+            onClick={(event) => {
+              event.stopPropagation();
+              setSnores((prev) => prev.filter((s) => s.id !== snore.id));
+              onPop?.();
+            }}
+            aria-label="Wake Kuro"
           >
-            z
-          </motion.span>
+            {snore.glyph}
+          </motion.button>
         ))}
       </AnimatePresence>
     </div>
   );
 }
 
-const KuroFace = memo(function KuroFace({ pupilsRef, mood, bliss, sleeping, size = 68 }) {
+const KuroFace = memo(function KuroFace({ pupilsRef, mood, bliss, sleeping, size = 68, robot = false }) {
   const thinking = mood === "thinking";
   const asleep = sleeping && !bliss && !thinking;
+  const body = robot ? ROBOT_BODY : FUR;
+  const ear = robot ? ROBOT_EAR : FUR_EAR;
+  const snout = robot ? ROBOT_SNOUT : SNOUT;
+  const eyeFill = robot ? ROBOT_DIM : "#fff";
+  const pupil = robot ? ROBOT_LED : OUTLINE;
+  const highlight = robot ? "#0a120a" : "#fff";
 
   return (
     <motion.svg
-      viewBox="18 10 60 52"
+      viewBox="18 6 60 56"
       width={size}
       height={size}
       className="shrink-0 drop-shadow-[3px_3px_0_var(--shadow-color)]"
@@ -123,49 +165,71 @@ const KuroFace = memo(function KuroFace({ pupilsRef, mood, bliss, sleeping, size
           ? { y: [0, 1.5, 0], rotate: [0, 1.2, 0, -1.2, 0] }
           : bliss
             ? { y: -1.5, rotate: -2, scale: 1.04 }
-            : { y: 0, scale: 1, rotate: 0 }
+            : robot
+              ? { y: [0, -1, 0] }
+              : { y: 0, scale: 1, rotate: 0 }
       }
       transition={
         asleep
           ? { duration: 3.2, repeat: Infinity, ease: "easeInOut" }
-          : { type: "spring", stiffness: 420, damping: 24 }
+          : robot && !bliss && !thinking
+            ? { duration: 1.8, repeat: Infinity, ease: "easeInOut" }
+            : { type: "spring", stiffness: 420, damping: 24 }
       }
     >
+      {robot && (
+        <>
+          <line x1="48" y1="8" x2="48" y2="16" stroke={ROBOT_LED} strokeWidth="2" />
+          <rect x="46" y="6" width="4" height="4" fill={ROBOT_LED} stroke={OUTLINE} strokeWidth="1.5" />
+        </>
+      )}
+
       <motion.g
         animate={bliss ? { rotate: -28 } : { rotate: -22 }}
         transition={{ type: "spring", stiffness: 420, damping: 24 }}
         style={{ transformOrigin: "26px 24px", transformBox: "fill-box" }}
       >
-        <rect x="21" y="14" width="11" height="20" fill={FUR_EAR} stroke={OUTLINE} strokeWidth="2" />
+        <rect x="21" y="14" width="11" height="20" fill={ear} stroke={OUTLINE} strokeWidth="2" />
+        {robot && <rect x="24" y="18" width="5" height="8" fill={ROBOT_LED} opacity="0.85" />}
       </motion.g>
       <motion.g
         animate={bliss ? { rotate: 28 } : { rotate: 22 }}
         transition={{ type: "spring", stiffness: 420, damping: 24 }}
         style={{ transformOrigin: "70px 24px", transformBox: "fill-box" }}
       >
-        <rect x="64" y="14" width="11" height="20" fill={FUR_EAR} stroke={OUTLINE} strokeWidth="2" />
+        <rect x="64" y="14" width="11" height="20" fill={ear} stroke={OUTLINE} strokeWidth="2" />
+        {robot && <rect x="67" y="18" width="5" height="8" fill={ROBOT_LED} opacity="0.85" />}
       </motion.g>
 
-      <rect x="28" y="20" width="40" height="36" fill={FUR} stroke={OUTLINE} strokeWidth="2.5" />
+      <rect x="28" y="20" width="40" height="36" fill={body} stroke={OUTLINE} strokeWidth="2.5" />
+      {robot && (
+        <>
+          <rect x="31" y="23" width="34" height="8" fill={ROBOT_PANEL} stroke={OUTLINE} strokeWidth="1.5" />
+          <rect x="33" y="25" width="4" height="4" fill={ROBOT_LED} />
+          <rect x="40" y="25" width="4" height="4" fill={ROBOT_DIM} />
+          <rect x="47" y="25" width="4" height="4" fill={ROBOT_LED} opacity="0.55" />
+        </>
+      )}
 
-      {bliss && (
+      {bliss && !robot && (
         <>
           <rect x="29" y="39" width="7" height="4" fill="#e8a898" opacity="0.55" />
           <rect x="60" y="39" width="7" height="4" fill="#e8a898" opacity="0.55" />
         </>
       )}
 
-      <rect x="34" y="42" width="28" height="14" fill={SNOUT} stroke={OUTLINE} strokeWidth="2" />
+      <rect x="34" y="42" width="28" height="14" fill={snout} stroke={OUTLINE} strokeWidth="2" />
+      {robot && <rect x="38" y="45" width="20" height="3" fill={ROBOT_DIM} />}
 
       {asleep ? (
         <>
-          <line x1="33" y1="35" x2="41" y2="35" stroke={OUTLINE} strokeWidth="2" strokeLinecap="square" />
-          <line x1="55" y1="35" x2="63" y2="35" stroke={OUTLINE} strokeWidth="2" strokeLinecap="square" />
+          <line x1="33" y1="35" x2="41" y2="35" stroke={robot ? ROBOT_LED : OUTLINE} strokeWidth="2" strokeLinecap="square" />
+          <line x1="55" y1="35" x2="63" y2="35" stroke={robot ? ROBOT_LED : OUTLINE} strokeWidth="2" strokeLinecap="square" />
         </>
       ) : bliss ? (
         <>
-          <polyline points="32,36 37,31 42,36" fill="none" stroke={OUTLINE} strokeWidth="2.25" strokeLinejoin="miter" strokeLinecap="square" />
-          <polyline points="54,36 59,31 64,36" fill="none" stroke={OUTLINE} strokeWidth="2.25" strokeLinejoin="miter" strokeLinecap="square" />
+          <polyline points="32,36 37,31 42,36" fill="none" stroke={robot ? ROBOT_LED : OUTLINE} strokeWidth="2.25" strokeLinejoin="miter" strokeLinecap="square" />
+          <polyline points="54,36 59,31 64,36" fill="none" stroke={robot ? ROBOT_LED : OUTLINE} strokeWidth="2.25" strokeLinejoin="miter" strokeLinecap="square" />
         </>
       ) : (
         <motion.g
@@ -177,26 +241,26 @@ const KuroFace = memo(function KuroFace({ pupilsRef, mood, bliss, sleeping, size
           }
           style={{ transformOrigin: "48px 33px" }}
         >
-          <rect x="31" y="27" width="12" height="12" fill="#fff" stroke={OUTLINE} strokeWidth="2" />
-          <rect x="53" y="27" width="12" height="12" fill="#fff" stroke={OUTLINE} strokeWidth="2" />
+          <rect x="31" y="27" width="12" height="12" fill={eyeFill} stroke={OUTLINE} strokeWidth="2" />
+          <rect x="53" y="27" width="12" height="12" fill={eyeFill} stroke={OUTLINE} strokeWidth="2" />
           <g ref={pupilsRef}>
-            <rect x="35" y="31" width="5" height="5" fill={OUTLINE} />
-            <rect x="57" y="31" width="5" height="5" fill={OUTLINE} />
-            <rect x="36" y="32" width="2" height="2" fill="#fff" />
-            <rect x="58" y="32" width="2" height="2" fill="#fff" />
+            <rect x="35" y="31" width="5" height="5" fill={pupil} />
+            <rect x="57" y="31" width="5" height="5" fill={pupil} />
+            <rect x="36" y="32" width="2" height="2" fill={highlight} />
+            <rect x="58" y="32" width="2" height="2" fill={highlight} />
           </g>
         </motion.g>
       )}
 
-      <rect x="44" y="44" width="8" height="6" fill={OUTLINE} />
-      {bliss && <rect x="46" y="45" width="2" height="1.5" fill="#5a5960" opacity="0.45" />}
+      <rect x="44" y="44" width="8" height="6" fill={robot ? ROBOT_LED : OUTLINE} />
+      {bliss && !robot && <rect x="46" y="45" width="2" height="1.5" fill="#5a5960" opacity="0.45" />}
 
       {!asleep && thinking && (
-        <line x1="43" y1="52" x2="53" y2="52" stroke={OUTLINE} strokeWidth="2" strokeLinecap="square" />
+        <line x1="43" y1="52" x2="53" y2="52" stroke={robot ? ROBOT_LED : OUTLINE} strokeWidth="2" strokeLinecap="square" />
       )}
 
       {thinking && !asleep && (
-        <text x="64" y="24" fontSize="9" fontWeight="bold" fill={OUTLINE}>
+        <text x="64" y="24" fontSize="9" fontWeight="bold" fill={robot ? ROBOT_LED : OUTLINE}>
           ?
         </text>
       )}
@@ -261,6 +325,7 @@ const ChatWidget = memo(function ChatWidget() {
 
   const endRef = useRef(null);
   const inputRef = useRef(null);
+  const widgetRef = useRef(null);
   const dogRef = useRef(null);
   const pupilsRef = useRef(null);
   const closeTimerRef = useRef(0);
@@ -273,6 +338,8 @@ const ChatWidget = memo(function ChatWidget() {
   const lastPointerRef = useRef({ x: 0, y: 0 });
   const lastActionRef = useRef(null);
   const hasStoredChat = useRef(sessionStorage.getItem(CHAT_STORAGE_KEY) != null);
+  const pointerInsideRef = useRef(false);
+  const inputFocusedRef = useRef(false);
 
   const sleeping = isIdle && !chatOpen && !petting && !dogHovered && !loading;
   const bliss = petting || dogHovered;
@@ -398,17 +465,55 @@ const ChatWidget = memo(function ChatWidget() {
     setChatOpen(true);
   }, []);
 
-  const closeChat = useCallback(() => {
-    if (inputFocused) return;
+  const scheduleCloseChat = useCallback(() => {
+    clearTimeout(closeTimerRef.current);
     closeTimerRef.current = window.setTimeout(() => {
+      if (inputFocusedRef.current || pointerInsideRef.current) return;
       setChatOpen(false);
     }, 280);
-  }, [inputFocused]);
+  }, []);
 
   const forceCloseChat = useCallback(() => {
     clearTimeout(closeTimerRef.current);
+    inputFocusedRef.current = false;
+    pointerInsideRef.current = false;
     setInputFocused(false);
     setChatOpen(false);
+  }, []);
+
+  const handleWidgetEnter = useCallback(() => {
+    pointerInsideRef.current = true;
+    openChat();
+  }, [openChat]);
+
+  const handleWidgetLeave = useCallback(() => {
+    pointerInsideRef.current = false;
+    scheduleCloseChat();
+  }, [scheduleCloseChat]);
+
+  const handleInputFocus = useCallback(() => {
+    inputFocusedRef.current = true;
+    setInputFocused(true);
+    clearTimeout(closeTimerRef.current);
+  }, []);
+
+  const handleInputBlur = useCallback(() => {
+    inputFocusedRef.current = false;
+    setInputFocused(false);
+    window.requestAnimationFrame(() => {
+      const focusInside = widgetRef.current?.contains(document.activeElement);
+      if (!focusInside && !pointerInsideRef.current) {
+        scheduleCloseChat();
+      }
+    });
+  }, [scheduleCloseChat]);
+
+  useEffect(() => {
+    return () => {
+      clearTimeout(closeTimerRef.current);
+      clearTimeout(bubbleTimerRef.current);
+      clearTimeout(petTimerRef.current);
+    };
   }, []);
 
   const sendMessage = async (text) => {
@@ -439,8 +544,11 @@ const ChatWidget = memo(function ChatWidget() {
         ...m,
         { role: "assistant", text: reply, actionLabel: actionLabel || undefined },
       ]);
-    } catch (e) {
-      setMessages((m) => [...m, { role: "assistant", text: e.message }]);
+    } catch {
+      setMessages((m) => [
+        ...m,
+        { role: "assistant", text: "Something went wrong. Try again in a moment." },
+      ]);
     } finally {
       setLoading(false);
     }
@@ -464,27 +572,29 @@ const ChatWidget = memo(function ChatWidget() {
 
   return createPortal(
     <div className="fixed left-7 bottom-4 z-[68] hidden md:block pointer-events-none">
-      <motion.div
-        className="relative flex flex-col items-start pointer-events-auto"
-        onMouseEnter={openChat}
-        onMouseLeave={closeChat}
-      >
-        <AnimatePresence>
-          {chatOpen && (
-            <motion.div
-              className="relative z-20 mb-3 w-[min(calc(100vw-2rem),380px)] flex flex-col max-h-[min(54vh,460px)] border-4 border-outline bg-[var(--color-surface)] shadow-[10px_10px_0_var(--shadow-color)] overflow-hidden"
-              initial={{ opacity: 0, y: 14, scale: 0.96 }}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              exit={{ opacity: 0, y: 10, scale: 0.97 }}
-              transition={{ type: "spring", stiffness: 420, damping: 30 }}
-              role="dialog"
-              aria-label="Kuro chat"
-            >
+      <div className="relative flex flex-col items-start">
+        <motion.div
+          ref={widgetRef}
+          className="relative flex flex-col items-start pointer-events-auto"
+          onMouseEnter={handleWidgetEnter}
+          onMouseLeave={handleWidgetLeave}
+        >
+          <AnimatePresence>
+            {chatOpen && (
+              <motion.div
+                className="relative z-20 mb-3 w-[min(calc(100vw-2rem),380px)] flex flex-col max-h-[min(54vh,460px)] border-4 border-outline bg-[var(--color-surface)] shadow-[10px_10px_0_var(--shadow-color)] overflow-hidden"
+                initial={{ opacity: 0, y: 14, scale: 0.96 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, y: 10, scale: 0.97 }}
+                transition={{ type: "spring", stiffness: 420, damping: 30 }}
+                role="dialog"
+                aria-label="Kuro chat"
+              >
               {/* Header */}
               <div className="flex items-center gap-3 border-b-4 border-outline px-3.5 py-3 bg-[var(--color-primary-container)] text-[var(--color-on-primary-container)]">
                 <div className="relative shrink-0">
                   <div className="border-2 border-[var(--color-on-primary-container)] bg-[var(--color-surface)] p-0.5">
-                    <KuroFace pupilsRef={null} mood={mood} bliss={false} sleeping={false} size={36} />
+                    <KuroFace pupilsRef={null} mood={mood} bliss={false} sleeping={false} robot={crtMode} size={36} />
                   </div>
                   <span
                     className={`absolute -right-1 -bottom-1 h-2.5 w-2.5 border-2 border-[var(--color-primary-container)] ${
@@ -612,8 +722,8 @@ const ChatWidget = memo(function ChatWidget() {
                     value={input}
                     onChange={(e) => setInput(e.target.value)}
                     onKeyDown={(e) => e.key === "Enter" && send()}
-                    onFocus={() => setInputFocused(true)}
-                    onBlur={() => setInputFocused(false)}
+                    onFocus={handleInputFocus}
+                    onBlur={handleInputBlur}
                     placeholder={placeholder}
                     className="flex-1 min-w-0 bg-transparent px-2 py-2 font-body-md text-sm text-[var(--color-on-surface)] placeholder:text-[var(--color-text-muted)] outline-none"
                     aria-label="Message Kuro"
@@ -643,7 +753,6 @@ const ChatWidget = memo(function ChatWidget() {
         </AnimatePresence>
 
         <div className="relative z-10">
-          <SleepSnores active={sleeping && !chatOpen} />
           <button
             ref={dogRef}
             type="button"
@@ -653,18 +762,41 @@ const ChatWidget = memo(function ChatWidget() {
             onFocus={() => setDogHovered(true)}
             onBlur={() => setDogHovered(false)}
             className="block cursor-pointer bg-transparent border-0 p-0"
-            aria-label={sleeping ? "Kuro is sleeping" : bliss ? "Kuro is enjoying pets" : "Pet Kuro"}
+            aria-label={
+              crtMode
+                ? sleeping
+                  ? "Kuro-bot is idle"
+                  : "Interact with Kuro-bot"
+                : sleeping
+                  ? "Kuro is sleeping"
+                  : bliss
+                    ? "Kuro is enjoying pets"
+                    : "Pet Kuro"
+            }
           >
             <KuroFace
               pupilsRef={pupilsRef}
               mood={mood}
               bliss={bliss}
               sleeping={sleeping}
+              robot={crtMode}
               size={68}
             />
           </button>
         </div>
       </motion.div>
+
+      {/* Outside openChat hover root so Z clicks wake/pet without forcing the panel open */}
+      <div className="absolute bottom-0 left-0 z-30 pointer-events-none" aria-hidden={!sleeping || chatOpen}>
+        <div className="relative w-[68px] h-[68px]">
+          <SleepSnores
+            active={sleeping && !chatOpen}
+            robot={crtMode}
+            onPop={petDog}
+          />
+        </div>
+      </div>
+      </div>
     </div>,
     document.body,
   );

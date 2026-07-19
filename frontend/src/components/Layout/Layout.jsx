@@ -7,14 +7,11 @@ import OnboardingHint from "../OnboardingHint/OnboardingHint";
 import InstallPrompt from "../InstallPrompt/InstallPrompt";
 import CrtExitBanner from "../CrtExitBanner/CrtExitBanner";
 import { useKeyboardNav } from "../../hooks/useKeyboardNav";
-import { useSiteIdleState } from "../../context/SiteIdleContext";
-
 const CommandPalette = lazy(() => import("../CommandPalette/CommandPalette"));
 
 const Layout = memo(function Layout({ children }) {
   const [shortcutsOpen, setShortcutsOpen] = useState(false);
   const [paletteMounted, setPaletteMounted] = useState(false);
-  const { hideChrome } = useSiteIdleState();
   const showShortcuts = useCallback(() => setShortcutsOpen(true), []);
   useKeyboardNav({ onShowShortcuts: showShortcuts });
 
@@ -63,7 +60,7 @@ const Layout = memo(function Layout({ children }) {
       )}
       <OnboardingHint />
       <InstallPrompt />
-      {!hideChrome && <CrtExitBanner />}
+      <CrtExitBanner />
       <ShortcutsOverlay isOpen={shortcutsOpen} onClose={() => setShortcutsOpen(false)} />
     </div>
   );

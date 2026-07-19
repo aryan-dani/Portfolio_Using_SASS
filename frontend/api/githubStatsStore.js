@@ -1,12 +1,13 @@
 import {
   GITHUB_USER,
   githubFetch,
+  githubGraphQL,
   getGitHubToken,
   readStaleMemoryCache,
   writeMemoryCache,
 } from "./githubApiShared.js";
 
-const MAX_REPOS_FOR_ACTIVITY = 2;
+const MAX_REPOS_FOR_ACTIVITY = 8;
 const LANG_REPO_SAMPLE = 6;
 const STATS_RETRY_MS = 1200;
 const STATS_MAX_RETRIES = 3;
@@ -184,7 +185,45 @@ function computeStreak(contributions) {
   return { current, longest };
 }
 
-function buildDashboardPayload(user, repos, activityPairs) {
+async function fetchOfficialContributionCalendar(token) {
+  const json = await githubGraphQL(
+    `query($login: String!) {
+      user(login: $login) {
+        contributionsCollection {
+          contributionCalendar {
+            totalContributions
+            weeks {
+              contributionDays {
+                contributionCount
+                date
+              }
+            }
+          }
+        }
+      }
+    }`,
+    { login: GITHUB_USER },
+    token,
+  );
+
+  const calendar = json?.data?.user?.contributionsCollection?.contributionCalendar;
+  if (!calendar?.weeks?.length) return null;
+
+  const days = calendar.weeks.flatMap((week) =>
+    (week.contributionDays || []).map((day) => ({
+      date: day.date,
+      count: day.contributionCount || 0,
+    })),
+  );
+
+  return {
+    days,
+    total: calendar.totalContributions || days.reduce((sum, d) => sum + d.count, 0),
+    source: "github-calendar",
+  };
+}
+
+function buildDashboardPayload(user, repos, activityPairs, calendar = null) {
   const publicRepos = repos.filter((repo) => !repo.private);
   const weeklyActivity = mergeWeeklyActivity(
     activityPairs.map((p) => p.commitActivity).filter(Boolean),
@@ -192,12 +231,18 @@ function buildDashboardPayload(user, repos, activityPairs) {
   const weeklyCommits = mergeParticipation(
     activityPairs.map((p) => p.participation).filter(Boolean),
   );
-  let contributions = weeksToContributionDays(weeklyActivity);
+
+  let contributions = calendar?.days || weeksToContributionDays(weeklyActivity);
+  let contributionSource = calendar?.source || "repo-stats";
+
   if (!contributions.some((day) => day.count > 0) && weeklyCommits.some((count) => count > 0)) {
     contributions = weeklyCommitsToContributions(weeklyCommits);
+    contributionSource = "repo-participation";
   }
+
   const streak = computeStreak(contributions);
-  const totalCommitsYear = contributions.reduce((sum, d) => sum + (d.count || 0), 0);
+  const totalCommitsYear =
+    calendar?.total ?? contributions.reduce((sum, d) => sum + (d.count || 0), 0);
   const totalStars = publicRepos.reduce((sum, repo) => sum + (repo.stargazers_count || 0), 0);
 
   return {
@@ -217,6 +262,7 @@ function buildDashboardPayload(user, repos, activityPairs) {
     },
     languages: [],
     contributions,
+    contributionSource,
     weeklyCommits,
     activityRepos: activityPairs.map((p) => p.repo),
     fetchedAt: new Date().toISOString(),
@@ -224,7 +270,11 @@ function buildDashboardPayload(user, repos, activityPairs) {
 }
 
 export async function buildGitHubDashboard(token = getGitHubToken()) {
-  const [user, repos] = await Promise.all([fetchUser(token), fetchRepos(token)]);
+  const [user, repos, calendar] = await Promise.all([
+    fetchUser(token),
+    fetchRepos(token),
+    fetchOfficialContributionCalendar(token),
+  ]);
 
   const publicRepos = repos.filter((repo) => !repo.private);
   const activityRepos = publicRepos
@@ -258,7 +308,7 @@ export async function buildGitHubDashboard(token = getGitHubToken()) {
     });
   }
 
-  const dashboard = buildDashboardPayload(user, repos, activityPairs);
+  const dashboard = buildDashboardPayload(user, repos, activityPairs, calendar);
   dashboard.languages = aggregateLanguages(langsPairs);
   return dashboard;
 }

@@ -112,10 +112,6 @@ function Contact() {
         email: formData.email,
         subject: formData.subject || "Portfolio Contact",
         message: formData.message,
-        _subject: `[Portfolio] ${formData.subject || "Contact"} from ${formData.name}`,
-        _captcha: "false",
-        _template: "table",
-        _replyto: formData.email,
       };
 
       const response = await fetch(endpoint, {
@@ -129,7 +125,7 @@ function Contact() {
 
       const result = await response.json().catch(() => ({}));
 
-      if (response.ok && (result.success === "true" || result.success === true || CONTACT_ENDPOINT)) {
+      if (response.ok && result.success === true) {
         setSubmitted(true);
         setShowConfetti(true);
         showToast("Message sent successfully!", "success");

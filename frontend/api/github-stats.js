@@ -5,9 +5,9 @@ import { readGithubCache, writeGithubCache } from "./githubApiShared.js";
 const CACHE_KEY = "github:dashboard:aryan-dani";
 const CACHE_TTL_SEC = 30 * 60;
 
-async function readCachedDashboard() {
+async function readCachedDashboard({ allowStale = false } = {}) {
   const redis = createGuestbookRedis({ readOnly: true });
-  return readGithubCache(redis, CACHE_KEY);
+  return readGithubCache(redis, CACHE_KEY, { allowStale });
 }
 
 async function writeCachedDashboard(data) {
@@ -18,7 +18,7 @@ async function writeCachedDashboard(data) {
 
 export async function handleGitHubStatsRequest(_request, response) {
   try {
-    const cached = await readCachedDashboard();
+    const cached = await readCachedDashboard({ allowStale: false });
     if (cached) {
       response.setHeader("Cache-Control", "s-maxage=1800, stale-while-revalidate=3600");
       response.setHeader("X-GitHub-Stats-Cache", "hit");
@@ -31,7 +31,8 @@ export async function handleGitHubStatsRequest(_request, response) {
     response.setHeader("X-GitHub-Stats-Cache", "miss");
     return response.status(200).json(data);
   } catch (error) {
-    const stale = (await readCachedDashboard()) || readDashboardMemoryCache();
+    const stale =
+      (await readCachedDashboard({ allowStale: true })) || readDashboardMemoryCache();
     if (stale) {
       response.setHeader("Cache-Control", "s-maxage=60, stale-while-revalidate=300");
       response.setHeader("X-GitHub-Stats-Cache", "stale");
@@ -40,7 +41,7 @@ export async function handleGitHubStatsRequest(_request, response) {
 
     const message = error.rateLimited
       ? "GitHub rate limit hit. Add GITHUB_TOKEN to .env.local / Vercel, then wait a few minutes."
-      : (error.message || "GitHub stats unavailable");
+      : "GitHub stats unavailable";
 
     return response.status(503).json({ error: message });
   }

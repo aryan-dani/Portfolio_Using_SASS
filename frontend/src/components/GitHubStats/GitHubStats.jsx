@@ -35,9 +35,9 @@ function GHCard({ header, children, className = "" }) {
 
 function StatTile({ label, value }) {
   return (
-    <div className="border-4 border-outline bg-[var(--color-surface-variant)] p-4 text-center shadow-[4px_4px_0px_0px_var(--shadow-color)]">
-      <p className="font-headline-md text-2xl md:text-3xl text-[var(--color-on-surface)]">{value}</p>
-      <p className="font-mono text-[10px] uppercase tracking-widest text-[var(--color-text-muted)] mt-1">{label}</p>
+    <div className="border-4 border-outline bg-[var(--color-surface-variant)] px-4 py-8 md:py-10 min-h-[128px] md:min-h-[148px] flex flex-col items-center justify-center text-center shadow-[4px_4px_0px_0px_var(--shadow-color)]">
+      <p className="font-headline-md text-3xl md:text-4xl lg:text-5xl leading-none text-[var(--color-on-surface)]">{value}</p>
+      <p className="font-mono text-[10px] md:text-xs uppercase tracking-widest text-[var(--color-text-muted)] mt-3">{label}</p>
     </div>
   );
 }
@@ -186,7 +186,7 @@ const GitHubStats = memo(function GitHubStats() {
                 </>
               }
             >
-              <div className="p-4 grid grid-cols-2 gap-4">
+              <div className="p-4 md:p-5 grid grid-cols-2 gap-4 md:gap-5 content-stretch">
                 <StatTile label="Public repos" value={user?.publicRepos ?? "—"} />
                 <StatTile label="Followers" value={user?.followers ?? "—"} />
                 <StatTile label="Stars earned" value={totals?.stars?.toLocaleString() ?? "—"} />
@@ -210,11 +210,18 @@ const GitHubStats = memo(function GitHubStats() {
             header={
               <>
                 <span>Contributions Calendar</span>
-                <span className="text-xs opacity-60">Repo commit activity</span>
+                <span className="text-xs opacity-60">
+                  {dashboard.contributionSource === "github-calendar"
+                    ? "Matches GitHub profile"
+                    : "Repo commit activity"}
+                </span>
               </>
             }
           >
-            <ContributionHeatmap contributions={dashboard.contributions} />
+            <ContributionHeatmap
+              contributions={dashboard.contributions}
+              source={dashboard.contributionSource}
+            />
           </GHCard>
 
           <GHCard

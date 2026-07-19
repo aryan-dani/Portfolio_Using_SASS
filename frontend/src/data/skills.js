@@ -28,7 +28,7 @@ export const skills = {
       level: 62,
       description:
         "Modular, maintainable CSS with variables, mixins, nesting, and inheritance - primarily used for this portfolio's component styles.",
-      projectIds: [1, 7, 8, 12, 13, 14, 15],
+      projectIds: [1, 7, 8, 12, 13, 14],
     },
     {
       id: "javascript",
@@ -55,7 +55,7 @@ export const skills = {
       level: 70,
       description:
         "Primary frontend framework - hooks, context API, component architecture, and state management used across 7+ production projects.",
-      projectIds: [1, 2, 4, 10, 11, 12, 13, 14, 15, 16],
+      projectIds: [1, 2, 4, 10, 11, 12, 13, 14, 16],
     },
     {
       id: "nextjs",
@@ -82,7 +82,7 @@ export const skills = {
       level: 65,
       description:
         "Modern build tool for lightning-fast HMR and optimized production builds. Powers this portfolio, Democrazy, Ishani, and Samiksha.",
-      projectIds: [12, 14, 15, 16],
+      projectIds: [12, 14, 16],
     },
     {
       id: "tailwind",
@@ -320,7 +320,7 @@ export const skills = {
       level: 68,
       description:
         "Serverless deployment platform with preview deployments, edge functions, and analytics. Hosts 6+ live projects.",
-      projectIds: [1, 10, 11, 12, 13, 15],
+      projectIds: [1, 10, 11, 12, 13, 16],
     },
     {
       id: "github-actions",

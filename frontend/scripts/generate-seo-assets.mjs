@@ -1,4 +1,4 @@
-import { mkdir, writeFile } from "node:fs/promises";
+import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { SEO_CONFIG, SEO_ROUTE_ORDER, SEO_ROUTE_META, SITE_URL } from "../src/config/seoConfig.js";
 
 const publicDir = new URL("../public/", import.meta.url);
@@ -16,13 +16,34 @@ async function writePublicFile(path, contents) {
   await writeFile(new URL(path, publicDir), contents, "utf8");
 }
 
+/** Keep lastmod stable across rebuilds unless the URL set changed. */
+async function resolveContentDate() {
+  try {
+    const existing = await readFile(new URL("sitemap.xml", publicDir), "utf8");
+    const locs = [...existing.matchAll(/<loc>(.*?)<\/loc>/g)].map((m) => m[1]);
+    const expected = SEO_ROUTE_ORDER.map((path) => SEO_CONFIG[path].canonical);
+    if (
+      locs.length === expected.length &&
+      locs.every((loc, index) => loc === expected[index])
+    ) {
+      const match = existing.match(/<lastmod>(\d{4}-\d{2}-\d{2})<\/lastmod>/);
+      if (match) return match[1];
+    }
+  } catch {
+    /* first generate or unreadable */
+  }
+  return today;
+}
+
+const contentDate = await resolveContentDate();
+
 function buildSitemap() {
   const urls = SEO_ROUTE_ORDER.map((path) => {
     const config = SEO_CONFIG[path];
     const meta = SEO_ROUTE_META[path];
     return `  <url>
     <loc>${xmlEscape(config.canonical)}</loc>
-    <lastmod>${today}</lastmod>
+    <lastmod>${contentDate}</lastmod>
     <changefreq>${meta.changefreq}</changefreq>
     <priority>${meta.priority}</priority>
   </url>`;
@@ -104,7 +125,7 @@ GitHub: https://github.com/aryan-dani
 /* SITE */
 Stack: React, Vite, Framer Motion, Lenis, Tailwind CSS
 Language: English
-Last updated: ${today}
+Last updated: ${contentDate}
 `;
 }
 

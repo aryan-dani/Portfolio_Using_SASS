@@ -30,6 +30,20 @@ export async function githubFetch(path, token = getGitHubToken()) {
   return fetch(`https://api.github.com${path}`, { headers: authHeaders(token) });
 }
 
+export async function githubGraphQL(query, variables = {}, token = getGitHubToken()) {
+  if (!token) return null;
+  const res = await fetch("https://api.github.com/graphql", {
+    method: "POST",
+    headers: {
+      ...authHeaders(token),
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ query, variables }),
+  });
+  if (!res.ok) return null;
+  return res.json();
+}
+
 export function readMemoryCache(key, ttlMs) {
   const entry = memoryStore.get(key);
   if (!entry) return null;
@@ -45,7 +59,7 @@ export function readStaleMemoryCache(key) {
   return memoryStore.get(key)?.data ?? null;
 }
 
-export async function readGithubCache(redis, key) {
+export async function readGithubCache(redis, key, { allowStale = false } = {}) {
   if (redis) {
     try {
       const cached = await redis.get(key);
@@ -54,7 +68,10 @@ export async function readGithubCache(redis, key) {
       /* fall through */
     }
   }
-  return readMemoryCache(key, 30 * 60 * 1000) || readStaleMemoryCache(key);
+  const fresh = readMemoryCache(key, 30 * 60 * 1000);
+  if (fresh) return fresh;
+  if (allowStale) return readStaleMemoryCache(key);
+  return null;
 }
 
 export async function writeGithubCache(redis, key, data, ttlSec = 30 * 60) {

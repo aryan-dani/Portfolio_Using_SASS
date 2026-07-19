@@ -4,7 +4,8 @@ import { getPortfolioScrollY, subscribePortfolioScroll } from "../utils/smoothSc
 import { useAchievements } from "./AchievementContext";
 
 export const RESTING_IDLE_MS = 9000;
-export const CHROME_IDLE_MS = 12000;
+/** Navbar + dock hide after this much inactivity. */
+export const CHROME_IDLE_MS = 2000;
 export const STALE_IDLE_MS = 45000;
 
 const MOVE_RESET_PX = 72;
@@ -29,9 +30,10 @@ function StaleWakeTracker({ isStale }) {
 export function SiteIdleProvider({ children }) {
   const { pathname } = useLocation();
   const [phase, setPhase] = useState(0);
+  const [hideChrome, setHideChrome] = useState(false);
   const pointerRef = useRef({ x: 0, y: 0, moved: 0 });
   const scrollYRef = useRef(0);
-  const wakeRef = useRef(() => {});
+  const wakeChromeRef = useRef(() => {});
 
   useEffect(() => {
     let restingTimer = 0;
@@ -44,18 +46,34 @@ export function SiteIdleProvider({ children }) {
       clearTimeout(staleTimer);
     };
 
-    const armIdle = () => {
-      clearTimers();
+    const armChromeIdle = () => {
+      clearTimeout(chromeTimer);
+      chromeTimer = window.setTimeout(() => setHideChrome(true), CHROME_IDLE_MS);
+    };
+
+    const armActivityIdle = () => {
+      clearTimeout(restingTimer);
+      clearTimeout(staleTimer);
       restingTimer = window.setTimeout(() => setPhase((p) => Math.max(p, 1)), RESTING_IDLE_MS);
-      chromeTimer = window.setTimeout(() => setPhase((p) => Math.max(p, 2)), CHROME_IDLE_MS);
       staleTimer = window.setTimeout(() => setPhase((p) => Math.max(p, 3)), STALE_IDLE_MS);
     };
 
-    const bump = () => {
+    /** General site activity (Kuro sleep / stale) — does not re-show chrome. */
+    const bumpActivity = () => {
       setPhase(0);
-      armIdle();
+      armActivityIdle();
     };
-    wakeRef.current = bump;
+
+    /**
+     * Explicit chrome reveal — top of page, top edge, or dock edge only.
+     * Also counts as activity.
+     */
+    const wakeChrome = () => {
+      setHideChrome(false);
+      armChromeIdle();
+      bumpActivity();
+    };
+    wakeChromeRef.current = wakeChrome;
 
     const onPointerMove = (e) => {
       const prev = pointerRef.current;
@@ -68,7 +86,7 @@ export function SiteIdleProvider({ children }) {
       pointerRef.current = { x: e.clientX, y: e.clientY, moved };
       if (moved >= MOVE_RESET_PX) {
         pointerRef.current.moved = 0;
-        bump();
+        bumpActivity();
       }
     };
 
@@ -76,34 +94,36 @@ export function SiteIdleProvider({ children }) {
       const y = getPortfolioScrollY();
       if (Math.abs(y - scrollYRef.current) >= SCROLL_RESET_PX) {
         scrollYRef.current = y;
-        bump();
+        bumpActivity();
       }
     };
 
     pointerRef.current = { x: 0, y: 0, moved: 0 };
     scrollYRef.current = getPortfolioScrollY();
-    bump();
+    setHideChrome(false);
+    setPhase(0);
+    armChromeIdle();
+    armActivityIdle();
 
     const instantEvents = ["pointerdown", "keydown", "click", "touchstart"];
-    instantEvents.forEach((event) => window.addEventListener(event, bump, { passive: true }));
+    instantEvents.forEach((event) => window.addEventListener(event, bumpActivity, { passive: true }));
     window.addEventListener("pointermove", onPointerMove, { passive: true });
     const unsubScroll = subscribePortfolioScroll(onScroll);
 
     return () => {
       clearTimers();
-      wakeRef.current = () => {};
-      instantEvents.forEach((event) => window.removeEventListener(event, bump));
+      wakeChromeRef.current = () => {};
+      instantEvents.forEach((event) => window.removeEventListener(event, bumpActivity));
       window.removeEventListener("pointermove", onPointerMove);
       unsubScroll();
     };
   }, [pathname]);
 
   const wake = useCallback(() => {
-    wakeRef.current();
+    wakeChromeRef.current();
   }, []);
 
   const isResting = phase >= 1;
-  const hideChrome = phase >= 2;
   const isStale = phase >= 3;
 
   useEffect(() => {
