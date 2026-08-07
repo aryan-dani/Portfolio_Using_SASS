@@ -37,7 +37,7 @@ export const skills = {
       level: 72,
       description:
         "Core language across all web projects. ES6+ features, async/await, DOM manipulation, and event-driven architecture.",
-      projectIds: [1, 7, 8, 12, 13, 14, 16],
+      projectIds: [1, 7, 8, 12, 13, 14, 16, 17],
     },
     {
       id: "typescript",
@@ -46,7 +46,7 @@ export const skills = {
       level: 65,
       description:
         "Type-safe development with interfaces, generics, and strict typing. Used in production apps including The Fourth Clover, North-Star, and Samiksha.",
-      projectIds: [1, 4, 13, 16],
+      projectIds: [1, 4, 13, 16, 17],
     },
     {
       id: "react",
@@ -55,7 +55,7 @@ export const skills = {
       level: 70,
       description:
         "Primary frontend framework - hooks, context API, component architecture, and state management used across 7+ production projects.",
-      projectIds: [1, 2, 4, 10, 11, 12, 13, 14, 16],
+      projectIds: [1, 2, 4, 10, 11, 12, 13, 14, 16, 17],
     },
     {
       id: "nextjs",
@@ -82,7 +82,7 @@ export const skills = {
       level: 65,
       description:
         "Modern build tool for lightning-fast HMR and optimized production builds. Powers this portfolio, Democrazy, Ishani, and Samiksha.",
-      projectIds: [12, 14, 16],
+      projectIds: [12, 14, 16, 17],
     },
     {
       id: "tailwind",
@@ -311,7 +311,7 @@ export const skills = {
       level: 78,
       description:
         "Version control, branching strategies, pull requests, and collaborative workflows. Every project lives on GitHub with proper commit history.",
-      projectIds: [1, 2, 3, 4, 5, 7, 10, 11, 12, 13, 16],
+      projectIds: [1, 2, 3, 4, 5, 7, 10, 11, 12, 13, 16, 17],
     },
     {
       id: "vercel",
@@ -330,6 +330,24 @@ export const skills = {
       description:
         "CI/CD pipeline automation - automated testing, builds, and deployment triggers. Core infrastructure for Arbiter's healing workflows.",
       projectIds: [11],
+    },
+    {
+      id: "rust",
+      name: "Rust",
+      icon: "SiRust",
+      level: 48,
+      description:
+        "Systems language for secure local services — powers Aegis vault crypto, key derivation, and the Tauri backend shell.",
+      projectIds: [17],
+    },
+    {
+      id: "tauri",
+      name: "Tauri",
+      icon: "SiTauri",
+      level: 52,
+      description:
+        "Lightweight desktop runtime pairing a web frontend with a Rust core. Used to ship Aegis as a Windows-native password vault.",
+      projectIds: [17],
     },
     {
       id: "groq",

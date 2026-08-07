@@ -63,7 +63,16 @@ export async function handleChatRequest(req, res) {
     );
     res.status(200).json(result);
   } catch (error) {
-    res.status(error.status || 500).json({ error: error.message || "Generation failed" });
+    const status = error.status || 500;
+    let message = error.message || "Generation failed";
+    // Never leak raw upstream / stack details to the client.
+    if (
+      status >= 500 &&
+      !/not configured|snag|busy|too many/i.test(message)
+    ) {
+      message = "Kuro hit a snag talking to the model. Try again shortly.";
+    }
+    res.status(status).json({ error: message });
   }
 }
 

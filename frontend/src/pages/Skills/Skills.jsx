@@ -12,6 +12,7 @@ import {
   SiTypescript, SiExpress, SiMongodb, SiTensorflow, SiPytorch,
   SiScikitlearn, SiNextdotjs, SiTailwindcss, SiFastapi, SiFlask,
   SiSupabase, SiOpencv, SiDocker, SiVite, SiFirebase, SiVercel,
+  SiRust, SiTauri,
 } from "react-icons/si";
 import { skills, skillCategories, getSkillById, getSkillCategory } from "../../data/skills";
 import { usePageSEO } from "../../utils/seo";
@@ -31,6 +32,7 @@ const iconMap = {
   SiTypescript, SiExpress, SiMongodb, SiTensorflow, SiPytorch,
   SiScikitlearn, SiNextdotjs, SiTailwindcss, SiFastapi, SiFlask,
   SiSupabase, SiOpencv, SiDocker, SiVite, SiFirebase, SiVercel,
+  SiRust, SiTauri,
 };
 
 function getProficiencyLabel(level) {

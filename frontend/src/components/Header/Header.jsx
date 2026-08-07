@@ -75,21 +75,11 @@ function Header() {
     topThreshold: 84,
     deltaThreshold: 16,
   });
-  const { hideChrome, wake } = useSiteIdleState();
-  const showChrome = isVisible && !hideChrome;
+  const { wake } = useSiteIdleState();
+  // Keep the top navbar always mounted — hiding it leaves the page looking unfinished.
+  // Only scroll-hide applies (mid-page scroll down); idle hide is for the dock only.
+  const showChrome = isVisible;
   useInertWhenHidden(navRef, !showChrome);
-  const wasVisibleRef = useRef(isVisible);
-
-  const revealChrome = useCallback(() => {
-    wake();
-    reveal();
-  }, [wake, reveal]);
-
-  // Reaching the top (or top-edge reveal) should bring chrome back after idle hide.
-  useEffect(() => {
-    if (isVisible && !wasVisibleRef.current) wake();
-    wasVisibleRef.current = isVisible;
-  }, [isVisible, wake]);
 
   useEffect(() => {
     const el = navRef.current;
@@ -102,7 +92,6 @@ function Header() {
     if (!showChrome) setIsMenuOpen(false);
   }, [showChrome]);
 
-  // While chrome is visible, keep resetting the 2s idle timer on intentional nav hover.
   useEffect(() => {
     if (!showChrome || !navRef.current) return undefined;
     const el = navRef.current;
@@ -127,8 +116,8 @@ function Header() {
       {!showChrome && (
         <div
           className="fixed inset-x-0 top-0 z-40 h-24 pointer-events-auto"
-          onPointerEnter={revealChrome}
-          onMouseEnter={revealChrome}
+          onPointerEnter={reveal}
+          onMouseEnter={reveal}
           aria-hidden="true"
         />
       )}

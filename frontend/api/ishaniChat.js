@@ -339,9 +339,12 @@ export async function generateIshaniReply({ message, history, currentPath, siteS
   });
 
   if (!response.ok) {
-    const errBody = await response.json().catch(() => ({}));
-    const err = new Error(errBody.error?.message || `Groq API error ${response.status}`);
-    err.status = 500;
+    const err = new Error(
+      response.status === 429
+        ? "The model is busy. Try again in a moment."
+        : "Kuro hit a snag talking to the model. Try again shortly.",
+    );
+    err.status = response.status === 429 ? 429 : 502;
     throw err;
   }
 

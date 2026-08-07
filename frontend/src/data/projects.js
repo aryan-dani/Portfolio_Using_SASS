@@ -1,19 +1,5 @@
 const projectEntries = [
   {
-    id: 16,
-    title: "Samiksha",
-    category: "web-dev",
-    year: "2025 - 2026",
-    description: `Frontend for a Cloud Security Posture Management console — the operator UI for runtime and IaC findings, compliance posture, AI insights, and ticketing. I owned the React/TypeScript client: auth and routing shells, responsive layouts, light/dark theming, and consistent page chrome across the product surface. Live at samikshaunited.app (team backend handles scanners and cloud integrations).`,
-    image: "/Images/Projects/Samiksha.jpg",
-    tags: ["React", "TypeScript", "Vite", "CSS", "UI"],
-    skillIds: ["react", "typescript", "vite", "javascript", "html5", "css3", "git"],
-    links: {
-      github: "https://github.com/atamalajopyetie/CSPM_Capstone",
-      preview: "https://samikshaunited.app/",
-    },
-  },
-  {
     id: 1,
     title: "The Fourth Clover",
     category: "web-dev",
@@ -71,6 +57,41 @@ const projectEntries = [
     links: {
       github: "https://github.com/aryan-dani/Arbiter",
       preview: "https://thearbiter.vercel.app/",
+    },
+  },
+  {
+    id: 16,
+    title: "Samiksha",
+    category: "web-dev",
+    year: "2025 - 2026",
+    description: `Frontend for a Cloud Security Posture Management console — the operator UI for runtime and IaC findings, compliance posture, AI insights, and ticketing. I owned the React/TypeScript client: auth and routing shells, responsive layouts, light/dark theming, and consistent page chrome across the product surface. Live at samikshaunited.app (team backend handles scanners and cloud integrations).`,
+    image: "/Images/Projects/Samiksha.jpg",
+    tags: ["React", "TypeScript", "Vite", "CSS", "UI"],
+    skillIds: ["react", "typescript", "vite", "javascript", "html5", "css3", "git"],
+    links: {
+      github: "https://github.com/atamalajopyetie/CSPM_Capstone",
+      preview: "https://samikshaunited.app/",
+    },
+  },
+  {
+    id: 17,
+    title: "Aegis",
+    category: "web-dev",
+    year: "2025 - 2026",
+    description: `Local-first Windows desktop password manager built with Tauri, Rust, and React. Vault data stays on the device with zero-knowledge master-password key derivation (Argon2id), AES-256-GCM entry encryption, and a SQLCipher-protected database. Designed for focused local secrets without background sync, account recovery, or telemetry — signed updates ship via GitHub Releases.`,
+    image: "/Images/Projects/Aegis.jpg",
+    tags: ["Tauri", "Rust", "React", "SQLCipher", "Security"],
+    skillIds: ["tauri", "rust", "react", "typescript", "vite", "javascript", "git"],
+    problem:
+      "Most password managers push cloud sync and account recovery, which conflicts with users who want secrets to stay on their machine with no telemetry.",
+    solution:
+      "Aegis keeps the vault local, derives keys only from the master password, and limits network use to signed update checks and optional breach lookups.",
+    architecture:
+      "Tauri desktop shell with a React UI, Rust backend, Argon2id key derivation, AES-256-GCM for entries, and SQLCipher for the on-disk vault.",
+    results:
+      "Windows installer + in-app signed updates from GitHub Releases; losing the master password permanently loses vault access by design.",
+    links: {
+      github: "https://github.com/aryan-dani/Aegis",
     },
   },
   {
