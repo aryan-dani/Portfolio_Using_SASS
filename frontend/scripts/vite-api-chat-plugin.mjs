@@ -1,8 +1,4 @@
 import { loadEnv } from "vite";
-import { handleChatRequest } from "../api/chat.js";
-import { handleGuestbookRequest } from "../api/guestbook.js";
-import { handleGitHubStatsRequest } from "../api/github-stats.js";
-import { handleGitHubEventsRequest } from "../api/github-events.js";
 
 function readJsonBody(req) {
   return new Promise((resolve, reject) => {
@@ -44,16 +40,32 @@ function createMockResponse(res) {
   };
 }
 
-/** Serves /api/* during `vite` dev (Vercel functions only run on deploy or `vercel dev`). */
+/**
+ * Serves /api/* during `vite` dev (Vercel functions only run on deploy or `vercel dev`).
+ * API handlers are imported lazily inside configureServer so production `vite build`
+ * does not resolve serverless modules while loading vite.config.js.
+ */
 export function apiChatDevPlugin() {
   return {
     name: "api-chat-dev",
-    configureServer(server) {
+    async configureServer(server) {
       const env = loadEnv(server.config.mode, server.config.root, "");
 
       for (const [key, value] of Object.entries(env)) {
         if (value && !process.env[key]) process.env[key] = String(value).trim();
       }
+
+      const [
+        { handleChatRequest },
+        { handleGuestbookRequest },
+        { handleGitHubStatsRequest },
+        { handleGitHubEventsRequest },
+      ] = await Promise.all([
+        import("../api/chat.js"),
+        import("../api/guestbook.js"),
+        import("../api/github-stats.js"),
+        import("../api/github-events.js"),
+      ]);
 
       server.middlewares.use(async (req, res, next) => {
         const path = req.url?.split("?")[0];
