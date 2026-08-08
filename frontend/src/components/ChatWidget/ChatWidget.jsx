@@ -9,6 +9,7 @@ import { useSiteIdle } from "../../hooks/useSiteIdle";
 import { useModalLock } from "../../hooks/useModalLock";
 import { askKuro, kuroVoiceError } from "../../utils/askKuro";
 import { executeKuroActions, describeKuroActions } from "../../utils/kuroActions";
+import { getDynamicPlaceholder, getDynamicSuggestionChips } from "../../utils/kuroTips";
 import {
   getKuroWelcomeLine,
   getKuroPageLine,
@@ -17,6 +18,7 @@ import {
   markKuroMet,
   markPageVisited,
 } from "../../data/kuroRouteLines";
+import KuroMarkdown from "./KuroMarkdown";
 
 const EYE_RANGE = 3.2;
 const PET_LINES = ["*tail wag*", "*happy pant*", "Good boy.", "*ear flop*", "*lean*", "More pets please."];
@@ -31,16 +33,6 @@ const THINKING_LINES = [
   "*tail wag while processing*",
   "*ears perk up*",
   "*consulting the portfolio*",
-];
-const SUGGESTION_CHIPS = [
-  { label: "Projects", send: "go to projects" },
-  { label: "Hack mode", send: "hack mode" },
-  { label: "Who built this?", send: "Who built this?" },
-];
-const INPUT_PLACEHOLDERS = [
-  "Ask about Aryan, or say 'go to projects'",
-  "Try: who built this?",
-  "Try: take me to skills",
 ];
 
 function loadChatHistory() {
@@ -359,9 +351,8 @@ const ChatWidget = memo(function ChatWidget() {
   const [messages, setMessages] = useState(loadChatHistory);
   const [loading, setLoading] = useState(false);
   const [thinkingLine, setThinkingLine] = useState(THINKING_LINES[0]);
-  const [placeholder] = useState(
-    () => INPUT_PLACEHOLDERS[Math.floor(Math.random() * INPUT_PLACEHOLDERS.length)],
-  );
+  const [placeholder] = useState(() => getDynamicPlaceholder());
+  const [suggestionChips, setSuggestionChips] = useState(() => getDynamicSuggestionChips("/"));
   const [inputFocused, setInputFocused] = useState(false);
   const [pinned, setPinned] = useState(() => Boolean(initialPrefs.pinned));
   const [isFullscreen, setIsFullscreen] = useState(false);
@@ -372,6 +363,10 @@ const ChatWidget = memo(function ChatWidget() {
   const { toggleTheme, setCrtMode, setAccent, theme, crtMode, accent } = useTheme();
   const navigate = useNavigate();
   const location = useLocation();
+
+  useEffect(() => {
+    setSuggestionChips(getDynamicSuggestionChips(location.pathname));
+  }, [location.pathname]);
 
   const endRef = useRef(null);
   const inputRef = useRef(null);
@@ -737,7 +732,7 @@ const ChatWidget = memo(function ChatWidget() {
             </span>
           </div>
           <p className="font-mono text-[9px] uppercase tracking-[0.12em] opacity-70 truncate">
-            Co-pilot · nav · hack · theme
+            copilot
           </p>
         </div>
         <div className="flex items-center gap-1.5 shrink-0">
@@ -806,7 +801,7 @@ const ChatWidget = memo(function ChatWidget() {
                     : "bg-[var(--color-surface-variant)] text-[var(--color-on-surface)]"
                 }`}
               >
-                {msg.text}
+                {isUser ? msg.text : <KuroMarkdown text={msg.text} />}
               </div>
               {msg.actionLabel && (
                 <p className="font-mono text-[9px] uppercase tracking-[0.1em] text-[var(--color-text-muted)] px-0.5">
@@ -846,7 +841,7 @@ const ChatWidget = memo(function ChatWidget() {
             <span className="w-full pt-2.5 font-mono text-[9px] uppercase tracking-[0.16em] text-[var(--color-text-muted)]">
               Try saying
             </span>
-            {SUGGESTION_CHIPS.map((chip) => (
+            {suggestionChips.map((chip) => (
               <button
                 key={chip.label}
                 type="button"
@@ -884,7 +879,7 @@ const ChatWidget = memo(function ChatWidget() {
             className={`shrink-0 border-2 border-outline px-3.5 py-2 font-label-bold uppercase text-xs tracking-wide transition-all ${
               canSend
                 ? "bg-[var(--color-primary-container)] text-[var(--color-on-primary-container)] shadow-[2px_2px_0_var(--shadow-color)] hover:translate-x-px hover:translate-y-px hover:shadow-none"
-                : "bg-[var(--color-surface-variant)] text-[var(--color-text-muted)] opacity-60 cursor-not-allowed"
+                : "bg-[var(--color-surface)] text-[var(--color-on-surface)] cursor-not-allowed"
             }`}
           >
             Send

@@ -1,4 +1,5 @@
 import { useEffect } from "react";
+import { clearKonamiProgress, markKonamiProgress } from "../utils/konamiProgress";
 
 const KONAMI_CODES = [
   "ArrowUp",
@@ -54,6 +55,7 @@ export function useKonami(onSuccess) {
     const reset = () => {
       index = 0;
       lastStepAt = 0;
+      clearKonamiProgress();
     };
 
     const onKeyDown = (event) => {
@@ -69,6 +71,7 @@ export function useKonami(onSuccess) {
       if (matchKonamiStep(event, index)) {
         index += 1;
         lastStepAt = now;
+        markKonamiProgress();
         if (index === KONAMI_CODES.length) {
           reset();
           onSuccess?.();
@@ -78,9 +81,14 @@ export function useKonami(onSuccess) {
 
       index = matchesKonamiStart(event) ? 1 : 0;
       lastStepAt = index ? now : 0;
+      if (index) markKonamiProgress();
+      else clearKonamiProgress();
     };
 
     window.addEventListener("keydown", onKeyDown, true);
-    return () => window.removeEventListener("keydown", onKeyDown, true);
+    return () => {
+      window.removeEventListener("keydown", onKeyDown, true);
+      clearKonamiProgress();
+    };
   }, [onSuccess]);
 }

@@ -1,7 +1,19 @@
 import { playgroundRouteMap } from "../config/routes";
+import { aboutInfo } from "../data/experience";
 import { smoothScrollToTop } from "./smoothScroll";
 
 const PALETTE_EVENT = "portfolio:open-palette";
+
+async function copyEmailToClipboard() {
+  const email = aboutInfo?.email;
+  if (!email || !navigator?.clipboard?.writeText) return false;
+  try {
+    await navigator.clipboard.writeText(email);
+    return true;
+  } catch {
+    return false;
+  }
+}
 
 export function executeKuroActions(actions, handlers) {
   if (!Array.isArray(actions) || !actions.length) return [];
@@ -50,6 +62,16 @@ export function executeKuroActions(actions, handlers) {
         window.dispatchEvent(new CustomEvent(PALETTE_EVENT));
         executed.push(action);
         break;
+      case "copy_email":
+        void copyEmailToClipboard();
+        executed.push(action);
+        break;
+      case "open_resume": {
+        const url = aboutInfo?.resumeUrl || "/resume.pdf";
+        window.open(url, "_blank", "noopener,noreferrer");
+        executed.push(action);
+        break;
+      }
       default:
         break;
     }
@@ -65,19 +87,23 @@ export function describeKuroActions(actions) {
     .map((a) => {
       switch (a.type) {
         case "navigate":
-          return `→ Opened ${a.label || a.page}`;
+          return `-> Opened ${a.label || a.page}`;
         case "toggle_theme":
-          return "→ Toggled theme";
+          return "-> Toggled theme";
         case "set_hack_mode":
-          return a.enabled ? "→ Hack mode on" : "→ Hack mode off";
+          return a.enabled ? "-> Hack mode on" : "-> Hack mode off";
         case "scroll_to_top":
-          return "→ Scrolled to top";
+          return "-> Scrolled to top";
         case "set_accent":
-          return `→ Accent: ${a.palette}`;
+          return `-> Accent: ${a.palette}`;
         case "open_palette":
-          return "→ Opened command palette";
+          return "-> Opened command palette";
+        case "copy_email":
+          return "-> Copied email";
+        case "open_resume":
+          return "-> Opened resume";
         default:
-          return "→ Done";
+          return "-> Done";
       }
     })
     .join(" ");

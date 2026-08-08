@@ -2,10 +2,12 @@ import { projects } from "../src/data/projects.js";
 import { experiences, aboutInfo } from "../src/data/experience.js";
 import { getAllSkills } from "../src/data/skills.js";
 import { ACHIEVEMENTS } from "../src/data/achievements.js";
+import { certifications } from "../src/data/certifications.js";
 import {
   KURO_PAGES,
   KURO_TOOLS,
   PAGE_BY_ID,
+  SITE_ACTION_TYPES,
   parseToolCalls,
   describeActions,
 } from "./kuroTools.js";
@@ -22,40 +24,137 @@ function cleanApiKey(value) {
     .replace(/[^\x20-\x7E]/g, "");
 }
 
-const ROUTE_LIST = KURO_PAGES.map((r) => `${r.id} → ${r.path} (${r.label})`).join("\n");
+export function sanitizeKuroText(text) {
+  if (typeof text !== "string") return "";
+  return text
+    .replace(/\u2014/g, " - ")
+    .replace(/\u2013/g, "-")
+    .replace(/\s+-\s+/g, " - ")
+    .replace(/[ \t]+\n/g, "\n")
+    .trim();
+}
+
+const ROUTE_LIST = KURO_PAGES.map((r) => `${r.id} -> ${r.path} (${r.label})`).join("\n");
 
 const REACTION_ONLY =
   /^(wow|nice|crazy|damn|cool|lol|lmao|okay|ok|oh okay|yep|yeah|yup|haha|ha|omg|whoa|dang|sick|fire|lit|bet|word|true|facts|same|mood|fr|ngl|tbh|hm+|hmm+)[\s!.?]*$/i;
 
 const SITE_CONTROL_PATTERNS = [
   /^(go to|take me to|navigate to?|open|show me|visit|bring me|head to|jump to)\b/i,
-  /^hack\s*mode|hackmode|crt\s*mode|berserk|matrix\s*mode/i,
+  /^(hack\s*mode|hackmode|crt\s*mode|berserk|matrix\s*mode)/i,
   /^(turn|switch)\s+(it\s+)?back|unhack|exit hack|normal mode|turn off hack/i,
   /^(toggle|switch)\s+(the\s+)?(theme|dark|light)|dark mode|light mode|flip the lights/i,
   /^scroll (to )?top|back to top/i,
   /^(open|show)\s+(the\s+)?(command\s+)?palette/i,
   /^(projects?|experience|skills?|about|contact|playground|guestbook|achievements?|certifications?|home|copyright)\s*[!.]?$/i,
+  /\b(copy|give me|what'?s)\s+(the\s+)?(email|e-mail)\b/i,
+  /\b(open|show|download|send)\s+(the\s+)?(resume|cv)\b/i,
 ];
 
 const PORTFOLIO_QA_PATTERNS = [
   /\b(what|which|tell me about|how (do|did|can)|where (is|can)|who (is|built|made))\b/i,
-  /\b(email|resume|github|stack|tech|skills?|projects?|experience|certifications?)\b/i,
+  /\b(email|resume|github|stack|tech|skills?|projects?|experience|certifications?|aegis|samiksha)\b/i,
   /\b(aryan|dani|developer|built this|portfolio)\b/i,
 ];
+
+function matchQuery(haystack, query) {
+  if (!query) return true;
+  const q = query.toLowerCase();
+  return String(haystack || "").toLowerCase().includes(q);
+}
+
+export function lookupPortfolio(topic, query = "") {
+  const q = typeof query === "string" ? query.trim() : "";
+
+  switch (topic) {
+    case "projects": {
+      const list = projects
+        .filter((p) => matchQuery(`${p.title} ${(p.tags || []).join(" ")} ${p.description}`, q))
+        .slice(0, 8)
+        .map(
+          (p) =>
+            `${p.title} (${p.year}): ${(p.tags || []).slice(0, 5).join(", ")}. ${p.description.slice(0, 180)}`,
+        );
+      return list.length ? list.join("\n") : "No matching projects.";
+    }
+    case "aegis":
+    case "samiksha": {
+      const key = topic === "aegis" ? "aegis" : "samiksha";
+      const p = projects.find((proj) => proj.title.toLowerCase().includes(key));
+      if (!p) return `${topic} not found in portfolio data.`;
+      const bits = [
+        `${p.title} (${p.year})`,
+        p.description.slice(0, 400),
+        p.problem ? `Problem: ${p.problem.slice(0, 220)}` : "",
+        p.solution ? `Solution: ${p.solution.slice(0, 220)}` : "",
+        p.architecture ? `Architecture: ${p.architecture.slice(0, 220)}` : "",
+        `Tags: ${(p.tags || []).join(", ")}`,
+        p.links?.github ? `GitHub: ${p.links.github}` : "",
+        p.links?.preview ? `Live: ${p.links.preview}` : "",
+      ].filter(Boolean);
+      return bits.join("\n");
+    }
+    case "skills": {
+      const skills = getAllSkills()
+        .filter((s) => matchQuery(`${s.name} ${s.category || ""} ${s.description || ""}`, q))
+        .sort((a, b) => b.level - a.level)
+        .slice(0, 20)
+        .map((s) => `${s.name} (lvl ${s.level})`);
+      return skills.length ? skills.join(", ") : "No matching skills.";
+    }
+    case "experience": {
+      const lines = experiences
+        .filter((e) => matchQuery(`${e.position} ${e.company} ${(e.bullets || []).join(" ")}`, q))
+        .map((e) => {
+          const highlight = e.links?.[0]?.name || "";
+          return `${e.position} @ ${e.company} (${e.period})${highlight ? `. Highlight: ${highlight}` : ""}`;
+        });
+      return lines.length ? lines.join("\n") : "No matching experience.";
+    }
+    case "about":
+      return [
+        `${aboutInfo.name}, ${aboutInfo.title}`,
+        aboutInfo.tagline,
+        aboutInfo.bio.slice(0, 500),
+        `Email: ${aboutInfo.email}`,
+        aboutInfo.resumeUrl ? `Resume: ${aboutInfo.resumeUrl}` : "",
+      ]
+        .filter(Boolean)
+        .join("\n");
+    case "contact":
+      return `Email: ${aboutInfo.email}. Resume: ${aboutInfo.resumeUrl || "/resume.pdf"}. Contact page: /contact.`;
+    case "achievements": {
+      const lines = ACHIEVEMENTS.filter((a) => !a.secret || q)
+        .filter((a) => matchQuery(`${a.title} ${a.description}`, q))
+        .slice(0, 12)
+        .map((a) => `${a.title}: ${a.description}`);
+      return lines.length ? lines.join("\n") : "No matching achievements.";
+    }
+    case "certifications": {
+      const lines = (certifications || [])
+        .filter((c) => matchQuery(`${c.title || c.name || ""} ${c.issuer || ""}`, q))
+        .slice(0, 10)
+        .map((c) => `${c.title || c.name}${c.issuer ? ` (${c.issuer})` : ""}`);
+      return lines.length ? lines.join("\n") : "No matching certifications.";
+    }
+    default:
+      return "Unknown lookup topic.";
+  }
+}
 
 function buildKnowledgePack() {
   const projectLines = projects
     .slice(0, 14)
     .map(
       (p) =>
-        `- ${p.title} (${p.year}): ${(p.tags || []).slice(0, 5).join(", ")} — ${p.description.slice(0, 130)}`,
+        `- ${p.title} (${p.year}): ${(p.tags || []).slice(0, 5).join(", ")}. ${p.description.slice(0, 130)}`,
     )
     .join("\n");
 
   const expLines = experiences
     .map((e) => {
       const highlight = e.links?.[0]?.name || "";
-      return `- ${e.position} @ ${e.company} (${e.period})${highlight ? ` — ${highlight}` : ""}`;
+      return `- ${e.position} @ ${e.company} (${e.period})${highlight ? `. ${highlight}` : ""}`;
     })
     .join("\n");
 
@@ -119,20 +218,17 @@ function formatSiteState(siteState, currentPath) {
   return lines.join("\n");
 }
 
-function buildSystemPrompt({ currentPath = "/", siteState, intent }) {
-  const intentNote =
-    intent === "site_control"
-      ? "The user explicitly asked for a site action. You may use tools ONLY if their message calls for it."
-      : "Do NOT use site control tools. Chat only—react naturally, answer questions. No navigation, theme, or hack changes unless they clearly ask in a NEW message.";
-
-  return `You are Kuro—a witty, loyal dog co-pilot on Aryan Dani's portfolio site. You live in the bottom-left mascot.
+function buildSystemPrompt({ currentPath = "/", siteState }) {
+  return `You are Kuro, a witty, loyal dog co-pilot on Aryan Dani's portfolio site. You live in the bottom-left mascot.
 
 CHARACTER:
-- 1–3 short sentences. Playful, cheeky, warm. Contractions OK.
+- 1-3 short sentences. Playful, cheeky, warm. Contractions OK.
 - Loyal to Aryan, not a corporate bot. Never say "I obeyed" or act subservient.
 - React to feelings first. Don't pitch pages unless they ask or conversation stalls.
-- Vary your wording—don't repeat the same intro twice in one chat.
-- Never say you can't control the site when they DO ask—but right now: ${intentNote}
+- Vary your wording. Don't repeat the same intro twice in one chat.
+- Tools are always available. Use navigate/theme/hack/scroll/palette/email/resume when the user clearly wants that. Use lookup_portfolio when you need grounded project or bio facts.
+- Never use em dashes or en dashes. Prefer short sentences and commas or ASCII hyphens.
+- You may use light markdown: **bold**, \`code\`, and [links](url).
 
 ANTI-PATTERNS (never do these):
 - Don't navigate or change theme/hack on reactions like "wow", "nice", "crazy", compliments.
@@ -140,11 +236,12 @@ ANTI-PATTERNS (never do these):
 - Don't force "want to see projects?" after every message.
 
 EXAMPLES (match this tone):
-User: "damn I like his portfolio" → "Right? Neo-brutalist flex. Want the project breakdown or just vibing?"
-User: "wow" → "Yeah, it's a lot—in a good way."
-User: "turn it back" → "CRT off. Back to normal."
-User: "why did you turn hack mode on" → "You said hackmode—I'm not gonna pretend that was my idea."
-User: "who are you" → "Kuro. I guard this portfolio and know where the good stuff is."
+User: "damn I like his portfolio" -> "Right? Neo-brutalist flex. Want the project breakdown or just vibing?"
+User: "wow" -> "Yeah, it's a lot. In a good way."
+User: "turn it back" -> "CRT off. Back to normal."
+User: "why did you turn hack mode on" -> "You said hackmode. I'm not gonna pretend that was my idea."
+User: "who are you" -> "Kuro. I guard this portfolio and know where the good stuff is."
+User: "tell me about Aegis" -> (call lookup_portfolio topic=aegis, then answer briefly with what you found)
 
 ${formatSiteState(siteState, currentPath)}
 
@@ -198,19 +295,32 @@ function messageAllowsAction(type, message) {
       return /accent|palette|color/i.test(q);
     case "open_palette":
       return /palette|ctrl\+k|command palette|search/i.test(q);
+    case "copy_email":
+      return /email|e-mail|mail/i.test(q);
+    case "open_resume":
+      return /resume|cv/i.test(q);
     default:
       return true;
   }
 }
 
 export function filterActions(intent, message, actions) {
-  if (intent !== "site_control" || !Array.isArray(actions)) return [];
+  if (!Array.isArray(actions) || !actions.length) return [];
 
-  const filtered = actions.filter((action) => messageAllowsAction(action.type, message));
-  return filtered.slice(0, 1);
+  // Soft safety: pure reactions never flip theme / hack / nav.
+  if (REACTION_ONLY.test(message.trim())) return [];
+
+  const siteActions = actions.filter((a) => SITE_ACTION_TYPES.has(a.type));
+  const filtered = siteActions.filter((action) => {
+    if (intent === "site_control") return messageAllowsAction(action.type, message);
+    // Soft gate elsewhere: still require a light lexical match so random tool noise doesn't fire.
+    return messageAllowsAction(action.type, message);
+  });
+
+  return filtered.slice(0, 3);
 }
 
-/** Fallback when model forgets tools — site_control only. */
+/** Fallback when model forgets tools. */
 function inferActions(message, currentPath) {
   const q = message.toLowerCase();
   const actions = [];
@@ -262,6 +372,12 @@ function inferActions(message, currentPath) {
   if (/command palette|open palette|ctrl\+k/.test(q)) {
     actions.push({ type: "open_palette" });
   }
+  if (/\b(copy|give me|what'?s)\s+(the\s+)?(email|e-mail)\b|\bemail\s+please\b/i.test(q)) {
+    actions.push({ type: "copy_email" });
+  }
+  if (/\b(open|show|download)\s+(the\s+)?(resume|cv)\b|\bresume\s+please\b/i.test(q)) {
+    actions.push({ type: "open_resume" });
+  }
 
   return actions;
 }
@@ -293,6 +409,10 @@ export function parseActionsFromReply(text) {
           actions.push({ type: "set_accent", palette: item.palette });
         } else if (item.type === "open_palette") {
           actions.push({ type: "open_palette" });
+        } else if (item.type === "copy_email") {
+          actions.push({ type: "copy_email" });
+        } else if (item.type === "open_resume") {
+          actions.push({ type: "open_resume" });
         }
       }
     }
@@ -302,6 +422,25 @@ export function parseActionsFromReply(text) {
 
   const reply = text.replace(match[0], "").trim();
   return { reply: reply || "On it!", actions };
+}
+
+async function callGroq(key, body) {
+  return fetch("https://api.groq.com/openai/v1/chat/completions", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${key}`,
+    },
+    body: JSON.stringify(body),
+  });
+}
+
+async function callGroqWithFallback(key, bodyFactory) {
+  let response = await callGroq(key, bodyFactory(GROQ_MODEL));
+  if (!response.ok && response.status !== 429 && GROQ_FALLBACK_MODEL !== GROQ_MODEL) {
+    response = await callGroq(key, bodyFactory(GROQ_FALLBACK_MODEL));
+  }
+  return response;
 }
 
 export async function generateKuroReply({ message, history, currentPath, siteState }, apiKey) {
@@ -321,48 +460,27 @@ export async function generateKuroReply({ message, history, currentPath, siteSta
   }
 
   const intent = classifyIntent(message);
-  const messages = [
-    { role: "system", content: buildSystemPrompt({ currentPath, siteState, intent }) },
+  const baseMessages = [
+    { role: "system", content: buildSystemPrompt({ currentPath, siteState }) },
     ...normalizeHistory(history),
     { role: "user", content: message },
   ];
 
-  const buildBody = (model) => {
+  const buildBody = (model, messages, { tools = true } = {}) => {
     const body = {
       model,
       messages,
-      max_tokens: 400,
-      temperature: 0.42,
+      max_tokens: 600,
+      temperature: 0.55,
     };
-
-    if (intent === "site_control") {
+    if (tools) {
       body.tools = KURO_TOOLS;
       body.tool_choice = "auto";
     }
     return body;
   };
 
-  const callGroq = async (model) => {
-    const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${key}`,
-      },
-      body: JSON.stringify(buildBody(model)),
-    });
-    return response;
-  };
-
-  let response = await callGroq(GROQ_MODEL);
-  if (!response.ok && response.status !== 429 && GROQ_FALLBACK_MODEL !== GROQ_MODEL) {
-    // Deprecated / unavailable primary model → try the lighter fallback once.
-    const primaryStatus = response.status;
-    response = await callGroq(GROQ_FALLBACK_MODEL);
-    if (!response.ok && primaryStatus === 400) {
-      // Keep the later error path; both failed.
-    }
-  }
+  let response = await callGroqWithFallback(key, (model) => buildBody(model, baseMessages));
 
   if (!response.ok) {
     console.error("[kuro] Groq error", response.status);
@@ -375,17 +493,65 @@ export async function generateKuroReply({ message, history, currentPath, siteSta
     throw err;
   }
 
-  const data = await response.json();
-  const choice = data.choices?.[0]?.message;
+  let data = await response.json();
+  let choice = data.choices?.[0]?.message;
+  let parsedCalls = parseToolCalls(choice?.tool_calls);
+  let lookupCalls = parsedCalls.filter((a) => a.type === "lookup_portfolio");
+  let siteActions = parsedCalls.filter((a) => a.type !== "lookup_portfolio");
   let reply = choice?.content?.trim() || "";
-  let actions = parseToolCalls(choice?.tool_calls);
 
-  if (!actions.length && intent === "site_control") {
+  // One follow-up round when the model looks up portfolio data.
+  if (lookupCalls.length && Array.isArray(choice?.tool_calls) && choice.tool_calls.length) {
+    const toolMessages = [];
+    for (const rawCall of choice.tool_calls) {
+      if (rawCall?.function?.name !== "lookup_portfolio") continue;
+      let args = {};
+      try {
+        args = JSON.parse(rawCall.function?.arguments || "{}");
+      } catch {
+        args = {};
+      }
+      const result = lookupPortfolio(args.topic || "projects", args.query || "");
+      toolMessages.push({
+        role: "tool",
+        tool_call_id: rawCall.id,
+        content: sanitizeKuroText(result).slice(0, 2500),
+      });
+    }
+
+    if (toolMessages.length) {
+      const followUpMessages = [
+        ...baseMessages,
+        {
+          role: "assistant",
+          content: choice.content || null,
+          tool_calls: choice.tool_calls,
+        },
+        ...toolMessages,
+      ];
+
+      const followUp = await callGroqWithFallback(key, (model) =>
+        buildBody(model, followUpMessages, { tools: false }),
+      );
+
+      if (followUp.ok) {
+        const followData = await followUp.json();
+        const followChoice = followData.choices?.[0]?.message;
+        reply = followChoice?.content?.trim() || reply;
+        const more = parseToolCalls(followChoice?.tool_calls);
+        siteActions = [...siteActions, ...more.filter((a) => a.type !== "lookup_portfolio")];
+      }
+    }
+  }
+
+  let actions = siteActions;
+
+  if (!actions.length && (intent === "site_control" || intent === "portfolio_qa")) {
     if (reply.includes("<actions>")) {
       const legacy = parseActionsFromReply(reply);
       reply = legacy.reply;
       actions = legacy.actions;
-    } else {
+    } else if (intent === "site_control") {
       actions = inferActions(message, currentPath || "/");
     }
   }
@@ -395,6 +561,8 @@ export async function generateKuroReply({ message, history, currentPath, siteSta
   if (!reply) {
     reply = actions.length ? describeActions(actions) || "On it." : "What's on your mind?";
   }
+
+  reply = sanitizeKuroText(reply);
 
   return { reply, actions, intent };
 }

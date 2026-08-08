@@ -11,8 +11,9 @@ import { useAchievements } from "../../context/AchievementContext";
 import { useSound } from "../../context/SoundContext";
 import { askKuro } from "../../utils/askKuro";
 import { useModalLock } from "../../hooks/useModalLock";
+import { usePageSEO } from "../../hooks/usePageSEO";
 import PageHeader from "../../components/PageHeader/PageHeader";
-import { usePageSEO } from "../../utils/seo";
+import { isKonamiInProgress } from "../../utils/konamiProgress";
 import "./Playground.scss";
 
 import { playgroundRouteMap as ROUTES } from "../../config/routes";
@@ -133,10 +134,11 @@ function Playground() {
       }
 
       // If it's a single character, focus the terminal input
-      if (e.key.length === 1 && inputRef.current) {
-      play("hover");
-      inputRef.current.focus();
-    }
+      // Skip while Konami is in progress so B/A complete the sequence.
+      if (e.key.length === 1 && inputRef.current && !isKonamiInProgress()) {
+        play("hover");
+        inputRef.current.focus();
+      }
     };
 
     window.addEventListener("keydown", handleGlobalKeyDown);

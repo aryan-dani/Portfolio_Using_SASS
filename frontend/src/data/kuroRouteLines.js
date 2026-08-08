@@ -4,8 +4,8 @@ export const KURO_PAGES_KEY = "portfolio_kuro_pages";
 const LEGACY_WELCOME_KEY = "portfolio_ishani_welcome";
 
 export const KURO_WELCOME_LINES = [
-  "Hey—I'm Kuro. Ask about Aryan, or tell me where to go.",
-  "Yo. I'm the dog in the corner. Projects, hack mode, whatever—your call.",
+  "Hey, I'm Kuro. Ask about Aryan, or tell me where to go.",
+  "Yo. I'm the dog in the corner. Projects, hack mode, whatever. Your call.",
   "What's up. I'm Kuro. Compliments welcome. Random theme flips, not so much.",
 ];
 
@@ -15,7 +15,7 @@ export const KURO_PAGE_LINES = {
     "First time here? This is the launch pad. Ask me anything!",
   ],
   "/projects": [
-    "Projects time! These are the builds I'm most proud of.",
+    "Projects time! Ask about Aegis, Samiksha, or any stack you care about.",
     "First look at the work? Tell me a stack and I'll point you to a match.",
   ],
   "/experience": [
@@ -24,7 +24,7 @@ export const KURO_PAGE_LINES = {
   ],
   "/skills": [
     "Skills vault! Search or filter by category.",
-    "First visit? Ask me what I use for AI or full-stack work.",
+    "First visit? Ask me what he uses for AI or full-stack work.",
   ],
   "/about": [
     "About page! GitHub stats and the backstory live here.",
@@ -32,15 +32,15 @@ export const KURO_PAGE_LINES = {
   ],
   "/contact": [
     "Contact zone! Email, form, or socials. Go say hi.",
-    "Need to reach out? I can copy my email for you.",
+    "Need to reach out? Ask me for the email.",
   ],
   "/playground": [
-    "CLI playground! Type `help` and go wild.",
-    "Terminal mode! Try `hack` or `ask` when you're ready.",
+    "CLI playground! Type help and go wild.",
+    "Terminal mode! Try hack or ask when you're ready.",
   ],
   "/certifications": [
     "Certs loaded! Filters help if the list looks long.",
-    "Credential wall! Good place to see what I've validated.",
+    "Credential wall! Good place to see what he's validated.",
   ],
   "/achievements": [
     "Achievement hunt! Explore the site to unlock trophies.",

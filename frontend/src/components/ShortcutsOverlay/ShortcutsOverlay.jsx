@@ -15,7 +15,7 @@ const GLOBAL_SHORTCUTS = [
 ];
 
 const BERSERK_SHORTCUTS = [
-  { keys: ["Ctrl/Alt", "H"], label: "Toggle CRT hack mode" },
+  { keys: ["Ctrl+Alt", "H"], label: "Toggle CRT hack mode" },
   {
     keys: ["↑", "↑", "↓", "↓", "←", "→", "←", "→", "B", "A"],
     label: "Konami code (same effect)",

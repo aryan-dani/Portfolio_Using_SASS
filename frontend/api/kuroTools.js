@@ -1,4 +1,4 @@
-/** Route + tool defs for Kuro chat (no React/icon deps — safe for serverless). */
+/** Route + tool defs for Kuro chat (no React/icon deps - safe for serverless). */
 export const KURO_PAGES = [
   { id: "home", path: "/", label: "Home" },
   { id: "projects", path: "/projects", label: "Projects" },
@@ -17,13 +17,36 @@ export const NAV_PAGE_IDS = KURO_PAGES.map((r) => r.id);
 
 export const PAGE_BY_ID = Object.fromEntries(KURO_PAGES.map((r) => [r.id, r]));
 
+export const LOOKUP_TOPICS = [
+  "projects",
+  "skills",
+  "experience",
+  "about",
+  "aegis",
+  "samiksha",
+  "contact",
+  "achievements",
+  "certifications",
+];
+
+/** Client-side site actions returned to the browser. */
+export const SITE_ACTION_TYPES = new Set([
+  "navigate",
+  "toggle_theme",
+  "set_hack_mode",
+  "scroll_to_top",
+  "set_accent",
+  "open_palette",
+  "copy_email",
+  "open_resume",
+]);
+
 export const KURO_TOOLS = [
   {
     type: "function",
     function: {
       name: "navigate",
-      description:
-        "Navigate to a portfolio page. ONLY when the user explicitly asks to go somewhere (e.g. 'go to projects'). Never on compliments or reactions.",
+      description: "Navigate to a portfolio page when the user wants to go somewhere.",
       parameters: {
         type: "object",
         properties: {
@@ -41,7 +64,7 @@ export const KURO_TOOLS = [
     type: "function",
     function: {
       name: "toggle_theme",
-      description: "Switch light/dark theme. ONLY when user explicitly asks to change theme or toggle lights.",
+      description: "Switch light/dark theme when the user asks to change theme or flip the lights.",
       parameters: { type: "object", properties: {} },
     },
   },
@@ -49,8 +72,7 @@ export const KURO_TOOLS = [
     type: "function",
     function: {
       name: "set_hack_mode",
-      description:
-        "Enable or disable CRT hacker mode. ONLY when user says hackmode, unhack, turn it back, or similar explicit commands.",
+      description: "Enable or disable CRT hacker mode when the user asks for hackmode, unhack, or similar.",
       parameters: {
         type: "object",
         properties: {
@@ -64,7 +86,7 @@ export const KURO_TOOLS = [
     type: "function",
     function: {
       name: "scroll_to_top",
-      description: "Scroll to page top. ONLY when user explicitly asks to scroll up or go back to top.",
+      description: "Scroll to the top of the page when the user asks.",
       parameters: { type: "object", properties: {} },
     },
   },
@@ -89,7 +111,46 @@ export const KURO_TOOLS = [
     type: "function",
     function: {
       name: "open_command_palette",
-      description: "Open command palette (Ctrl+K). ONLY when user explicitly asks for search/palette.",
+      description: "Open the command palette (Ctrl+K) when the user asks for search or the palette.",
+      parameters: { type: "object", properties: {} },
+    },
+  },
+  {
+    type: "function",
+    function: {
+      name: "lookup_portfolio",
+      description:
+        "Look up grounded portfolio facts (projects, skills, experience, about, Aegis, Samiksha, contact). Use when answering questions about the builder or work.",
+      parameters: {
+        type: "object",
+        properties: {
+          topic: {
+            type: "string",
+            enum: LOOKUP_TOPICS,
+            description: "Which slice of portfolio data to load",
+          },
+          query: {
+            type: "string",
+            description: "Optional focus keyword (project name, skill, company)",
+          },
+        },
+        required: ["topic"],
+      },
+    },
+  },
+  {
+    type: "function",
+    function: {
+      name: "copy_email",
+      description: "Copy Aryan's email to the clipboard when the user asks for the email.",
+      parameters: { type: "object", properties: {} },
+    },
+  },
+  {
+    type: "function",
+    function: {
+      name: "open_resume",
+      description: "Open the resume PDF when the user asks for the resume or CV.",
       parameters: { type: "object", properties: {} },
     },
   },
@@ -134,6 +195,20 @@ export function parseToolCalls(toolCalls) {
       case "open_command_palette":
         actions.push({ type: "open_palette" });
         break;
+      case "lookup_portfolio":
+        actions.push({
+          type: "lookup_portfolio",
+          topic: args.topic || "projects",
+          query: typeof args.query === "string" ? args.query.slice(0, 80) : "",
+          toolCallId: call.id,
+        });
+        break;
+      case "copy_email":
+        actions.push({ type: "copy_email" });
+        break;
+      case "open_resume":
+        actions.push({ type: "open_resume" });
+        break;
       default:
         break;
     }
@@ -147,19 +222,23 @@ export function describeActions(actions) {
     .map((a) => {
       switch (a.type) {
         case "navigate":
-          return `Taking you to ${a.label}…`;
+          return `Taking you to ${a.label}...`;
         case "toggle_theme":
-          return "Flipping the lights…";
+          return "Flipping the lights...";
         case "set_hack_mode":
-          return a.enabled ? "Engaging hack mode…" : "Exiting hack mode…";
+          return a.enabled ? "Engaging hack mode..." : "Exiting hack mode...";
         case "scroll_to_top":
-          return "Zooming back to the top…";
+          return "Zooming back to the top...";
         case "set_accent":
-          return `Accent → ${a.palette}`;
+          return `Accent -> ${a.palette}`;
         case "open_palette":
-          return "Opening command palette…";
+          return "Opening command palette...";
+        case "copy_email":
+          return "Copying email...";
+        case "open_resume":
+          return "Opening resume...";
         default:
-          return "On it…";
+          return "On it...";
       }
     })
     .join(" ");
