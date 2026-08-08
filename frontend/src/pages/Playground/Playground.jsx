@@ -11,7 +11,7 @@ import { useAchievements } from "../../context/AchievementContext";
 import { useSound } from "../../context/SoundContext";
 import { askKuro } from "../../utils/askKuro";
 import { useModalLock } from "../../hooks/useModalLock";
-import { usePageSEO } from "../../hooks/usePageSEO";
+import { usePageSEO } from "../../utils/seo";
 import PageHeader from "../../components/PageHeader/PageHeader";
 import { isKonamiInProgress } from "../../utils/konamiProgress";
 import "./Playground.scss";
