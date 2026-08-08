@@ -3,7 +3,7 @@ import { smoothScrollToTop } from "./smoothScroll";
 
 const PALETTE_EVENT = "portfolio:open-palette";
 
-export function executeIshaniActions(actions, handlers) {
+export function executeKuroActions(actions, handlers) {
   if (!Array.isArray(actions) || !actions.length) return [];
 
   const {

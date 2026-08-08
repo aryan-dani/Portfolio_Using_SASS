@@ -1,4 +1,4 @@
-import { generateIshaniReply } from "./ishaniChat.js";
+import { generateKuroReply } from "./kuroChat.js";
 import { createGuestbookRedis } from "./guestbookStore.js";
 
 const CHAT_RATE_LIMIT = 30;
@@ -57,7 +57,7 @@ export async function handleChatRequest(req, res) {
 
   try {
     await checkChatRateLimit(getClientIp(req));
-    const result = await generateIshaniReply(
+    const result = await generateKuroReply(
       { message, history, currentPath, siteState },
       process.env.GROQ_API_KEY,
     );

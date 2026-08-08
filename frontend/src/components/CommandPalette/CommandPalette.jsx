@@ -6,7 +6,7 @@ import { useTheme } from "../../context/ThemeContext";
 import { useModalLock } from "../../hooks/useModalLock";
 import { staticNavCommands } from "../../utils/commandPaletteStatic";
 import { aboutInfo } from "../../data/experience";
-import { PALETTE_EVENT } from "../../utils/ishaniActions";
+import { PALETTE_EVENT } from "../../utils/kuroActions";
 
 function CommandPalette() {
   const [isOpen, setIsOpen] = useState(false);

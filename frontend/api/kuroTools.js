@@ -1,5 +1,5 @@
-/** Route data for Ishani tools (no React/icon deps - safe for serverless). */
-export const ISHANI_PAGES = [
+/** Route + tool defs for Kuro chat (no React/icon deps — safe for serverless). */
+export const KURO_PAGES = [
   { id: "home", path: "/", label: "Home" },
   { id: "projects", path: "/projects", label: "Projects" },
   { id: "experience", path: "/experience", label: "Experience" },
@@ -13,11 +13,11 @@ export const ISHANI_PAGES = [
   { id: "copyright", path: "/copyright", label: "Copyright" },
 ];
 
-export const NAV_PAGE_IDS = ISHANI_PAGES.map((r) => r.id);
+export const NAV_PAGE_IDS = KURO_PAGES.map((r) => r.id);
 
-export const PAGE_BY_ID = Object.fromEntries(ISHANI_PAGES.map((r) => [r.id, r]));
+export const PAGE_BY_ID = Object.fromEntries(KURO_PAGES.map((r) => [r.id, r]));
 
-export const ISHANI_TOOLS = [
+export const KURO_TOOLS = [
   {
     type: "function",
     function: {

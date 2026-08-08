@@ -51,7 +51,7 @@ export function kuroVoiceError(error) {
   return "Hmm, that didn't land. Try again in a moment.";
 }
 
-export async function askIshani(message, { history = [], currentPath = "/", siteState = null } = {}) {
+export async function askKuro(message, { history = [], currentPath = "/", siteState = null } = {}) {
   let response;
   try {
     response = await fetch("/api/chat", {

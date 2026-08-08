@@ -10,44 +10,88 @@ export function SoundProvider({ children }) {
   const [enabled, setEnabled] = useState(() => localStorage.getItem(STORAGE_KEY) === "true");
   const audioRef = useRef(null);
   const masterRef = useRef(null);
+  const unlockedRef = useRef(false);
   const lastHoverAtRef = useRef(0);
   const lastHoverTargetRef = useRef(null);
 
-  const getAudioContext = useCallback(() => {
-    if (!audioRef.current) {
-      const AudioContext = window.AudioContext || window.webkitAudioContext;
-      if (!AudioContext) return null;
-      audioRef.current = new AudioContext();
-    }
-    if (audioRef.current.state === "suspended") {
-      audioRef.current.resume();
-    }
-    return audioRef.current;
+  const getRunningContext = useCallback(() => {
+    const ctx = audioRef.current;
+    if (!ctx || ctx.state !== "running") return null;
+    return ctx;
   }, []);
 
+  /** Create/resume AudioContext only after a real user gesture (click/keydown). */
+  const unlockAudio = useCallback(async () => {
+    if (!enabled) return null;
+
+    try {
+      if (!audioRef.current) {
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        if (!AudioContext) return null;
+        audioRef.current = new AudioContext();
+        masterRef.current = null;
+      }
+
+      if (audioRef.current.state === "suspended") {
+        await audioRef.current.resume();
+      }
+
+      unlockedRef.current = audioRef.current.state === "running";
+      return unlockedRef.current ? audioRef.current : null;
+    } catch {
+      unlockedRef.current = false;
+      return null;
+    }
+  }, [enabled]);
+
   const play = useCallback(
-    (kind = "click") => {
+    (kind = "click", { fromGesture = false } = {}) => {
       if (!enabled) return;
-      const audioContext = getAudioContext();
-      if (!audioContext) return;
-      playUiSound(audioContext, masterRef, kind);
+
+      if (fromGesture) {
+        // Fire-and-forget unlock; play once context is running.
+        void unlockAudio().then((ctx) => {
+          if (!ctx) return;
+          playUiSound(ctx, masterRef, kind);
+        });
+        return;
+      }
+
+      // Hover / ambient: never create or resume — only play if already unlocked.
+      const ctx = getRunningContext();
+      if (!ctx) return;
+      playUiSound(ctx, masterRef, kind);
     },
-    [enabled, getAudioContext],
+    [enabled, getRunningContext, unlockAudio],
   );
 
   const toggleSound = useCallback(() => {
     setEnabled((current) => {
       const next = !current;
       localStorage.setItem(STORAGE_KEY, String(next));
+      if (next) {
+        // Toggle is a user gesture — unlock immediately.
+        queueMicrotask(() => {
+          void unlockAudio();
+        });
+      } else if (audioRef.current) {
+        unlockedRef.current = false;
+        void audioRef.current.suspend?.();
+      }
       return next;
     });
-  }, []);
+  }, [unlockAudio]);
 
   useEffect(() => {
     if (!enabled || !isFinePointerDevice()) return undefined;
 
     const onClick = (event) => {
-      if (event.target.closest?.("button, a, [role='button']")) play("click");
+      if (event.target.closest?.("button, a, [role='button']")) {
+        play("click", { fromGesture: true });
+      } else {
+        // Any click unlocks audio for later hover ticks.
+        void unlockAudio();
+      }
     };
 
     const onPointerOver = (event) => {
@@ -78,14 +122,21 @@ export function SoundProvider({ children }) {
       document.removeEventListener("pointerover", onPointerOver);
       document.removeEventListener("pointerout", onPointerOut);
     };
-  }, [enabled, play]);
+  }, [enabled, play, unlockAudio]);
 
-  // Close AudioContext on unmount to free hardware audio resources
   useEffect(() => {
-    return () => { audioRef.current?.close(); };
+    return () => {
+      unlockedRef.current = false;
+      audioRef.current?.close();
+      audioRef.current = null;
+      masterRef.current = null;
+    };
   }, []);
 
-  const value = useMemo(() => ({ enabled, toggleSound, play }), [enabled, play, toggleSound]);
+  const value = useMemo(
+    () => ({ enabled, toggleSound, play, unlockAudio }),
+    [enabled, toggleSound, play, unlockAudio],
+  );
   return <SoundContext.Provider value={value}>{children}</SoundContext.Provider>;
 }
 

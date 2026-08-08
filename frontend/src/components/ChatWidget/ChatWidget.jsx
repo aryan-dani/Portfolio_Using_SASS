@@ -7,8 +7,8 @@ import { useTheme } from "../../context/ThemeContext";
 import { isFinePointerDevice } from "../../utils/device";
 import { useSiteIdle } from "../../hooks/useSiteIdle";
 import { useModalLock } from "../../hooks/useModalLock";
-import { askIshani, kuroVoiceError } from "../../utils/askIshani";
-import { executeIshaniActions, describeKuroActions } from "../../utils/ishaniActions";
+import { askKuro, kuroVoiceError } from "../../utils/askKuro";
+import { executeKuroActions, describeKuroActions } from "../../utils/kuroActions";
 import {
   getKuroWelcomeLine,
   getKuroPageLine,
@@ -16,7 +16,7 @@ import {
   hasVisitedPage,
   markKuroMet,
   markPageVisited,
-} from "../../data/ishaniRouteLines";
+} from "../../data/kuroRouteLines";
 
 const EYE_RANGE = 3.2;
 const PET_LINES = ["*tail wag*", "*happy pant*", "Good boy.", "*ear flop*", "*lean*", "More pets please."];
@@ -444,7 +444,7 @@ const ChatWidget = memo(function ChatWidget() {
 
   const runActions = useCallback(
     (actions) => {
-      executeIshaniActions(actions, {
+      executeKuroActions(actions, {
         navigate,
         toggleTheme,
         setCrtMode,
@@ -671,7 +671,7 @@ const ChatWidget = memo(function ChatWidget() {
     };
 
     try {
-      const { reply, actions } = await askIshani(clean, {
+      const { reply, actions } = await askKuro(clean, {
         history: nextMessages.slice(-12),
         currentPath: location.pathname,
         siteState,

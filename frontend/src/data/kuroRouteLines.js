@@ -111,9 +111,3 @@ export function markKuroMet() {
     /* ignore */
   }
 }
-
-/** @deprecated use Kuro exports */
-export const ISHANI_WELCOME_KEY = KURO_WELCOME_KEY;
-export const getIshaniWelcomeLine = getKuroWelcomeLine;
-export const hasMetIshani = hasMetKuro;
-export const markIshaniMet = markKuroMet;

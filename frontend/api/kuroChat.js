@@ -3,17 +3,26 @@ import { experiences, aboutInfo } from "../src/data/experience.js";
 import { getAllSkills } from "../src/data/skills.js";
 import { ACHIEVEMENTS } from "../src/data/achievements.js";
 import {
-  ISHANI_PAGES,
-  ISHANI_TOOLS,
+  KURO_PAGES,
+  KURO_TOOLS,
   PAGE_BY_ID,
   parseToolCalls,
   describeActions,
-} from "./ishaniTools.js";
+} from "./kuroTools.js";
 
-const GROQ_MODEL = "llama-3.3-70b-versatile";
+const GROQ_MODEL = process.env.GROQ_MODEL || "openai/gpt-oss-120b";
+const GROQ_FALLBACK_MODEL = process.env.GROQ_FALLBACK_MODEL || "openai/gpt-oss-20b";
 const MAX_HISTORY = 12;
 
-const ROUTE_LIST = ISHANI_PAGES.map((r) => `${r.id} → ${r.path} (${r.label})`).join("\n");
+function cleanApiKey(value) {
+  if (typeof value !== "string") return "";
+  return value
+    .trim()
+    .replace(/^["'“”‘’`]+|["'“”‘’`]+$/g, "")
+    .replace(/[^\x20-\x7E]/g, "");
+}
+
+const ROUTE_LIST = KURO_PAGES.map((r) => `${r.id} → ${r.path} (${r.label})`).join("\n");
 
 const REACTION_ONLY =
   /^(wow|nice|crazy|damn|cool|lol|lmao|okay|ok|oh okay|yep|yeah|yup|haha|ha|omg|whoa|dang|sick|fire|lit|bet|word|true|facts|same|mood|fr|ngl|tbh|hm+|hmm+)[\s!.?]*$/i;
@@ -295,8 +304,9 @@ export function parseActionsFromReply(text) {
   return { reply: reply || "On it!", actions };
 }
 
-export async function generateIshaniReply({ message, history, currentPath, siteState }, apiKey) {
-  if (!apiKey) {
+export async function generateKuroReply({ message, history, currentPath, siteState }, apiKey) {
+  const key = cleanApiKey(apiKey);
+  if (!key) {
     const err = new Error(
       "Kuro is not configured. Add GROQ_API_KEY to frontend/.env.local (free at console.groq.com/keys), then restart npm run dev.",
     );
@@ -317,28 +327,45 @@ export async function generateIshaniReply({ message, history, currentPath, siteS
     { role: "user", content: message },
   ];
 
-  const body = {
-    model: GROQ_MODEL,
-    messages,
-    max_tokens: 400,
-    temperature: 0.42,
+  const buildBody = (model) => {
+    const body = {
+      model,
+      messages,
+      max_tokens: 400,
+      temperature: 0.42,
+    };
+
+    if (intent === "site_control") {
+      body.tools = KURO_TOOLS;
+      body.tool_choice = "auto";
+    }
+    return body;
   };
 
-  if (intent === "site_control") {
-    body.tools = ISHANI_TOOLS;
-    body.tool_choice = "auto";
+  const callGroq = async (model) => {
+    const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${key}`,
+      },
+      body: JSON.stringify(buildBody(model)),
+    });
+    return response;
+  };
+
+  let response = await callGroq(GROQ_MODEL);
+  if (!response.ok && response.status !== 429 && GROQ_FALLBACK_MODEL !== GROQ_MODEL) {
+    // Deprecated / unavailable primary model → try the lighter fallback once.
+    const primaryStatus = response.status;
+    response = await callGroq(GROQ_FALLBACK_MODEL);
+    if (!response.ok && primaryStatus === 400) {
+      // Keep the later error path; both failed.
+    }
   }
 
-  const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${apiKey}`,
-    },
-    body: JSON.stringify(body),
-  });
-
   if (!response.ok) {
+    console.error("[kuro] Groq error", response.status);
     const err = new Error(
       response.status === 429
         ? "The model is busy. Try again in a moment."

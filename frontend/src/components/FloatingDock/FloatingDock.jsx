@@ -121,7 +121,7 @@ function FloatingDock() {
               type="button"
               onClick={() => {
                 toggleSound();
-                setTimeout(() => play("success"), 0);
+                play("success", { fromGesture: true });
               }}
               className={`relative isolate flex items-center justify-center p-2 sm:p-3 transition-all duration-200 select-none group shrink-0 hover-gpu ${
                 soundEnabled

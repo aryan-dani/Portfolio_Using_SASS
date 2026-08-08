@@ -9,7 +9,7 @@ import { experiences, aboutInfo } from "../../data/experience";
 import { useTheme } from "../../context/ThemeContext";
 import { useAchievements } from "../../context/AchievementContext";
 import { useSound } from "../../context/SoundContext";
-import { askIshani } from "../../utils/askIshani";
+import { askKuro } from "../../utils/askKuro";
 import { useModalLock } from "../../hooks/useModalLock";
 import PageHeader from "../../components/PageHeader/PageHeader";
 import { usePageSEO } from "../../utils/seo";
@@ -581,7 +581,7 @@ function Playground() {
         }
         track("ai_ask");
         setHistory((prev) => [...prev, { text: "Kuro is thinking...", type: "info" }]);
-        askIshani(question, { currentPath: window.location.pathname })
+        askKuro(question, { currentPath: window.location.pathname })
           .then(({ reply, actions }) => {
             setHistory((prev) => [...prev, { text: reply, type: "success" }]);
             if (actions?.length) {
