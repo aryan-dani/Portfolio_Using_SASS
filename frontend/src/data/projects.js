@@ -1,5 +1,60 @@
 const projectEntries = [
   {
+    id: 13,
+    title: "Utility",
+    category: "web-dev",
+    year: "2026",
+    description: `Academic OS: a minimalist academic workspace for students with Document Intelligence (RAG), a Parallel Indexing Engine, Supabase auth & storage, a Pomodoro focus timer, GPA calculator, and study tools. Built with Next.js, Tailwind, and deployed on Vercel.`,
+    image: "/Images/Projects/Utility.jpg",
+    tags: ["Next.js", "Supabase", "TypeScript", "Tailwind CSS", "Vercel", "AI"],
+    skillIds: ["nextjs", "supabase", "typescript", "tailwind", "rag", "javascript", "html5", "css3", "git", "vercel"],
+    links: {
+      github: "https://github.com/aryan-dani/Utility",
+      preview: "https://utilityos.tech",
+    },
+  },
+  {
+    id: 18,
+    title: "Swiggy Nexus",
+    category: "ai-ml",
+    year: "2026",
+    description: `Autonomous social concierge and Swiggy MCP orchestrator built for the Builders Club hackathon. A Next.js Concierge UI plus FastAPI/LangGraph backend stages Food, Instamart, and Dineout through 35 MCP tools, then pauses at a human-in-the-loop checkpoint before any write (book table, place food order, checkout). Groq llama-3.3-70b tool-calling, Google Calendar webhooks, and an AI sommelier drive the flow. Hosted demo uses mocked MCP. Independent POC, not affiliated with Swiggy.`,
+    image: "/Images/Projects/Swiggy_Nexus.png",
+    tags: ["LangGraph", "MCP", "FastAPI", "Next.js", "Groq", "HITL"],
+    skillIds: [
+      "python",
+      "fastapi",
+      "langgraph",
+      "llms",
+      "agentic",
+      "mcp",
+      "groq",
+      "prompt-engineering",
+      "nextjs",
+      "react",
+      "typescript",
+      "tailwind",
+      "javascript",
+      "html5",
+      "css3",
+      "rest-api",
+      "git",
+      "vercel",
+    ],
+    problem:
+      "Cross-vertical food, grocery, and dining intent is usually split across chatbots and brittle REST calls, so an agent can hallucinate orders or skip consent before money moves.",
+    solution:
+      "Nexus uses a Planner/Executor/Synth loop: stage carts and table slots with read-only MCP tools, require HITL approval, then run write tools. Calendar #swiggy/#host events and QoL signals (weather, guests, IPL) feed the same graph.",
+    architecture:
+      "Next.js Concierge UI streams SSE tool traces. FastAPI + LangGraph StateGraph with HITL interrupts. Local mock MCP (Food, Instamart, Dineout) or mcp.swiggy.com. Groq llama-3.3-70b for tool calling. SQLite/PostgreSQL taste-vault memory.",
+    results:
+      "Live demo at swiggy-nexus.vercel.app with a 60s reviewer path (bundle, grocery checkout, table booking) and MCP coverage meter. Write tools never fire before Approve.",
+    links: {
+      github: "https://github.com/aryan-dani/Swiggy_Nexus",
+      preview: "https://swiggy-nexus.vercel.app/",
+    },
+  },
+  {
     id: 1,
     title: "The Fourth Clover",
     category: "web-dev",
@@ -17,6 +72,33 @@ const projectEntries = [
     links: {
       github: "https://github.com/aryan-dani/The-Fourth-Clover",
       preview: "https://thefourthclover.bio/",
+    },
+  },
+  {
+    id: 16,
+    title: "Samiksha",
+    category: "web-dev",
+    year: "2025 - 2026",
+    description: `Frontend for a Cloud Security Posture Management console — the operator UI for runtime and IaC findings, compliance posture, AI insights, and ticketing. I owned the React/TypeScript client: auth and routing shells, responsive layouts, light/dark theming, and consistent page chrome across the product surface. Live at samikshaunited.app (team backend handles scanners and cloud integrations).`,
+    image: "/Images/Projects/Samiksha.jpg",
+    tags: ["React", "TypeScript", "Vite", "CSS", "UI"],
+    skillIds: ["react", "typescript", "vite", "javascript", "html5", "css3", "git"],
+    links: {
+      github: "https://github.com/atamalajopyetie/CSPM_Capstone",
+      preview: "https://samikshaunited.app/",
+    },
+  },
+  {
+    id: 14,
+    title: "Ishani",
+    category: "web-dev",
+    year: "2026",
+    description: `Ishani - a timetable and department portal with an AI assistant for MIT-WPU (Groq-backed), multi-semester grids, staff directory, and admin APIs. Built as a React (Vite) frontend with a FastAPI backend and optional RAG-powered chat.`,
+    image: "/Images/Projects/Ishani.jpg",
+    tags: ["React", "Vite", "FastAPI", "Groq", "AI"],
+    skillIds: ["react", "vite", "fastapi", "groq", "rag", "python", "llms", "prompt-engineering", "javascript", "html5", "css3", "rest-api"],
+    links: {
+      preview: "https://miniproject-aies.pages.dev/",
     },
   },
   {
@@ -60,20 +142,6 @@ const projectEntries = [
     },
   },
   {
-    id: 16,
-    title: "Samiksha",
-    category: "web-dev",
-    year: "2025 - 2026",
-    description: `Frontend for a Cloud Security Posture Management console — the operator UI for runtime and IaC findings, compliance posture, AI insights, and ticketing. I owned the React/TypeScript client: auth and routing shells, responsive layouts, light/dark theming, and consistent page chrome across the product surface. Live at samikshaunited.app (team backend handles scanners and cloud integrations).`,
-    image: "/Images/Projects/Samiksha.jpg",
-    tags: ["React", "TypeScript", "Vite", "CSS", "UI"],
-    skillIds: ["react", "typescript", "vite", "javascript", "html5", "css3", "git"],
-    links: {
-      github: "https://github.com/atamalajopyetie/CSPM_Capstone",
-      preview: "https://samikshaunited.app/",
-    },
-  },
-  {
     id: 17,
     title: "Aegis",
     category: "web-dev",
@@ -106,33 +174,6 @@ const projectEntries = [
     links: {
       github: "https://github.com/aryan-dani/Democrazy",
       preview: "https://democrazy-omega.vercel.app/",
-    },
-  },
-  {
-    id: 13,
-    title: "Utility",
-    category: "web-dev",
-    year: "2026",
-    description: `Academic OS: a minimalist academic workspace for students with Document Intelligence (RAG), a Parallel Indexing Engine, Supabase auth & storage, a Pomodoro focus timer, GPA calculator, and study tools. Built with Next.js, Tailwind, and deployed on Vercel.`,
-    image: "/Images/Projects/Utility.jpg",
-    tags: ["Next.js", "Supabase", "TypeScript", "Tailwind CSS", "Vercel", "AI"],
-    skillIds: ["nextjs", "supabase", "typescript", "tailwind", "rag", "javascript", "html5", "css3", "git", "vercel"],
-    links: {
-      github: "https://github.com/aryan-dani/Utility",
-      preview: "https://utilityos.tech",
-    },
-  },
-  {
-    id: 14,
-    title: "Ishani",
-    category: "web-dev",
-    year: "2026",
-    description: `Ishani - a timetable and department portal with an AI assistant for MIT-WPU (Groq-backed), multi-semester grids, staff directory, and admin APIs. Built as a React (Vite) frontend with a FastAPI backend and optional RAG-powered chat.`,
-    image: "/Images/Projects/Ishani.jpg",
-    tags: ["React", "Vite", "FastAPI", "Groq", "AI"],
-    skillIds: ["react", "vite", "fastapi", "groq", "rag", "python", "llms", "prompt-engineering", "javascript", "html5", "css3", "rest-api"],
-    links: {
-      preview: "https://miniproject-aies.pages.dev/",
     },
   },
   {

@@ -10,7 +10,7 @@ export const skills = {
       level: 82,
       description:
         "Semantic HTML5 markup, accessibility standards, and modern web structure used across every web project - from SPAs to static pages.",
-      projectIds: [1, 7, 8, 12, 13, 14, 16],
+      projectIds: [1, 7, 8, 12, 13, 14, 16, 18],
     },
     {
       id: "css3",
@@ -19,7 +19,7 @@ export const skills = {
       level: 78,
       description:
         "Advanced CSS animations, Grid/Flexbox layouts, and responsive design. Styled the portfolio's neo-brutalist design system from scratch.",
-      projectIds: [1, 7, 8, 12, 13, 14, 16],
+      projectIds: [1, 7, 8, 12, 13, 14, 16, 18],
     },
     {
       id: "sass",
@@ -37,7 +37,7 @@ export const skills = {
       level: 72,
       description:
         "Core language across all web projects. ES6+ features, async/await, DOM manipulation, and event-driven architecture.",
-      projectIds: [1, 7, 8, 12, 13, 14, 16, 17],
+      projectIds: [1, 7, 8, 12, 13, 14, 16, 17, 18],
     },
     {
       id: "typescript",
@@ -45,8 +45,8 @@ export const skills = {
       icon: "SiTypescript",
       level: 65,
       description:
-        "Type-safe development with interfaces, generics, and strict typing. Used in production apps including The Fourth Clover, North-Star, and Samiksha.",
-      projectIds: [1, 4, 13, 16, 17],
+        "Type-safe development with interfaces, generics, and strict typing. Used in production apps including The Fourth Clover, North-Star, Samiksha, and Swiggy Nexus.",
+      projectIds: [1, 4, 13, 16, 17, 18],
     },
     {
       id: "react",
@@ -55,7 +55,7 @@ export const skills = {
       level: 70,
       description:
         "Primary frontend framework - hooks, context API, component architecture, and state management used across 7+ production projects.",
-      projectIds: [1, 2, 4, 10, 11, 12, 13, 14, 16, 17],
+      projectIds: [1, 2, 4, 10, 11, 12, 13, 14, 16, 17, 18],
     },
     {
       id: "nextjs",
@@ -63,8 +63,8 @@ export const skills = {
       icon: "SiNextdotjs",
       level: 64,
       description:
-        "Full-stack React framework with App Router, server components, API routes, and SSR. Powers The Fourth Clover, Utility, and The Shadow Instructor.",
-      projectIds: [1, 10, 13],
+        "Full-stack React framework with App Router, server components, API routes, and SSR. Powers The Fourth Clover, Utility, The Shadow Instructor, and Swiggy Nexus.",
+      projectIds: [1, 10, 13, 18],
     },
     {
       id: "angular",
@@ -90,8 +90,8 @@ export const skills = {
       icon: "SiTailwindcss",
       level: 68,
       description:
-        "Utility-first CSS framework for rapid UI development. Used across The Fourth Clover, Utility, and several AI project frontends.",
-      projectIds: [1, 13],
+        "Utility-first CSS framework for rapid UI development. Used across The Fourth Clover, Utility, Swiggy Nexus, and several AI project frontends.",
+      projectIds: [1, 13, 18],
     },
     {
       id: "nodejs",
@@ -108,8 +108,8 @@ export const skills = {
       icon: "SiFastapi",
       level: 68,
       description:
-        "High-performance async Python APIs with auto-generated OpenAPI docs. Backend for DebateBot, North-Star, Shadow Instructor, Arbiter, and Ishani.",
-      projectIds: [2, 4, 10, 11, 14],
+        "High-performance async Python APIs with auto-generated OpenAPI docs. Backend for DebateBot, North-Star, Shadow Instructor, Arbiter, Ishani, and Swiggy Nexus.",
+      projectIds: [2, 4, 10, 11, 14, 18],
     },
     {
       id: "flask",
@@ -163,7 +163,7 @@ export const skills = {
       level: 72,
       description:
         "Designing RESTful APIs with proper status codes, authentication, pagination, and OpenAPI documentation across multiple backend projects.",
-      projectIds: [2, 3, 4, 7, 14],
+      projectIds: [2, 3, 4, 7, 14, 18],
     },
   ],
   machinelearning: [
@@ -174,7 +174,7 @@ export const skills = {
       level: 74,
       description:
         "Core language for AI/ML, backend development, and data science. Used across 8+ projects for everything from FastAPI backends to deep learning pipelines.",
-      projectIds: [2, 3, 4, 5, 6, 9, 10, 11, 14],
+      projectIds: [2, 3, 4, 5, 6, 9, 10, 11, 14, 18],
     },
     {
       id: "llms",
@@ -183,7 +183,7 @@ export const skills = {
       level: 80,
       description:
         "Building sophisticated agentic workflows using Gemini 3.0/2.5, LLaMA 3.3 70B, and Groq. Prompt engineering, tool-calling, and multi-turn conversation design.",
-      projectIds: [2, 10, 11, 12, 14],
+      projectIds: [2, 10, 11, 12, 14, 18],
     },
     {
       id: "agentic",
@@ -191,8 +191,8 @@ export const skills = {
       icon: "FaBrain",
       level: 72,
       description:
-        "Designing Dual-Agent and Multi-Agent state machines - interview simulation (Shadow Instructor) and autonomous CI/CD healing (Arbiter).",
-      projectIds: [10, 11],
+        "Designing Dual-Agent and Multi-Agent state machines - interview simulation (Shadow Instructor), autonomous CI/CD healing (Arbiter), and HITL commerce orchestration (Swiggy Nexus).",
+      projectIds: [10, 11, 18],
     },
     {
       id: "langgraph",
@@ -200,8 +200,17 @@ export const skills = {
       icon: "FaBrain",
       level: 62,
       description:
-        "Building stateful, multi-step AI agent graphs with branching logic, tool nodes, and conditional edges for DebateBot and Arbiter.",
-      projectIds: [2, 11],
+        "Building stateful, multi-step AI agent graphs with branching logic, tool nodes, HITL interrupts, and conditional edges for DebateBot, Arbiter, and Swiggy Nexus.",
+      projectIds: [2, 11, 18],
+    },
+    {
+      id: "mcp",
+      name: "MCP",
+      icon: "FaServer",
+      level: 58,
+      description:
+        "Model Context Protocol clients and mock servers for deterministic tool calling. Swiggy Nexus stages Food, Instamart, and Dineout through 35 MCP tools with HITL before writes.",
+      projectIds: [18],
     },
     {
       id: "prompt-engineering",
@@ -210,7 +219,7 @@ export const skills = {
       level: 75,
       description:
         "Crafting system prompts, few-shot examples, chain-of-thought reasoning, and structured output schemas across all AI projects.",
-      projectIds: [2, 10, 11, 12, 14],
+      projectIds: [2, 10, 11, 12, 14, 18],
     },
     {
       id: "rag",
@@ -311,7 +320,7 @@ export const skills = {
       level: 78,
       description:
         "Version control, branching strategies, pull requests, and collaborative workflows. Every project lives on GitHub with proper commit history.",
-      projectIds: [1, 2, 3, 4, 5, 7, 10, 11, 12, 13, 16, 17],
+      projectIds: [1, 2, 3, 4, 5, 7, 10, 11, 12, 13, 16, 17, 18],
     },
     {
       id: "vercel",
@@ -320,7 +329,7 @@ export const skills = {
       level: 68,
       description:
         "Serverless deployment platform with preview deployments, edge functions, and analytics. Hosts 6+ live projects.",
-      projectIds: [1, 10, 11, 12, 13, 16],
+      projectIds: [1, 10, 11, 12, 13, 16, 18],
     },
     {
       id: "github-actions",
@@ -353,10 +362,10 @@ export const skills = {
       id: "groq",
       name: "Groq",
       icon: "FaRobot",
-      level: 45,
+      level: 55,
       description:
-        "Ultra-fast LLM inference platform for real-time AI responses. Powers Ishani's AI assistant with sub-100ms latency.",
-      projectIds: [14],
+        "Ultra-fast LLM inference platform for real-time AI responses. Powers Ishani's assistant and Swiggy Nexus tool-calling with llama-3.3-70b.",
+      projectIds: [14, 18],
     },
   ],
 };

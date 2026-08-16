@@ -53,7 +53,7 @@ const SITE_CONTROL_PATTERNS = [
 
 const PORTFOLIO_QA_PATTERNS = [
   /\b(what|which|tell me about|how (do|did|can)|where (is|can)|who (is|built|made))\b/i,
-  /\b(email|resume|github|stack|tech|skills?|projects?|experience|certifications?|aegis|samiksha)\b/i,
+  /\b(email|resume|github|stack|tech|skills?|projects?|experience|certifications?|aegis|samiksha|swiggy|nexus|utility|ishani)\b/i,
   /\b(aryan|dani|developer|built this|portfolio)\b/i,
 ];
 
@@ -78,8 +78,20 @@ export function lookupPortfolio(topic, query = "") {
       return list.length ? list.join("\n") : "No matching projects.";
     }
     case "aegis":
-    case "samiksha": {
-      const key = topic === "aegis" ? "aegis" : "samiksha";
+    case "samiksha":
+    case "swiggy":
+    case "utility":
+    case "ishani":
+    case "clover": {
+      const keyMap = {
+        aegis: "aegis",
+        samiksha: "samiksha",
+        swiggy: "swiggy",
+        utility: "utility",
+        ishani: "ishani",
+        clover: "clover",
+      };
+      const key = keyMap[topic];
       const p = projects.find((proj) => proj.title.toLowerCase().includes(key));
       if (!p) return `${topic} not found in portfolio data.`;
       const bits = [

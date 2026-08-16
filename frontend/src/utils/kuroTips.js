@@ -3,10 +3,12 @@ const TIP_POOL = {
     { label: "Projects", send: "go to projects" },
     { label: "Hack mode", send: "hack mode" },
     { label: "Who built this?", send: "Who built this?" },
+    { label: "Swiggy Nexus", send: "Tell me about Swiggy Nexus" },
     { label: "Aegis vault", send: "Tell me about Aegis" },
     { label: "Pet tip", send: "What can you do?" },
   ],
   "/projects": [
+    { label: "Swiggy Nexus", send: "Tell me about Swiggy Nexus" },
     { label: "Aegis", send: "Tell me about Aegis" },
     { label: "Samiksha", send: "What is Samiksha?" },
     { label: "Stack match", send: "Which projects use React?" },
@@ -55,6 +57,7 @@ const FALLBACK_TIPS = [
   { label: "Hack mode", send: "hack mode" },
   { label: "Who built this?", send: "Who built this?" },
   { label: "Aegis", send: "Tell me about Aegis" },
+  { label: "Swiggy Nexus", send: "Tell me about Swiggy Nexus" },
   { label: "Skills", send: "go to skills" },
   { label: "Email", send: "What's his email?" },
 ];
@@ -62,6 +65,7 @@ const FALLBACK_TIPS = [
 const PLACEHOLDERS = [
   "Ask about Aryan, or say go to projects",
   "Try: who built this?",
+  "Try: tell me about Swiggy Nexus",
   "Try: tell me about Aegis",
   "Try: take me to skills",
   "Try: how do I enable hack mode?",

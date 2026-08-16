@@ -15,7 +15,7 @@ export const KURO_PAGE_LINES = {
     "First time here? This is the launch pad. Ask me anything!",
   ],
   "/projects": [
-    "Projects time! Ask about Aegis, Samiksha, or any stack you care about.",
+    "Projects time! Ask about Utility, Swiggy Nexus, Samiksha, or any stack you care about.",
     "First look at the work? Tell me a stack and I'll point you to a match.",
   ],
   "/experience": [
