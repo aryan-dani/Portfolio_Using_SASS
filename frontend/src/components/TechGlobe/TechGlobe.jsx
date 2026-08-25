@@ -228,8 +228,10 @@ const TechGlobe = memo(function TechGlobe() {
       ctx.save();
       ctx.translate(centerX, centerY);
       ctx.strokeStyle = colors.outline;
-      ctx.lineWidth = 1.5;
-      ctx.globalAlpha = 0.16;
+      ctx.lineCap = "round";
+      ctx.lineJoin = "round";
+      ctx.lineWidth = Math.max(2.8, globeRadius * 0.018);
+      ctx.globalAlpha = 0.48;
       for (let i = -3; i <= 3; i += 1) {
         ctx.beginPath();
         ctx.ellipse(0, i * globeRadius * 0.22, globeRadius, globeRadius * 0.18, 0, 0, Math.PI * 2);
@@ -245,7 +247,8 @@ const TechGlobe = memo(function TechGlobe() {
       const projected = nodes.map(projectNode).sort((a, b) => a.depth - b.depth);
       projectedRef.current = projected;
 
-      ctx.lineWidth = 1;
+      ctx.lineWidth = 1.8;
+      ctx.lineCap = "round";
       for (const [i, j] of edgePairs) {
         const a = projected[i];
         const b = projected[j];
@@ -254,7 +257,7 @@ const TechGlobe = memo(function TechGlobe() {
         const dy = a.sy - b.sy;
         const distance = Math.hypot(dx, dy);
         if (distance > globeRadius * 0.42 || (a.depth + b.depth) / 2 < 0.38) continue;
-        ctx.globalAlpha = Math.max(0, 0.28 - distance / (globeRadius * 1.55));
+        ctx.globalAlpha = Math.max(0.12, 0.42 - distance / (globeRadius * 1.55));
         ctx.strokeStyle = colors.outline;
         ctx.beginPath();
         ctx.moveTo(a.sx, a.sy);
