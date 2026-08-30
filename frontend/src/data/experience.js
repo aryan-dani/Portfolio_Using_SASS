@@ -1,28 +1,26 @@
+// Newest first: current role on top, then the trail backward.
 export const experiences = [
   {
-    id: 1,
-    company: "Artem HealthTech Pvt. Ltd.",
-    companyUrl: "https://artemhealthtech.com/about-us",
-    logo: "/Images/Jobs/Artem_Health.png",
-    position: "Intern (AI Engineer)",
-    period: "Jan - May 2025",
-    location: "Pune, India",
-    links: [
-      { name: "Speech to Text Voice Translation", url: "https://github.com/aryan-dani/Speech_To_Text" }
-    ],
+    id: 3,
+    company: "ProvaanTech",
+    companyUrl: "https://provaantech.com/",
+    logo: "/Images/Jobs/ProvaanTech.png",
+    position: "AI/ML Intern",
+    period: "June 2026 - Present",
+    location: "Remote",
+    current: true,
+    links: [],
     technologies: [
-      "Convolutional Neural Networks",
-      "Vision Language Models",
-      "Angular.js",
-      "HMIS Framework",
-      "WebSockets",
-      "Python / PyTorch"
+      "Python",
+      "Machine Learning",
+      "Deep Learning",
+      "Research",
+      "Applied AI",
     ],
     responsibilities: [
-      "Engineered and deployed an automated diagnostic pipeline using Convolutional Neural Networks (CNNs) and Vision Language Models (VLMs) to classify and extract anomaly descriptions in DICOM slices, reducing manual analysis time for radiologist workflows.",
-      "Developed a low-latency '<a href='https://github.com/aryan-dani/Speech_To_Text' target='_blank' rel='noopener noreferrer' class='underline decoration-4 underline-offset-2 hover:bg-black hover:text-white transition-colors'>Speech to Text</a>' voice translation service using Angular.js, HTML5 Speech Recognition API, and WebSockets to facilitate hands-free data logging.",
-      "Collaborated with cross-functional healthcare product squads to refine large model parameters, improving token inference times by 30% and optimizing platform rendering speed.",
-      "Integrated secure authentication protocols and medical record database adapters, ensuring full compliance with health information privacy standards."
+      "Selected as an AI/ML intern to work on real-world client and product problems from day one, with assignments aligned to Artificial Intelligence and Machine Learning.",
+      "Report to Mr. Sanjay Soni on a remote 4-hour daily cadence focused on self-learning, research, and practical implementation rather than classroom-scale exercises.",
+      "Building and iterating on applied AI/ML systems, with project links added as work is cleared to share.",
     ],
   },
   {
@@ -55,40 +53,31 @@ export const experiences = [
     ],
   },
   {
-    id: 3,
-    company: "Freelance & Open Source Projects",
-    companyUrl: "https://github.com/aryan-dani",
-    logo: "/Images/Jobs/Github_Contrib.png",
-    position: "Lead Full-Stack Web Architect",
-    period: "Jan 2026 - Present",
-    location: "Remote",
+    id: 1,
+    company: "Artem HealthTech Pvt. Ltd.",
+    companyUrl: "https://artemhealthtech.com/",
+    logo: "/Images/Jobs/Artem_Health.png",
+    position: "Intern (AI Engineer)",
+    period: "Jan - May 2025",
+    location: "Pune, India",
     links: [
-      { name: "Swiggy Nexus", url: "https://github.com/aryan-dani/Swiggy_Nexus" },
-      { name: "The Fourth Clover Web App", url: "https://github.com/aryan-dani/The-Fourth-Clover" },
-      { name: "Utility Academic OS", url: "https://github.com/aryan-dani/Utility" },
-      { name: "Shadow Instructor (Gemini 3.0)", url: "https://github.com/aryan-dani/The_Shadow_Instructor" },
-      { name: "Arbiter - RIFT 2026", url: "https://github.com/aryan-dani/Arbiter" },
-      { name: "Democrazy", url: "https://github.com/aryan-dani/Democrazy" },
-      { name: "Portfolio v2.0", url: "https://github.com/aryan-dani/Portfolio" },
+      { name: "Speech to Text Voice Translation", url: "https://github.com/aryan-dani/Speech_To_Text" }
     ],
     technologies: [
-      "Next.js 15",
-      "TypeScript",
-      "React.js",
-      "Supabase",
-      "Tailwind CSS",
-      "Firebase",
-      "Gemini / LangGraph",
-      "Groq / MCP",
-      "Vercel"
+      "Convolutional Neural Networks",
+      "Vision Language Models",
+      "Angular.js",
+      "HMIS Framework",
+      "WebSockets",
+      "Python / PyTorch"
     ],
     responsibilities: [
-      "Designed and launched '<a href='https://github.com/aryan-dani/The-Fourth-Clover' target='_blank' rel='noopener noreferrer' class='underline decoration-4 underline-offset-2 hover:bg-[var(--color-outline)] hover:text-[var(--color-surface)] transition-colors'>The Fourth Clover</a>', '<a href='https://github.com/aryan-dani/Utility' target='_blank' rel='noopener noreferrer' class='underline decoration-4 underline-offset-2 hover:bg-[var(--color-outline)] hover:text-[var(--color-surface)] transition-colors'>Utility</a>', and '<a href='https://github.com/aryan-dani/The_Shadow_Instructor' target='_blank' rel='noopener noreferrer' class='underline decoration-4 underline-offset-2 hover:bg-[var(--color-outline)] hover:text-[var(--color-surface)] transition-colors'>Shadow Instructor</a>' - production Next.js apps with App Router, RAG pipelines, OAuth, and serverless AI endpoints.",
-      "Built agentic systems including '<a href='https://github.com/aryan-dani/Swiggy_Nexus' target='_blank' rel='noopener noreferrer' class='underline decoration-4 underline-offset-2 hover:bg-[var(--color-outline)] hover:text-[var(--color-surface)] transition-colors'>Swiggy Nexus</a>' (MCP concierge with HITL commerce), '<a href='https://github.com/aryan-dani/Arbiter' target='_blank' rel='noopener noreferrer' class='underline decoration-4 underline-offset-2 hover:bg-[var(--color-outline)] hover:text-[var(--color-surface)] transition-colors'>Arbiter</a>' (RIFT 2026), and '<a href='https://github.com/aryan-dani/DebateBot' target='_blank' rel='noopener noreferrer' class='underline decoration-4 underline-offset-2 hover:bg-[var(--color-outline)] hover:text-[var(--color-surface)] transition-colors'>DebateBot</a>' using LangGraph, Groq/Gemini, and Docker sandboxes.",
-      "Shipped '<a href='https://github.com/aryan-dani/Democrazy' target='_blank' rel='noopener noreferrer' class='underline decoration-4 underline-offset-2 hover:bg-[var(--color-outline)] hover:text-[var(--color-surface)] transition-colors'>Democrazy</a>' and '<a href='https://github.com/aryan-dani/Portfolio' target='_blank' rel='noopener noreferrer' class='underline decoration-4 underline-offset-2 hover:bg-[var(--color-outline)] hover:text-[var(--color-surface)] transition-colors'>Portfolio v2.0</a>' with Vite/React, static SEO prerendering, and mobile-first performance tuning.",
-      "Selected as a Google Student Ambassador (Dec 2025), contributing to community outreach and technical advocacy for Gemini and modern AI tooling.",
+      "Engineered and deployed an automated diagnostic pipeline using Convolutional Neural Networks (CNNs) and Vision Language Models (VLMs) to classify and extract anomaly descriptions in DICOM slices, reducing manual analysis time for radiologist workflows.",
+      "Developed a low-latency '<a href='https://github.com/aryan-dani/Speech_To_Text' target='_blank' rel='noopener noreferrer' class='underline decoration-4 underline-offset-2 hover:bg-black hover:text-white transition-colors'>Speech to Text</a>' voice translation service using Angular.js, HTML5 Speech Recognition API, and WebSockets to facilitate hands-free data logging.",
+      "Collaborated with cross-functional healthcare product squads to refine large model parameters, improving token inference times by 30% and optimizing platform rendering speed.",
+      "Integrated secure authentication protocols and medical record database adapters, ensuring full compliance with health information privacy standards."
     ],
-  }
+  },
 ];
 
 export const socialLinks = [
@@ -120,7 +109,7 @@ export const aboutInfo = {
   tagline: "Building the future, one line of code at a time.",
   email: "daniaryan212@gmail.com",
   resumeUrl: "/resume.pdf",
-  bio: `Hey, I'm Aryan Dani - a full-stack developer and AI engineer who builds sharp web products and agentic systems that actually ship. Recent work spans Swiggy Nexus (HITL MCP concierge across Food, Instamart, and Dineout), dual-agent interview simulators (Gemini 3.0), autonomous CI/CD healing agents for RIFT 2026, academic OS tools with RAG, and this portfolio rebuilt for speed on mobile.
+  bio: `Hey, I'm Aryan Dani - a full-stack developer and AI engineer who builds sharp web products and agentic systems that actually ship. I am currently an AI/ML intern at ProvaanTech. Earlier work includes healthcare AI at Artem HealthTech and a computer-vision capstone at MIT-WPU.
 
 When I'm not wrangling CSS or LangGraph state machines, you'll find me deep in anime like Haikyu!! or experimenting with the next Gemini release. I'm also a Google Student Ambassador and a proud tea person (chai > coffee, always).
 

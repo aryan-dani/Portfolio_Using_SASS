@@ -45,6 +45,7 @@ const GitCareerTimeline = memo(function GitCareerTimeline({ onSelectExperience }
                 {role.branch}
               </span>
               <span className="font-mono text-[10px] uppercase text-[var(--color-text-muted)] whitespace-nowrap">
+                {role.current ? "Now · " : ""}
                 {role.period}
               </span>
             </div>
@@ -53,9 +54,21 @@ const GitCareerTimeline = memo(function GitCareerTimeline({ onSelectExperience }
               <h3 className="font-label-bold text-sm uppercase leading-snug text-[var(--color-on-surface)]">
                 {role.position}
               </h3>
-              <p className="font-body-md text-sm text-[var(--color-on-surface-variant)]">
-                {role.company}
-              </p>
+              {role.companyUrl ? (
+                <a
+                  href={role.companyUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="font-body-md text-sm text-[var(--color-on-surface-variant)] hover:underline cursor-none"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  {role.company}
+                </a>
+              ) : (
+                <p className="font-body-md text-sm text-[var(--color-on-surface-variant)]">
+                  {role.company}
+                </p>
+              )}
 
               {role.highlight && (
                 <p className="mt-auto pt-4 border-t-2 border-dashed border-outline-variant font-mono text-[11px] leading-relaxed text-[var(--color-text-muted)] group-hover:text-[var(--color-on-surface)] transition-colors">

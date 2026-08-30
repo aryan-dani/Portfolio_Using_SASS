@@ -293,7 +293,7 @@ export const SEO_CONFIG = {
   "/experience": {
     title: "Experience - Aryan Dani | AI Engineer & Web Developer",
     description:
-      "Professional experience of Aryan Dani as an AI Engineer and Full Stack Developer. Includes work at Artem HealthTech, MIT-WPU AI Capstone, and freelance web development projects.",
+      "Professional experience of Aryan Dani as an AI Engineer. Includes an AI/ML internship at ProvaanTech, work at Artem HealthTech, and the MIT-WPU AI capstone.",
     keywords:
       "Aryan Dani experience, AI Engineer Pune, MIT WPU AI student, web developer experience, machine learning engineer",
     canonical: `${SITE_URL}/experience`,

@@ -11,7 +11,7 @@ function fakeHash(seed) {
 function branchSlug(exp) {
   if (exp.id === 1) return "artem-intern";
   if (exp.id === 2) return "mit-capstone";
-  if (exp.id === 3) return "freelance";
+  if (exp.id === 3) return "provaantech-intern";
   return `exp-${exp.id}`;
 }
 
@@ -25,6 +25,7 @@ function linkToMsg(name) {
   if (short.includes("utility")) return "feat(web): Utility academic OS";
   if (short.includes("threat")) return "feat(cv): real-time threat detection";
   if (short.includes("pose")) return "feat(cv): PosePro motion analyzer";
+  if (short.includes("parser")) return "feat(ml): document parser pipeline";
   if (short.includes("speech")) return "feat(api): speech-to-text pipeline";
   if (short.includes("democrazy")) return "feat: Democrazy civic sim";
   if (short.includes("fourth")) return "feat: Fourth Clover web app";
@@ -43,16 +44,16 @@ const HIGHLIGHTS_PER_ROLE = 1;
 
 /** Grouped roles for the About page career section. */
 export function buildCareerRoles() {
-  return [...experiences]
-    .sort((a, b) => b.id - a.id)
-    .map((exp) => {
+  return [...experiences].map((exp) => {
       const link = (exp.links || [])[0];
       return {
         id: exp.id,
         branch: branchSlug(exp),
         position: exp.position,
         company: exp.company,
+        companyUrl: exp.companyUrl || "",
         period: exp.period,
+        current: Boolean(exp.current),
         highlight: link
           ? {
               name: link.name,
@@ -67,7 +68,7 @@ export function buildCareerRoles() {
 /** Build a compact git-log from experience + linked projects (not the GitHub API). */
 export function buildCareerCommits() {
   const rows = [];
-  const ordered = [...experiences].sort((a, b) => b.id - a.id);
+  const ordered = [...experiences];
 
   ordered.forEach((exp, expIndex) => {
     const branch = branchSlug(exp);

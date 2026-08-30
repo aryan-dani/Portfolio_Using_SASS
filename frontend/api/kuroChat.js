@@ -119,7 +119,7 @@ export function lookupPortfolio(topic, query = "") {
         .filter((e) => matchQuery(`${e.position} ${e.company} ${(e.bullets || []).join(" ")}`, q))
         .map((e) => {
           const highlight = e.links?.[0]?.name || "";
-          return `${e.position} @ ${e.company} (${e.period})${highlight ? `. Highlight: ${highlight}` : ""}`;
+          return `${e.position} @ ${e.company} (${e.period})${e.companyUrl ? ` ${e.companyUrl}` : ""}${highlight ? `. Highlight: ${highlight}` : ""}`;
         });
       return lines.length ? lines.join("\n") : "No matching experience.";
     }
@@ -166,7 +166,7 @@ function buildKnowledgePack() {
   const expLines = experiences
     .map((e) => {
       const highlight = e.links?.[0]?.name || "";
-      return `- ${e.position} @ ${e.company} (${e.period})${highlight ? `. ${highlight}` : ""}`;
+      return `- ${e.position} @ ${e.company} (${e.period})${e.companyUrl ? ` ${e.companyUrl}` : ""}${highlight ? `. ${highlight}` : ""}`;
     })
     .join("\n");
 

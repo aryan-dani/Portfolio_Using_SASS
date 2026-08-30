@@ -54,18 +54,25 @@ function CardContent({ exp, style, isExpanded, onToggle }) {
       >
         <div className="text-left">
           <h2 className="font-headline-md text-xl md:text-2xl lg:text-3xl uppercase">{exp.position}</h2>
-          <h3 className="font-label-bold text-sm uppercase mt-1 opacity-75">
-            {exp.company}
-            {exp.links?.company && (
+          <h3 className="font-label-bold text-sm uppercase mt-1 flex items-center gap-2 flex-wrap">
+            {exp.companyUrl ? (
               <a
-                href={exp.links.company}
+                href={exp.companyUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="ml-2 inline-flex items-center gap-1 hover:underline cursor-none"
+                className="opacity-75 inline-flex items-center gap-1.5 hover:underline cursor-none"
                 onClick={(e) => e.stopPropagation()}
               >
+                {exp.company}
                 <FaExternalLinkAlt className="text-[10px]" />
               </a>
+            ) : (
+              <span className="opacity-75">{exp.company}</span>
+            )}
+            {exp.current && (
+              <span className="inline-block border-2 border-current px-1.5 py-0.5 text-[9px] tracking-[0.14em]">
+                Now
+              </span>
             )}
           </h3>
           <div className="md:hidden mt-2 flex items-center gap-2 opacity-60 text-xs font-label-bold uppercase">
@@ -174,7 +181,14 @@ function PeriodBadge({ exp, alignRight = false }) {
         transition: hoverSpring,
       }}
     >
-      <p className="font-headline-md text-lg uppercase">{exp.period}</p>
+      <p className="font-headline-md text-lg uppercase">
+        {exp.period}
+        {exp.current && (
+          <span className="ml-2 align-middle inline-block border-2 border-current px-1.5 py-0.5 text-[9px] tracking-[0.14em]">
+            Now
+          </span>
+        )}
+      </p>
       {exp.location && (
         <p className={`font-body-md text-sm flex items-center gap-1.5 mt-1 opacity-70 ${alignRight ? "justify-end" : "justify-start"}`}>
           <FaMapMarkerAlt className="text-xs" />
@@ -198,6 +212,7 @@ function ExperienceCard({ exp, index, isExpanded, onToggle }) {
       ref={ref}
       key={exp.id}
       className="relative z-10 w-full mb-10 md:mb-16 grid grid-cols-1 md:grid-cols-[minmax(0,1fr)_3.5rem_minmax(0,1fr)] md:gap-x-10 items-start gap-4 overflow-visible"
+      data-timeline-origin={index === 0 ? "true" : undefined}
       initial={{ opacity: 0, x: isEven ? -60 : 60 }}
       animate={inView ? { opacity: 1, x: 0 } : {}}
       transition={{ ...defaultSpring, delay: index * 0.05 }}
@@ -272,11 +287,19 @@ function Experience() {
       const fill = timelineFillRef.current;
       if (!section || !fill) return;
 
-      const rect = section.getBoundingClientRect();
-      const viewport = window.innerHeight;
-      const total = rect.height + viewport;
-      const scrolled = viewport - rect.top;
-      const progress = Math.min(1, Math.max(0, scrolled / total));
+      const originEl = section.querySelector("[data-timeline-origin]");
+      const track = fill.parentElement;
+      const originTop = originEl ? originEl.offsetTop + 32 : 32;
+      if (track) track.style.top = `${originTop}px`;
+
+      const originBox = originEl?.getBoundingClientRect();
+      const sectionBox = section.getBoundingClientRect();
+      const start = originBox ? originBox.top + 32 : sectionBox.top + originTop;
+      const end = sectionBox.bottom;
+      const readLine = window.innerHeight * 0.4;
+      const raw = (readLine - start) / Math.max(end - start, 1);
+      // Always light the current (top) role a little; grow downward through older roles.
+      const progress = Math.min(1, Math.max(0.14, raw));
       fill.style.transform = `scaleY(${progress})`;
     };
 
@@ -301,7 +324,7 @@ function Experience() {
     >
       <PageHeader
         title="Experience"
-        description="A timeline of raw code, loud design, and shipped products. Building stuff that matters."
+        description="Newest work first. Current role on top, then the trail that got me here."
         className="mb-8"
       />
 
